@@ -20,12 +20,14 @@ public:
 
 signals:
     void zoomRatioChanged(int zoomRatio);
+    void showContoursStateChanged(bool state);
 
 private:
     ModeWidget* mModeWidget;
     CurveWidget* mCurveWidget;
     ControlPointWidget* mControlPointWidget;
     ZoomWidget* mZoomWidget;
+    QCheckBox* mShowContoursCheckBox;
 
 };
 

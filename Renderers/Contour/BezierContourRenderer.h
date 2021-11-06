@@ -23,17 +23,16 @@ public:
     void render(QVector<Curve*> curves);
     void setProjectionMatrix(QMatrix4x4 newMatrix);
 
-    ModeWidget::Mode mode() const;
     void setMode(ModeWidget::Mode newMode);
-
-    float zoomRatio() const;
     void setZoomRatio(float newZoomRatio);
+
+    void setShowContours(bool newShowContours);
 
 private:
     BezierContourRenderer(const BezierContourRenderer&);
     BezierContourRenderer& operator=(const BezierContourRenderer&);
 
-    void render(bool highlightOnlySelectedCurve, QVector<Curve*> curves);
+    void render(Bezier* curves, QVector4D color);
     QVector4D lighter(QVector4D color, float factor); // 0 < factor < 1
     QVector<Curve*> orderCurves(QVector<Curve*> curves);
 
@@ -50,6 +49,7 @@ private:
 
     ModeWidget::Mode mMode;
     float mZoomRatio;
+    bool mShowContours;
 
 };
 

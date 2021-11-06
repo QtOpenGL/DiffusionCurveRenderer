@@ -73,7 +73,6 @@ float ControlPointRenderer::zoomRatio() const
 {
     return mZoomRatio;
 }
-
 void ControlPointRenderer::setZoomRatio(float newZoomRatio)
 {
     mZoomRatio = newZoomRatio;

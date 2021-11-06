@@ -42,7 +42,7 @@ GLWidget::GLWidget(QWidget *parent) : QOpenGLWidget(parent),
         mCurves << bezier;
     }
 
-    mCurves = Util::readCurveDataFromXML("zephyr.xml");
+    mCurves = Util::readCurveDataFromXML("Data/zephyr.xml");
 
     setMouseTracking(true);
 }
@@ -163,6 +163,15 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
         if(mSelectedCurve)
         {
             ControlPoint* controlPoint = mSelectedCurve->getClosestControlPoint(g2c(mMousePosition));
+
+            if(controlPoint)
+            {
+                if(controlPoint->position.distanceToPoint(QVector2D(g2c(mMousePosition))) > 20 * mZoomRatio)
+                    controlPoint = nullptr;
+            }
+
+
+
             setSelectedControlPoint(controlPoint);
             if(controlPoint)
             {
@@ -237,7 +246,7 @@ void GLWidget::mousePressEvent(QMouseEvent *event)
         else
         {
             Curve* selectedCurve = selectCurve(mMousePosition);
-            QRectF boundingBox = mSelectedCurve->getBoundingBox(20);
+            QRectF boundingBox = mSelectedCurve->getBoundingBox();
 
             if(boundingBox.contains(g2c(mMousePosition)))
             {
@@ -379,7 +388,7 @@ void GLWidget::updateCursor()
     {
         if(mSelectedCurve)
         {
-            if(mSelectedCurve->getBoundingBox(20).contains(g2c(mMousePosition)))
+            if(mSelectedCurve->getBoundingBox().contains(g2c(mMousePosition)))
                 setCursor(Qt::SizeAllCursor);
             else
                 setCursor(Qt::ArrowCursor);
@@ -391,6 +400,22 @@ void GLWidget::updateCursor()
 
     }
     
+}
+
+ControlPoint *GLWidget::getClosestControlPoint(QPointF mousePosition)
+{
+    if(!mSelectedCurve)
+        return nullptr;
+
+    ControlPoint* controlPoint = mSelectedCurve->getClosestControlPoint(g2c(mousePosition));
+
+    if(controlPoint)
+    {
+        if(controlPoint->position.distanceToPoint(QVector2D(g2c(mousePosition))) > 20 * mZoomRatio)
+            controlPoint = nullptr;
+    }
+
+    return controlPoint;
 }
 
 void GLWidget::removeCurve(int index)
@@ -577,4 +602,10 @@ void GLWidget::onKeyPressed(int key)
 void GLWidget::onZoomRatioChanged(float zoomRatio)
 {
     zoom(zoomRatio, QPointF(0.5 * width(), 0.5 * height()));
+}
+
+void GLWidget::onShowContoursStateChanged(bool state)
+{
+    mBezierContourRenderer->setShowContours(state);
+    update();
 }

@@ -50,7 +50,7 @@ public:
     virtual QVector<QVector4D> getColors(ColorDirection direction, bool onlyEnabledColorPoints = true);
     virtual QVector<GLfloat> getColorPositions(ColorDirection direction, bool onlyEnabledColorPoints = true);
 
-    virtual ControlPoint* getClosestControlPoint(QPointF point, float radius = 12);
+    virtual ControlPoint* getClosestControlPoint(QPointF point);
     virtual void deselectAllControlPoints();
     virtual float distanceToPoint(QPointF point);
 
@@ -58,7 +58,7 @@ public:
     virtual void translate(QPointF translation);
 
     virtual float length(int intervals = 100);
-    virtual QRectF getBoundingBox(float space);
+    virtual QRectF getBoundingBox(int intervals = 100);
 
     virtual QVector2D valueAt(float t) = 0;
     virtual QVector2D tangentAt(float t) = 0;

@@ -19,6 +19,16 @@ LeftWidget::LeftWidget(QWidget *parent) : QWidget(parent)
 
     mainLayout->addSpacerItem(new QSpacerItem(1,1,QSizePolicy::Ignored, QSizePolicy::Expanding));
 
+    mShowContoursCheckBox = new QCheckBox("Show Contours");
+    mShowContoursCheckBox->setCheckable(true);
+    mShowContoursCheckBox->setChecked(true);
+
+    connect(mShowContoursCheckBox, &QCheckBox::stateChanged, this, [this](int state){
+       emit showContoursStateChanged(state == 2);
+    });
+
+    mainLayout->addWidget(mShowContoursCheckBox);
+
     setFixedWidth(300);
     setLayout(mainLayout);
 }

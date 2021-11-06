@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
     QSurfaceFormat::setDefaultFormat(fmt);
 
     MainWindow w;
-    w.setWindowTitle("Curve Renderer");
+    w.setWindowTitle("Diffusion Curve Renderer");
     w.show();
 
 

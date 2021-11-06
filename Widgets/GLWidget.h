@@ -45,6 +45,7 @@ public slots:
     void onAction(GLWidget::Action action);
     void onKeyPressed(int key);
     void onZoomRatioChanged(float zoomRatio);
+    void onShowContoursStateChanged(bool state);
 
 protected:
     void initializeGL() override;
@@ -60,6 +61,7 @@ protected:
     void setSelectedCurve(Curve* selectedCurve);
     void setSelectedControlPoint(ControlPoint* selectedControlPoint);
     void updateCursor();
+    ControlPoint* getClosestControlPoint(QPointF mousePosition);
 
     void removeCurve(int index);
     void removeCurve(Curve* curve);

@@ -37,7 +37,7 @@ void BoundingBoxRenderer::render(Curve* curve)
 
         if(curve->selected())
         {
-            QRectF boundingBox = curve->getBoundingBox(20);
+            QRectF boundingBox = curve->getBoundingBox();
 
             // Dashed Lines
             {

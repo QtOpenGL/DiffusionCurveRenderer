@@ -65,6 +65,8 @@ CentralWidget::CentralWidget(QWidget *parent) : QWidget(parent)
         });
 
         connect(mLeftWidget->modeWidget(), &ModeWidget::modeChanged, mGLWidget, &GLWidget::onModeChanged);
+
+        connect(mLeftWidget, &LeftWidget::showContoursStateChanged, mGLWidget, &GLWidget::onShowContoursStateChanged);
     }
 
     setLayout(mainLayout);

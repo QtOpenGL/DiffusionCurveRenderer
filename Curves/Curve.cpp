@@ -310,10 +310,13 @@ int Curve::getSize()
     return mControlPoints.size();
 }
 
-ControlPoint* Curve::getClosestControlPoint(QPointF point, float radius)
+ControlPoint* Curve::getClosestControlPoint(QPointF point)
 {
-    float minimumDistance = radius;
-    int index = -1;
+    if(mControlPoints.size() == 0)
+        return nullptr;
+
+    float minimumDistance = std::numeric_limits<float>::infinity();
+    int index = 0;
 
     for(int i = 0; i < mControlPoints.size(); ++i)
     {
@@ -324,17 +327,9 @@ ControlPoint* Curve::getClosestControlPoint(QPointF point, float radius)
             minimumDistance = distance;
             index = i;
         }
-
     }
 
-    if(index != -1)
-    {
-        return mControlPoints[index];
-    }
-    else
-    {
-        return nullptr;
-    }
+    return mControlPoints[index];
 }
 
 void Curve::deselectAllControlPoints()
@@ -380,7 +375,7 @@ float Curve::length(int intervals)
 {
     float length = 0.0f;
     float t = 0.0f;
-    const float dt = 1.0f / (float)intervals;
+    const float dt = 1.0f / static_cast<float>(intervals);
 
     for(int i = 0; i < intervals; ++i)
     {
@@ -393,17 +388,17 @@ float Curve::length(int intervals)
     return length;
 }
 
-QRectF Curve::getBoundingBox(float space)
+QRectF Curve::getBoundingBox(int intervals)
 {
-    float xMin = std::numeric_limits<float>::max();
-    float xMax = -std::numeric_limits<float>::max();
-    float yMin = std::numeric_limits<float>::max();
-    float yMax = -std::numeric_limits<float>::max();
+    float xMin = std::numeric_limits<float>::infinity();
+    float xMax = -std::numeric_limits<float>::infinity();
+    float yMin = std::numeric_limits<float>::infinity();
+    float yMax = -std::numeric_limits<float>::infinity();
 
-    const float dt = 0.001f;
+    const float dt = 1.0f / static_cast<float>(intervals);
     float t = 0.0f;
 
-    for(int i = 0; i < 1000; i++)
+    for(int i = 0; i < intervals; i++)
     {
         QVector2D value = valueAt(t);
 
@@ -419,10 +414,7 @@ QRectF Curve::getBoundingBox(float space)
         t += dt;
     }
 
-    return QRectF(xMin - space - 0.5 * mThickness,
-                  yMin - space - 0.5 * mThickness,
-                  xMax - xMin + 2 * space + mThickness,
-                  yMax - yMin + 2 * space + mThickness);
+    return QRectF(xMin, yMin, xMax - xMin, yMax - yMin);
 }
 
 

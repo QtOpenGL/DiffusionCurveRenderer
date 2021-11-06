@@ -4,7 +4,8 @@ BezierContourRenderer::BezierContourRenderer(QObject *parent) :
     QObject(parent),
     mShader(nullptr),
     mMode(ModeWidget::Select),
-    mZoomRatio(1.0f)
+    mZoomRatio(1.0f),
+    mShowContours(true)
 {
 
 }
@@ -82,29 +83,33 @@ void BezierContourRenderer::render(QVector<Curve*> curves)
 
     for(int i = 0; i < orderedCurves.size(); ++i)
     {
-        if(orderedCurves.at(i)->selected())
-        {
+        Bezier* curve = dynamic_cast<Bezier*>(orderedCurves[i]);
+
+        if(curve == nullptr)
+            continue;
+
+        if(curve->selected())
             highlightOnlySelectedCurve = true;
-            break;
-        }
-
     }
 
-    switch (mMode) {
-    case ModeWidget::Select:
-        render(highlightOnlySelectedCurve, orderedCurves);
-        break;
-    case ModeWidget::Add:
-        render(highlightOnlySelectedCurve, orderedCurves);
-        break;
-    case ModeWidget::Move:
-        render(highlightOnlySelectedCurve, orderedCurves);
-        break;
-    case ModeWidget::Pan:
-        render(false, orderedCurves);
-        break;
+    if(mMode == ModeWidget::Pan)
+        highlightOnlySelectedCurve = false;
 
+
+    for(int i = 0; i < orderedCurves.size(); ++i)
+    {
+        Bezier* curve = dynamic_cast<Bezier*>(orderedCurves[i]);
+
+        if(curve == nullptr)
+            continue;
+
+        if(curve->selected())
+            render(curve, QVector4D(0,0,0,1));
+        else if(mShowContours)
+            render(curve, highlightOnlySelectedCurve ? QVector4D(0.9, 0.9, 0.9, 1) : QVector4D(0,0,0,1));
     }
+
+
 }
 
 void BezierContourRenderer::setProjectionMatrix(QMatrix4x4 newMatrix)
@@ -112,40 +117,27 @@ void BezierContourRenderer::setProjectionMatrix(QMatrix4x4 newMatrix)
     mProjectionMatrix = newMatrix;
 }
 
-void BezierContourRenderer::render(bool highlightOnlySelectedCurve, QVector<Curve*> curves)
+void BezierContourRenderer::render(Bezier* curve, QVector4D color)
 {
-    for(int i = 0; i < curves.size(); ++i)
-    {
-        Bezier* curve = dynamic_cast<Bezier*>(curves[i]);
+    mShader->bind();
 
-        if(curve == nullptr)
-            continue;
+    // Control Points Buffer
+    QVector<QVector2D> controlPoints = curve->getControlPointPositions();
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, mControlPointsBuffer);
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(QVector2D) * controlPoints.size(), controlPoints.constData());
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-        QVector4D color = QVector4D(0,0,0,1);
+    // Uniform Variables
+    mShader->setUniformValue(mProjectionMatrixLocation, mProjectionMatrix);
+    mShader->setUniformValue(mColorLocation, color);
+    mShader->setUniformValue(mThicknessLocation, 2.0f);
+    mShader->setUniformValue(mTicksDeltaLocation, mTicksDelta);
+    mShader->setUniformValue(mControlPointsCountLocation, controlPoints.size());
 
-        if(highlightOnlySelectedCurve && !curve->selected())
-            color = QVector4D(0.9, 0.9, 0.9, 1);
+    QOpenGLVertexArrayObject::Binder binder(&mTicksVertexArray);
+    glDrawArrays(GL_POINTS, 0, mTicks.size());
+    mShader->release();
 
-        mShader->bind();
-
-        QVector<QVector2D> controlPoints = curve->getControlPointPositions();
-
-        // Control Points Buffer
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, mControlPointsBuffer);
-        glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(QVector2D) * controlPoints.size(), controlPoints.constData());
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
-        // Uniform Variables
-        mShader->setUniformValue(mProjectionMatrixLocation, mProjectionMatrix);
-        mShader->setUniformValue(mColorLocation, color);
-        mShader->setUniformValue(mThicknessLocation, mZoomRatio * 4);
-        mShader->setUniformValue(mTicksDeltaLocation, mTicksDelta);
-        mShader->setUniformValue(mControlPointsCountLocation, controlPoints.size());
-
-        QOpenGLVertexArrayObject::Binder binder(&mTicksVertexArray);
-        glDrawArrays(GL_POINTS, 0, mTicks.size());
-        mShader->release();
-    }
 }
 
 QVector4D BezierContourRenderer::lighter(QVector4D color, float factor)
@@ -180,38 +172,27 @@ QVector<Curve *> BezierContourRenderer::orderCurves(QVector<Curve *> curves)
     {
         Curve* curve = curves[i];
         if(orderedCurves.last()->z() <= curve->z())
-        {
             orderedCurves << curve;
-        }
         else
-        {
             for(int j = 0; j < orderedCurves.size(); j++)
-            {
                 if(orderedCurves[j]->z() > curve->z())
                 {
                     orderedCurves.insert(j, curve);
                     break;
                 }
-            }
-        }
     }
 
     return orderedCurves;
 }
 
-float BezierContourRenderer::zoomRatio() const
+void BezierContourRenderer::setShowContours(bool newShowContours)
 {
-    return mZoomRatio;
+    mShowContours = newShowContours;
 }
 
 void BezierContourRenderer::setZoomRatio(float newZoomRatio)
 {
     mZoomRatio = newZoomRatio;
-}
-
-ModeWidget::Mode BezierContourRenderer::mode() const
-{
-    return mMode;
 }
 
 void BezierContourRenderer::setMode(ModeWidget::Mode newMode)
