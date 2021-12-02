@@ -8,7 +8,7 @@ class Util
 public:
     Util();
 
-    static QVector<Curve*> readCurveDataFromXML(QString filename);
+    static QVector<Curve *> readCurveDataFromXML(QString filename);
 };
 
 #endif // UTIL_H

@@ -1,42 +1,49 @@
 #include "BoundingBoxRenderer.h"
 
-BoundingBoxRenderer::BoundingBoxRenderer(QObject *parent) :
-    QObject(parent),
-    mZoomRatio(1.0)
-{
-
-}
+BoundingBoxRenderer::BoundingBoxRenderer()
+    : mRectangleRenderer(nullptr)
+    , mLineRenderer(nullptr)
+    , mZoomRatio(1.0)
+    , mInitialized(false)
+{}
 
 BoundingBoxRenderer::~BoundingBoxRenderer()
 {
+    if (mRectangleRenderer)
+        delete mRectangleRenderer;
 
+    if (mLineRenderer)
+        delete mLineRenderer;
 }
 
 bool BoundingBoxRenderer::initialize()
 {
-    mRectangleRenderer = new RectangleRenderer(this);
-    mLineRenderer = new LineRenderer(this);
+    mRectangleRenderer = new RectangleRenderer;
+    mLineRenderer = new LineRenderer;
 
-    return mRectangleRenderer->initialize() && mLineRenderer->initialize();
+    if (!mRectangleRenderer->initialize())
+        return false;
+
+    if (!mLineRenderer->initialize())
+        return false;
+
+    return mInitialized = true;
 }
 
-void BoundingBoxRenderer::render(Curve* curve)
+void BoundingBoxRenderer::render(Curve *curve)
 {
-    if(curve == nullptr)
+    if (!mInitialized)
+        return;
+
+    if (curve == nullptr)
         return;
 
     switch (mMode) {
-    case ModeWidget::Pan:
-        break;
-    case ModeWidget::Select:
-        break;
-    case ModeWidget::Add:
-        break;
-    case ModeWidget::Move:
-    {
-
-        if(curve->selected())
-        {
+    case ModeWidget::Pan: break;
+    case ModeWidget::Select: break;
+    case ModeWidget::Add: break;
+    case ModeWidget::Move: {
+        if (curve->selected()) {
             QRectF boundingBox = curve->getBoundingBox();
 
             // Dashed Lines
@@ -65,7 +72,6 @@ void BoundingBoxRenderer::render(Curve* curve)
                 mLineRenderer->render(params);
             }
 
-
             // Corners
             {
                 RectangleRenderer::RenderParameters params;
@@ -87,38 +93,22 @@ void BoundingBoxRenderer::render(Curve* curve)
                 params.rectangle = QRectF(boundingBox.bottomRight(), size);
                 mRectangleRenderer->render(params);
             }
-
-
         }
         break;
     }
-
     }
-
 }
 
-void BoundingBoxRenderer::setProjectionMatrix(QMatrix4x4 newMatrix)
+void BoundingBoxRenderer::setProjectionMatrix(const QMatrix4x4 &newMatrix)
 {
     mRectangleRenderer->setProjectionMatrix(newMatrix);
     mLineRenderer->setProjectionMatrix(newMatrix);
 }
 
-ModeWidget::Mode BoundingBoxRenderer::mode() const
-{
-    return mMode;
-}
+ModeWidget::Mode BoundingBoxRenderer::mode() const { return mMode; }
 
-void BoundingBoxRenderer::setMode(ModeWidget::Mode newMode)
-{
-    mMode = newMode;
-}
+void BoundingBoxRenderer::setMode(ModeWidget::Mode newMode) { mMode = newMode; }
 
-float BoundingBoxRenderer::zoomRatio() const
-{
-    return mZoomRatio;
-}
+float BoundingBoxRenderer::zoomRatio() const { return mZoomRatio; }
 
-void BoundingBoxRenderer::setZoomRatio(float newZoomRatio)
-{
-    mZoomRatio = newZoomRatio;
-}
+void BoundingBoxRenderer::setZoomRatio(float newZoomRatio) { mZoomRatio = newZoomRatio; }

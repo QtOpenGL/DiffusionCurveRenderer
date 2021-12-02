@@ -11,12 +11,7 @@ class ModeWidget : public QGroupBox
 public:
     explicit ModeWidget(QGroupBox *parent = nullptr);
 
-    enum Mode {
-        Select = 0,
-        Add = 1,
-        Move = 2,
-        Pan = 3
-    } mMode;
+    enum Mode { Select = 0, Add = 1, Move = 2, Pan = 3 };
 
 signals:
     void modeChanged(ModeWidget::Mode mode);
@@ -25,8 +20,8 @@ private slots:
     void refresh();
 
 private:
-    QVector<QPushButton*> mButtons;
-
+    QVector<QPushButton *> mButtons;
+    Mode mMode;
 };
 
 #endif // MODEWIDGET_H

@@ -1,37 +1,33 @@
 #ifndef BOUNDINGBOXRENDERER_H
 #define BOUNDINGBOXRENDERER_H
 
-#include <Renderers/Base/RectangleRenderer.h>
-#include <Renderers/Base/LineRenderer.h>
 #include <Curves/Curve.h>
+#include <Renderers/Base/LineRenderer.h>
+#include <Renderers/Base/RectangleRenderer.h>
 #include <Widgets/ModeWidget.h>
 
-class BoundingBoxRenderer : public QObject
+class BoundingBoxRenderer
 {
-    Q_OBJECT
-
 public:
-    BoundingBoxRenderer(QObject *parent = nullptr);
+    BoundingBoxRenderer();
     ~BoundingBoxRenderer();
 
     bool initialize();
-    void render(Curve* curve);
-    void setProjectionMatrix(QMatrix4x4 newMatrix);
+    void render(Curve *curve);
+    void setProjectionMatrix(const QMatrix4x4 &newMatrix);
 
     ModeWidget::Mode mode() const;
     void setMode(ModeWidget::Mode newMode);
-
     float zoomRatio() const;
     void setZoomRatio(float newZoomRatio);
 
 private:
-    BoundingBoxRenderer(const BoundingBoxRenderer&);
-    BoundingBoxRenderer& operator=(const BoundingBoxRenderer&);
-
     RectangleRenderer *mRectangleRenderer;
-    LineRenderer* mLineRenderer;
+    LineRenderer *mLineRenderer;
     ModeWidget::Mode mMode;
     float mZoomRatio;
+
+    bool mInitialized;
 };
 
 #endif // BOUNDINGBOXRENDERER_H

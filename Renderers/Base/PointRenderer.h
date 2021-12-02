@@ -7,35 +7,44 @@
 #include <QOpenGLVertexArrayObject>
 #include <QVector2D>
 
-class PointRenderer : public QObject, protected QOpenGLFunctions
+class PointRenderer : protected QOpenGLFunctions
 {
-    Q_OBJECT
-
 public:
-    struct RenderParameters {
-        QVector2D point;
-        float innerRadius, outerRadius;
-        QVector4D innerColor, outerColor;
-    };
-
-    explicit PointRenderer(QObject *parent = nullptr);
+    PointRenderer();
     ~PointRenderer();
 
+    struct RenderParameters
+    {
+        QVector2D point;
+        float innerRadius;
+        float outerRadius;
+        QVector4D innerColor;
+        QVector4D outerColor;
+    };
+
     bool initialize();
-    void render(RenderParameters params);
-    void setProjectionMatrix(QMatrix4x4 newMatrix);
+    void render(const RenderParameters &params);
+    void setProjectionMatrix(const QMatrix4x4 &newMatrix);
 
 private:
-    PointRenderer(const PointRenderer&);
-    PointRenderer& operator=(const PointRenderer&);
-
-    QOpenGLShaderProgram* mShader;
-    int mProjectionMatrixLocation, mPointLocation, mInnerColorLocation, mOuterColorLocation, mInnerRadiusLocation, mOuterRadiusLocation, mTicksDeltaLocation;
+    QOpenGLShaderProgram *mShader;
     QOpenGLVertexArrayObject mTicksVertexArray;
     QOpenGLBuffer mTicksBuffer;
+
+    int mProjectionMatrixLocation;
+    int mPointLocation;
+    int mInnerColorLocation;
+    int mOuterColorLocation;
+    int mInnerRadiusLocation;
+    int mOuterRadiusLocation;
+    int mTicksDeltaLocation;
+
     QMatrix4x4 mProjectionMatrix;
+
     QVector<float> mTicks;
     float mTicksDelta;
+
+    bool mInitialized;
 };
 
 #endif // POINTRENDERER_H

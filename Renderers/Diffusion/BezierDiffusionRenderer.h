@@ -1,44 +1,49 @@
 #ifndef BEZIERDIFFUSIONRENDERER_H
 #define BEZIERDIFFUSIONRENDERER_H
 
-#include <QOpenGLWidget>
+#include <QOpenGLBuffer>
 #include <QOpenGLExtraFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
-#include <QOpenGLBuffer>
+#include <QOpenGLWidget>
 
-#include <Curves/Curve.h>
 #include <Constants.h>
+#include <Curves/Curve.h>
 
-class BezierDiffusionRenderer : public QObject, protected QOpenGLExtraFunctions
+class BezierDiffusionRenderer : protected QOpenGLExtraFunctions
 {
-    Q_OBJECT
 public:
-    explicit BezierDiffusionRenderer(QObject *parent = nullptr);
+    BezierDiffusionRenderer();
     ~BezierDiffusionRenderer();
 
     bool initialize();
-    void render(QVector<Curve*> curves);
+    void render(QVector<Curve *> curves);
 
     void setProjectionMatrix(const QMatrix4x4 &newProjectionMatrix);
 
 private:
-    int mProjectionMatrixLocation, mTicksDeltaLocation, mThicknessLocation;
-    int mControlPointsLocation, mControlPointsCountLocation;
-    int mLeftColorsLocation, mLeftColorPositionsLocation, mLeftColorsCountLocation;
-    int mRightColorsLocation, mRightColorPositionsLocation, mRightColorsCountLocation;
-
-    QOpenGLShaderProgram* mShader;
+    QOpenGLShaderProgram *mShader;
     QOpenGLVertexArrayObject mTicksVertexArray;
     QOpenGLBuffer mTicksBuffer;
+
+    int mProjectionMatrixLocation;
+    int mTicksDeltaLocation;
+    int mThicknessLocation;
+    int mControlPointsLocation;
+    int mControlPointsCountLocation;
+    int mLeftColorsLocation;
+    int mLeftColorPositionsLocation;
+    int mLeftColorsCountLocation;
+    int mRightColorsLocation;
+    int mRightColorPositionsLocation;
+    int mRightColorsCountLocation;
 
     QMatrix4x4 mProjectionMatrix;
 
     QVector<float> mTicks;
     float mTicksDelta;
 
-signals:
-
+    bool mInitialized;
 };
 
 #endif // BEZIERDIFFUSIONRENDERER_H

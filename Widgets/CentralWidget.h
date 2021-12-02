@@ -4,7 +4,7 @@
 #include <QWidget>
 
 #include "LeftWidget.h"
-#include "GLWidget.h"
+#include "OpenGLWidget.h"
 
 class CentralWidget : public QWidget
 {
@@ -12,13 +12,13 @@ class CentralWidget : public QWidget
 public:
     explicit CentralWidget(QWidget *parent = nullptr);
 
-    GLWidget *gLWidget() const;
-    void setGLWidget(GLWidget *newGLWidget);
+    OpenGLWidget *gLWidget() const;
+    void setGLWidget(OpenGLWidget *newGLWidget);
 
 private:
-    QGroupBox* mGLWidgetContainer;
-    GLWidget* mGLWidget;
-    LeftWidget* mLeftWidget;
+    QGroupBox *mGLWidgetContainer;
+    OpenGLWidget *mGLWidget;
+    LeftWidget *mLeftWidget;
 };
 
 #endif // CENTRALWIDGET_H

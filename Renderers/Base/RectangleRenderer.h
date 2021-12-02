@@ -1,46 +1,49 @@
 #ifndef RECTANGLERENDERER_H
 #define RECTANGLERENDERER_H
 
-#include <QVector>
-#include <QOpenGLBuffer>
-#include <QOpenGLShaderProgram>
-#include <QOpenGLVertexArrayObject>
+#include <Widgets/ModeWidget.h>
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
+#include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
-#include <Widgets/ModeWidget.h>
 #include <QVector4D>
+#include <QVector>
 
-class RectangleRenderer : public QObject, protected QOpenGLFunctions
+class RectangleRenderer : protected QOpenGLFunctions
 {
-    Q_OBJECT
-
 public:
-    explicit RectangleRenderer(QObject *parent = nullptr);
+    RectangleRenderer();
     ~RectangleRenderer();
 
-    struct RenderParameters {
+    struct RenderParameters
+    {
         QRectF rectangle;
         QVector4D fillColor;
+        QVector4D borderColor;
         bool borderEnabled;
         float borderWidth;
-        QVector4D borderColor;
-
     };
 
     bool initialize();
-    void render(RenderParameters params);
-    void setProjectionMatrix(QMatrix4x4 newMatrix);
+    void render(const RenderParameters &params);
+    void setProjectionMatrix(const QMatrix4x4 &newMatrix);
 
 private:
-    RectangleRenderer(const RectangleRenderer&);
-    RectangleRenderer& operator=(const RectangleRenderer&);
+    QOpenGLShaderProgram *mShader;
 
-    QOpenGLShaderProgram* mShader;
-    int mProjectionMatrixLocation, mFillColorLocation, mBorderEnabledLocation, mBorderWidthLocation, mBorderColorLocation, mWidthLocation, mHeightLocation;
+    int mProjectionMatrixLocation;
+    int mFillColorLocation;
+    int mBorderEnabledLocation;
+    int mBorderWidthLocation;
+    int mBorderColorLocation;
+    int mWidthLocation;
+    int mHeightLocation;
+
     QOpenGLVertexArrayObject mVertexArray;
     QOpenGLBuffer mBuffer;
     QMatrix4x4 mProjectionMatrix;
+
+    bool mInitialized;
 };
 
 #endif // RECTANGLERENDERER_H

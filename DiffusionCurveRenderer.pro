@@ -34,11 +34,11 @@ DISTFILES += \
 
 HEADERS += \
     Constants.h \
-    Controllers/GLWidgetController.h \
     Curves/Bezier.h \
     Curves/ColorPoint.h \
     Curves/ControlPoint.h \
     Curves/Curve.h \
+    MainController.h \
     MainWindow.h \
     Renderers/Base/LineRenderer.h \
     Renderers/Base/PointRenderer.h \
@@ -51,18 +51,18 @@ HEADERS += \
     Widgets/CentralWidget.h \
     Widgets/ControlPointWidget.h \
     Widgets/CurveWidget.h \
-    Widgets/GLWidget.h \
     Widgets/LeftWidget.h \
     Widgets/ModeWidget.h \
+    Widgets/OpenGLWidget.h \
     Widgets/ZoomWidget.h
 
 SOURCES += \
-    Controllers/GLWidgetController.cpp \
     Curves/Bezier.cpp \
     Curves/ColorPoint.cpp \
     Curves/ControlPoint.cpp \
     Curves/Curve.cpp \
     Main.cpp \
+    MainController.cpp \
     MainWindow.cpp \
     Renderers/Base/LineRenderer.cpp \
     Renderers/Base/PointRenderer.cpp \
@@ -75,7 +75,7 @@ SOURCES += \
     Widgets/CentralWidget.cpp \
     Widgets/ControlPointWidget.cpp \
     Widgets/CurveWidget.cpp \
-    Widgets/GLWidget.cpp \
     Widgets/LeftWidget.cpp \
     Widgets/ModeWidget.cpp \
+    Widgets/OpenGLWidget.cpp \
     Widgets/ZoomWidget.cpp

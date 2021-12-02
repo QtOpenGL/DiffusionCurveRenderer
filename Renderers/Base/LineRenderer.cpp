@@ -1,11 +1,9 @@
 ﻿#include "LineRenderer.h"
 
-LineRenderer::LineRenderer(QObject *parent) :
-    QObject(parent),
-    mShader(nullptr)
-{
-
-}
+LineRenderer::LineRenderer()
+    : mShader(nullptr)
+    , mInitialized(false)
+{}
 
 LineRenderer::~LineRenderer()
 {
@@ -15,7 +13,7 @@ LineRenderer::~LineRenderer()
     mDenseTicksBuffer.destroy();
     mDenseTicksVertexArray.destroy();
 
-    if(mShader)
+    if (mShader)
         delete mShader;
 
     mShader = nullptr;
@@ -27,12 +25,10 @@ bool LineRenderer::initialize()
 
     mShader = new QOpenGLShaderProgram;
 
-    if(!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Line/VertexShader.vert") ||
-            !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Line/FragmentShader.frag") ||
-            !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Line/GeometryShader.geom") ||
-            !mShader->link() ||
-            !mShader->bind())
-    {
+    if (!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Line/VertexShader.vert")
+        || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Line/FragmentShader.frag")
+        || !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Line/GeometryShader.geom")
+        || !mShader->link() || !mShader->bind()) {
         qCritical() << this << mShader->log();
         return false;
     }
@@ -50,19 +46,19 @@ bool LineRenderer::initialize()
     mDashLengthLocation = mShader->uniformLocation("dashLength");
     mGapLengthLocation = mShader->uniformLocation("gapLength");
 
-    // Vertex Attribute Locations
+    // Vertex Attribute Location
     mShader->bindAttributeLocation("vertex", 0);
 
     // Rare Ticks
     {
+        mRareTicksVertexArray.create();
+        mRareTicksVertexArray.bind();
+
         mRareTicks = QVector<float>(10, 0);
-        for(int i = 0; i < mRareTicks.size(); i++)
+        for (int i = 0; i < mRareTicks.size(); i++)
             mRareTicks[i] = static_cast<float>(i) / mRareTicks.size();
 
         mRareTicksDelta = 1.0f / mRareTicks.size();
-
-        mRareTicksVertexArray.create();
-        QOpenGLVertexArrayObject::Binder binder(&mRareTicksVertexArray);
 
         mRareTicksBuffer.create();
         mRareTicksBuffer.bind();
@@ -71,18 +67,20 @@ bool LineRenderer::initialize()
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, 0, nullptr);
         mRareTicksBuffer.release();
+
+        mRareTicksVertexArray.release();
     }
 
     // Dense Ticks
     {
+        mDenseTicksVertexArray.create();
+        mDenseTicksVertexArray.bind();
+
         mDenseTicks = QVector<float>(1000, 0);
-        for(int i = 0; i < mDenseTicks.size(); i++)
+        for (int i = 0; i < mDenseTicks.size(); i++)
             mDenseTicks[i] = static_cast<float>(i) / mDenseTicks.size();
 
         mDenseTicksDelta = 1.0f / mDenseTicks.size();
-
-        mDenseTicksVertexArray.create();
-        QOpenGLVertexArrayObject::Binder binder(&mDenseTicksVertexArray);
 
         mDenseTicksBuffer.create();
         mDenseTicksBuffer.bind();
@@ -91,13 +89,18 @@ bool LineRenderer::initialize()
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, 0, nullptr);
         mDenseTicksBuffer.release();
+
+        mDenseTicksVertexArray.release();
     }
 
-    return true;
+    return mInitialized = true;
 }
 
-void LineRenderer::render(RenderParameters params)
+void LineRenderer::render(const RenderParameters &params)
 {
+    if (!mInitialized)
+        return;
+
     mShader->bind();
 
     mShader->setUniformValue(mProjectionMatrixLocation, mProjectionMatrix);
@@ -113,22 +116,18 @@ void LineRenderer::render(RenderParameters params)
     mShader->setUniformValue(mDashLengthLocation, params.dashLength);
     mShader->setUniformValue(mGapLengthLocation, params.gapLength);
 
-    if(params.lineStyle == LineStyle::Solid)
-    {
-        QOpenGLVertexArrayObject::Binder binder(&mRareTicksVertexArray);
+    if (params.lineStyle == LineStyle::Solid) {
+        mRareTicksVertexArray.bind();
         glDrawArrays(GL_POINTS, 0, mRareTicks.size());
+        mRareTicksVertexArray.release();
 
-    }
-    else if(params.lineStyle == LineStyle::Dashed)
-    {
-        QOpenGLVertexArrayObject::Binder binder(&mDenseTicksVertexArray);
+    } else if (params.lineStyle == LineStyle::Dashed) {
+        mDenseTicksVertexArray.bind();
         glDrawArrays(GL_POINTS, 0, mDenseTicks.size());
+        mDenseTicksVertexArray.release();
     }
 
     mShader->release();
 }
 
-void LineRenderer::setProjectionMatrix(QMatrix4x4 newMatrix)
-{
-    mProjectionMatrix = newMatrix;
-}
+void LineRenderer::setProjectionMatrix(const QMatrix4x4 &newMatrix) { mProjectionMatrix = newMatrix; }

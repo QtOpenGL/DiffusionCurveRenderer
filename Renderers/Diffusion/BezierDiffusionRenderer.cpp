@@ -2,23 +2,21 @@
 
 #include <Curves/Bezier.h>
 
-
-BezierDiffusionRenderer::BezierDiffusionRenderer(QObject *parent)
-    : QObject(parent),
-      mShader(nullptr)
-{
-
-}
+BezierDiffusionRenderer::BezierDiffusionRenderer()
+    : mShader(nullptr)
+    , mInitialized(false)
+{}
 
 BezierDiffusionRenderer::~BezierDiffusionRenderer()
 {
-
     mTicksBuffer.destroy();
     mTicksVertexArray.destroy();
-    if(mShader)
-        delete mShader;
-}
 
+    if (mShader)
+        delete mShader;
+
+    mShader = nullptr;
+}
 
 bool BezierDiffusionRenderer::initialize()
 {
@@ -26,12 +24,10 @@ bool BezierDiffusionRenderer::initialize()
 
     mShader = new QOpenGLShaderProgram;
 
-    if(!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Bezier/Diffusion/VertexShader.vert") ||
-            !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Bezier/Diffusion/FragmentShader.frag") ||
-            !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Bezier/Diffusion/GeometryShader.geom") ||
-            !mShader->link() ||
-            !mShader->bind())
-    {
+    if (!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Bezier/Diffusion/VertexShader.vert")
+        || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Bezier/Diffusion/FragmentShader.frag")
+        || !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Bezier/Diffusion/GeometryShader.geom")
+        || !mShader->link() || !mShader->bind()) {
         qCritical() << mShader->log();
         return false;
     }
@@ -57,7 +53,7 @@ bool BezierDiffusionRenderer::initialize()
 
     // Ticks
     mTicks = QVector<float>(2000, 0.0);
-    for(int i = 0; i < mTicks.size(); ++i)
+    for (int i = 0; i < mTicks.size(); ++i)
         mTicks[i] = i / static_cast<float>(mTicks.size());
 
     mTicksDelta = 1.0f / static_cast<float>(mTicks.size());
@@ -65,7 +61,7 @@ bool BezierDiffusionRenderer::initialize()
     // VAO and VBO
     {
         mTicksVertexArray.create();
-        QOpenGLVertexArrayObject::Binder binder(&mTicksVertexArray);
+        mTicksVertexArray.bind();
 
         mTicksBuffer.create();
         mTicksBuffer.bind();
@@ -74,18 +70,22 @@ bool BezierDiffusionRenderer::initialize()
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, 0, nullptr);
         mTicksBuffer.release();
+
+        mTicksVertexArray.release();
     }
 
-    return true;
+    return mInitialized = true;
 }
 
-void BezierDiffusionRenderer::render(QVector<Curve*> curves)
+void BezierDiffusionRenderer::render(QVector<Curve *> curves)
 {
-    for(int i = 0; i < curves.size(); ++i)
-    {
-        Bezier* curve = dynamic_cast<Bezier*>(curves[i]);
+    if (!mInitialized)
+        return;
 
-        if(curve == nullptr)
+    for (int i = 0; i < curves.size(); ++i) {
+        Bezier *curve = dynamic_cast<Bezier *>(curves[i]);
+
+        if (curve == nullptr)
             continue;
 
         mShader->bind();
@@ -103,19 +103,26 @@ void BezierDiffusionRenderer::render(QVector<Curve*> curves)
         QVector<QVector4D> leftColors = curve->getColors(Curve::Left);
         QVector<GLfloat> leftColorPositions = curve->getColorPositions(Curve::Left);
         mShader->setUniformValueArray(mLeftColorsLocation, leftColors.constData(), leftColors.size());
-        mShader->setUniformValueArray(mLeftColorPositionsLocation, leftColorPositions.constData(), leftColorPositions.size(), 1);
+        mShader->setUniformValueArray(mLeftColorPositionsLocation,
+                                      leftColorPositions.constData(),
+                                      leftColorPositions.size(),
+                                      1);
         mShader->setUniformValue(mLeftColorsCountLocation, leftColors.size());
 
         // Right colors
         QVector<QVector4D> rightColors = curve->getColors(Curve::Right);
         QVector<GLfloat> rightColorPositions = curve->getColorPositions(Curve::Right);
         mShader->setUniformValueArray(mRightColorsLocation, rightColors.constData(), rightColors.size());
-        mShader->setUniformValueArray(mRightColorPositionsLocation, rightColorPositions.constData(), rightColorPositions.size(), 1);
+        mShader->setUniformValueArray(mRightColorPositionsLocation,
+                                      rightColorPositions.constData(),
+                                      rightColorPositions.size(),
+                                      1);
         mShader->setUniformValue(mRightColorsCountLocation, rightColors.size());
 
-
-        QOpenGLVertexArrayObject::Binder binder(&mTicksVertexArray);
+        mTicksVertexArray.bind();
         glDrawArrays(GL_POINTS, 0, mTicks.size());
+        mTicksVertexArray.release();
+
         mShader->release();
     }
 }
@@ -124,4 +131,3 @@ void BezierDiffusionRenderer::setProjectionMatrix(const QMatrix4x4 &newProjectio
 {
     mProjectionMatrix = newProjectionMatrix;
 }
-

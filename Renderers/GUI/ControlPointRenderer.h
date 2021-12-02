@@ -1,21 +1,20 @@
 #ifndef CONTROLPOINTRENDERER_H
 #define CONTROLPOINTRENDERER_H
 
-#include <Renderers/Base/PointRenderer.h>
 #include <Curves/Curve.h>
+#include <Renderers/Base/PointRenderer.h>
 #include <Widgets/ModeWidget.h>
 
-class ControlPointRenderer : public QObject
+class ControlPointRenderer
 {
-    Q_OBJECT
-
 public:
-    explicit ControlPointRenderer(QObject *parent = nullptr);
+    ControlPointRenderer();
     ~ControlPointRenderer();
 
     bool initialize();
-    void render(Curve* curve);
-    void setProjectionMatrix(QMatrix4x4 newMatrix);
+    void render(Curve *curve);
+
+    void setProjectionMatrix(const QMatrix4x4 &newMatrix);
 
     ModeWidget::Mode mode() const;
     void setMode(ModeWidget::Mode newMode);
@@ -24,13 +23,11 @@ public:
     void setZoomRatio(float newZoomRatio);
 
 private:
-    ControlPointRenderer(const ControlPointRenderer&);
-    ControlPointRenderer& operator=(const ControlPointRenderer&);
+    PointRenderer *mPointRenderer;
 
-    PointRenderer* mPointRenderer;
     ModeWidget::Mode mMode;
-
     float mZoomRatio;
+    bool mInitialized;
 };
 
 #endif // CONTROLPOINTRENDERER_H

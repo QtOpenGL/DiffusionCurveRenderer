@@ -27,7 +27,6 @@ float customPow(float x, float y)
     return pow(x, y);
 }
 
-
 float factorial(int n)
 {
     float result = 1;

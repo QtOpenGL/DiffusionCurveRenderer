@@ -3,10 +3,11 @@
 
 #include "ControlPoint.h"
 #include "Curve.h"
+
 #include <QRectF>
-#include <QVector>
 #include <QVector2D>
 #include <QVector4D>
+#include <QVector>
 
 class Bezier : public Curve
 {
@@ -23,8 +24,6 @@ private:
     QVector<float> getDerivativeCoefficients();
     float factorial(int n);
     float choose(int n, int k);
-
-
 };
 
 #endif // BEZIER_H

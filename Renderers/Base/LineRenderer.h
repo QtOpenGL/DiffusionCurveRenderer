@@ -2,52 +2,60 @@
 #define LINERENDERER_H
 
 #include <QOpenGLBuffer>
+#include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
-#include <QOpenGLBuffer>
-#include <QOpenGLFunctions>
-#include <QOpenGLVertexArrayObject>
 
-class LineRenderer : public QObject, protected QOpenGLFunctions
+class LineRenderer : protected QOpenGLFunctions
 {
-
 public:
-    explicit LineRenderer(QObject *parent = nullptr);
+    LineRenderer();
     ~LineRenderer();
 
-    enum LineStyle {
-        Solid = 0,
-        Dashed = 1
-    };
+    enum LineStyle { Solid = 0, Dashed = 1 };
 
-    struct RenderParameters {
-        QVector2D startingPoint, endPoint;
+    struct RenderParameters
+    {
+        QVector2D startingPoint;
+        QVector2D endPoint;
         QVector4D color;
-        float thickness;
         LineStyle lineStyle;
+        float thickness;
         float dashLength;
         float gapLength;
     };
 
     bool initialize();
-    void render(RenderParameters params);
-    void setProjectionMatrix(QMatrix4x4 newMatrix);
+    void render(const RenderParameters &params);
+    void setProjectionMatrix(const QMatrix4x4 &newMatrix);
 
 private:
-    LineRenderer(const LineRenderer&);
-    LineRenderer& operator=(const LineRenderer&);
-
-    int mProjectionMatrixLocation, mStartingPointLocation, mEndPointLocation, mColorLocation, mThicknessLocation, mLineStyleLocation;
-    int mLineLengthLocation, mDashLengthLocation, mGapLengthLocation;
-    int mRareTicksDeltaLocation, mDenseTicksDeltaLocation;
-
-    QOpenGLShaderProgram* mShader;
-    QOpenGLVertexArrayObject mRareTicksVertexArray, mDenseTicksVertexArray;
-    QOpenGLBuffer mRareTicksBuffer, mDenseTicksBuffer;
+    QOpenGLShaderProgram *mShader;
+    QOpenGLVertexArrayObject mRareTicksVertexArray;
+    QOpenGLVertexArrayObject mDenseTicksVertexArray;
+    QOpenGLBuffer mRareTicksBuffer;
+    QOpenGLBuffer mDenseTicksBuffer;
     QMatrix4x4 mProjectionMatrix;
 
-    QVector<float> mRareTicks, mDenseTicks;
-    float mRareTicksDelta, mDenseTicksDelta;
+    int mProjectionMatrixLocation;
+    int mStartingPointLocation;
+    int mEndPointLocation;
+    int mColorLocation;
+    int mThicknessLocation;
+    int mLineStyleLocation;
+    int mLineLengthLocation;
+    int mDashLengthLocation;
+    int mGapLengthLocation;
+    int mRareTicksDeltaLocation;
+    int mDenseTicksDeltaLocation;
+
+    QVector<float> mRareTicks;
+    QVector<float> mDenseTicks;
+
+    float mRareTicksDelta;
+    float mDenseTicksDelta;
+
+    bool mInitialized;
 };
 
 #endif // LINERENDERER_H

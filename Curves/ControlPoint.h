@@ -6,7 +6,6 @@
 
 struct ControlPoint
 {
-
 public:
     ControlPoint();
     ControlPoint(float x, float y);

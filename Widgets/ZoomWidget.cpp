@@ -2,8 +2,9 @@
 
 #include <QLayout>
 
-ZoomWidget::ZoomWidget(QGroupBox *parent) : QGroupBox(parent) ,
-    mZoomRatio(1.0)
+ZoomWidget::ZoomWidget(QGroupBox *parent)
+    : QGroupBox(parent)
+    , mZoomRatio(1.0)
 {
     mSlider = new QSlider(Qt::Horizontal);
     mSlider->setMinimum(8);
@@ -12,12 +13,12 @@ ZoomWidget::ZoomWidget(QGroupBox *parent) : QGroupBox(parent) ,
     mSlider->setInvertedAppearance(false);
     mSlider->setTickPosition(QSlider::TicksBelow);
 
-    connect(mSlider, &QSlider::valueChanged, this, [=](int value){
-       mZoomRatio = 16.0f / static_cast<float>(value);
-       emit zoomRatioChanged(mZoomRatio);
+    connect(mSlider, &QSlider::valueChanged, this, [=](int value) {
+        mZoomRatio = 16.0f / static_cast<float>(value);
+        emit zoomRatioChanged(mZoomRatio);
     });
 
-    QHBoxLayout* layout = new QHBoxLayout;
+    QHBoxLayout *layout = new QHBoxLayout;
     layout->addWidget(mSlider);
     setLayout(layout);
     setTitle("Zoom");
@@ -25,7 +26,7 @@ ZoomWidget::ZoomWidget(QGroupBox *parent) : QGroupBox(parent) ,
 
 void ZoomWidget::onZoomRatioChanged(float zoomRatio)
 {
-    if(qFuzzyCompare(mZoomRatio, zoomRatio))
+    if (qFuzzyCompare(mZoomRatio, zoomRatio))
         return;
 
     mZoomRatio = zoomRatio;

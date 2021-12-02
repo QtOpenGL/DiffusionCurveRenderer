@@ -1,9 +1,9 @@
 #ifndef LEFTWIDGET_H
 #define LEFTWIDGET_H
 
-#include "ModeWidget.h"
-#include "CurveWidget.h"
 #include "ControlPointWidget.h"
+#include "CurveWidget.h"
+#include "ModeWidget.h"
 #include "ZoomWidget.h"
 #include <QWidget>
 
@@ -23,12 +23,11 @@ signals:
     void showContoursStateChanged(bool state);
 
 private:
-    ModeWidget* mModeWidget;
-    CurveWidget* mCurveWidget;
-    ControlPointWidget* mControlPointWidget;
-    ZoomWidget* mZoomWidget;
-    QCheckBox* mShowContoursCheckBox;
-
+    ModeWidget *mModeWidget;
+    CurveWidget *mCurveWidget;
+    ControlPointWidget *mControlPointWidget;
+    ZoomWidget *mZoomWidget;
+    QCheckBox *mShowContoursCheckBox;
 };
 
 #endif // LEFTWIDGET_H

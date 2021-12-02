@@ -2,9 +2,10 @@
 
 #include <QHBoxLayout>
 
-LeftWidget::LeftWidget(QWidget *parent) : QWidget(parent)
+LeftWidget::LeftWidget(QWidget *parent)
+    : QWidget(parent)
 {
-    QVBoxLayout* mainLayout = new QVBoxLayout;
+    QVBoxLayout *mainLayout = new QVBoxLayout;
     mModeWidget = new ModeWidget;
     mainLayout->addWidget(mModeWidget);
 
@@ -17,14 +18,14 @@ LeftWidget::LeftWidget(QWidget *parent) : QWidget(parent)
     mZoomWidget = new ZoomWidget;
     mainLayout->addWidget(mZoomWidget);
 
-    mainLayout->addSpacerItem(new QSpacerItem(1,1,QSizePolicy::Ignored, QSizePolicy::Expanding));
+    mainLayout->addSpacerItem(new QSpacerItem(1, 1, QSizePolicy::Ignored, QSizePolicy::Expanding));
 
     mShowContoursCheckBox = new QCheckBox("Show Contours");
     mShowContoursCheckBox->setCheckable(true);
     mShowContoursCheckBox->setChecked(true);
 
-    connect(mShowContoursCheckBox, &QCheckBox::stateChanged, this, [this](int state){
-       emit showContoursStateChanged(state == 2);
+    connect(mShowContoursCheckBox, &QCheckBox::stateChanged, this, [this](int state) {
+        emit showContoursStateChanged(state == 2);
     });
 
     mainLayout->addWidget(mShowContoursCheckBox);
@@ -33,22 +34,10 @@ LeftWidget::LeftWidget(QWidget *parent) : QWidget(parent)
     setLayout(mainLayout);
 }
 
-ModeWidget *LeftWidget::modeWidget() const
-{
-    return mModeWidget;
-}
+ModeWidget *LeftWidget::modeWidget() const { return mModeWidget; }
 
-CurveWidget *LeftWidget::curveWidget() const
-{
-    return mCurveWidget;
-}
+CurveWidget *LeftWidget::curveWidget() const { return mCurveWidget; }
 
-ControlPointWidget *LeftWidget::controlPointWidget() const
-{
-    return mControlPointWidget;
-}
+ControlPointWidget *LeftWidget::controlPointWidget() const { return mControlPointWidget; }
 
-ZoomWidget *LeftWidget::zoomWidget() const
-{
-    return mZoomWidget;
-}
+ZoomWidget *LeftWidget::zoomWidget() const { return mZoomWidget; }

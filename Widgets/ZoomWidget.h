@@ -17,7 +17,7 @@ signals:
     void zoomRatioChanged(float zoomRatio);
 
 private:
-    QSlider* mSlider;
+    QSlider *mSlider;
     float mZoomRatio;
 };
 

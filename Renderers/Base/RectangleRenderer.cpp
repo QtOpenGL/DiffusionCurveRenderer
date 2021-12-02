@@ -1,18 +1,16 @@
 #include "RectangleRenderer.h"
 
-RectangleRenderer::RectangleRenderer(QObject *parent):
-    QObject(parent),
-    mShader(nullptr)
-{
-
-}
+RectangleRenderer::RectangleRenderer()
+    : mShader(nullptr)
+    , mInitialized(false)
+{}
 
 RectangleRenderer::~RectangleRenderer()
 {
     mBuffer.destroy();
     mVertexArray.destroy();
 
-    if(mShader)
+    if (mShader)
         delete mShader;
 
     mShader = nullptr;
@@ -24,12 +22,10 @@ bool RectangleRenderer::initialize()
 
     mShader = new QOpenGLShaderProgram;
 
-    if(!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Rectangle/VertexShader.vert") ||
-            !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Rectangle/GeometryShader.geom") ||
-            !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Rectangle/FragmentShader.frag") ||
-            !mShader->link() ||
-            !mShader->bind())
-    {
+    if (!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Rectangle/VertexShader.vert")
+        || !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Rectangle/GeometryShader.geom")
+        || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Rectangle/FragmentShader.frag")
+        || !mShader->link() || !mShader->bind()) {
         qCritical() << this << mShader->log();
         return false;
     }
@@ -43,28 +39,30 @@ bool RectangleRenderer::initialize()
     mWidthLocation = mShader->uniformLocation("width");
     mHeightLocation = mShader->uniformLocation("height");
 
-
     //Bind locations
     mShader->bindAttributeLocation("topLeft", 0);
 
     // Vertex Array and Buffer
-    {
-        mVertexArray.create();
-        QOpenGLVertexArrayObject::Binder binder(&mVertexArray);
-        mBuffer.create();
-        mBuffer.bind();
-        mBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
-        mBuffer.allocate(nullptr, sizeof(QVector2D));
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-        mBuffer.release();
-    }
+    mVertexArray.create();
+    mVertexArray.bind();
 
-    return true;
+    mBuffer.create();
+    mBuffer.bind();
+    mBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
+    mBuffer.allocate(sizeof(QVector2D));
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    mBuffer.release();
+
+    mVertexArray.release();
+
+    return mInitialized = true;
 }
 
-void RectangleRenderer::render(RenderParameters params)
+void RectangleRenderer::render(const RenderParameters &params)
 {
+    if (!mInitialized)
+        return;
 
     QVector2D topLeft = QVector2D(params.rectangle.topLeft());
 
@@ -80,16 +78,13 @@ void RectangleRenderer::render(RenderParameters params)
     mShader->setUniformValue(mWidthLocation, width);
     mShader->setUniformValue(mHeightLocation, height);
 
-    QOpenGLVertexArrayObject::Binder binder(&mVertexArray);
     mBuffer.bind();
     mBuffer.write(0, &topLeft, sizeof(QVector2D));
     mBuffer.release();
+
+    mVertexArray.bind();
     glDrawArrays(GL_POINTS, 0, 1);
-
-
+    mVertexArray.release();
 }
 
-void RectangleRenderer::setProjectionMatrix(QMatrix4x4 newMatrix)
-{
-    mProjectionMatrix = newMatrix;
-}
+void RectangleRenderer::setProjectionMatrix(const QMatrix4x4 &newMatrix) { mProjectionMatrix = newMatrix; }

@@ -1,14 +1,12 @@
 #ifndef CURVE_H
 #define CURVE_H
 
-#include "Constants.h"
 #include "ColorPoint.h"
+#include "Constants.h"
 #include "ControlPoint.h"
 
-#include <QObject>
-#include <QVector>
 #include <QVector4D>
-#include <QOpenGLShaderProgram>
+#include <QVector>
 
 class Curve
 {
@@ -16,10 +14,7 @@ public:
     Curve();
     virtual ~Curve();
 
-    enum ColorDirection {
-        Left = 0,
-        Right = 1
-    };
+    enum ColorDirection { Left = 0, Right = 1 };
 
     float thickness() const;
     void setThickness(float newThickness);
@@ -27,30 +22,30 @@ public:
     bool selected() const;
     void setSelected(bool newSelected);
 
-    virtual QVector<ControlPoint*> getControlPoints();
-    virtual ControlPoint* getControlPoint(int index);
+    virtual QVector<ControlPoint *> getControlPoints();
+    virtual ControlPoint *getControlPoint(int index);
     virtual QVector<QVector2D> getControlPointPositions();
-    virtual void addControlPoint(ControlPoint* controlPoint);
-    virtual void setControlPoint(int index, ControlPoint* controlPoint);
+    virtual void addControlPoint(ControlPoint *controlPoint);
+    virtual void setControlPoint(int index, ControlPoint *controlPoint);
     virtual void removeControlPoint(int index);
-    virtual void removeControlPoint(ControlPoint* controlPoint);
+    virtual void removeControlPoint(ControlPoint *controlPoint);
 
     virtual int getSize();
     virtual int getOrder();
     virtual int getDegree();
 
-    virtual QVector<ColorPoint*> getColorPoints(ColorDirection direction);
-    virtual void addColorPoint(ColorDirection direction, ColorPoint* colorPoint);
-    virtual ColorPoint* getColorPoint(ColorDirection direction, int index);
+    virtual QVector<ColorPoint *> getColorPoints(ColorDirection direction);
+    virtual void addColorPoint(ColorDirection direction, ColorPoint *colorPoint);
+    virtual ColorPoint *getColorPoint(ColorDirection direction, int index);
     virtual void removeColorPoint(ColorDirection direction, int index);
-    virtual void removeColorPoint(ColorDirection direction, ColorPoint* controlPoint);
+    virtual void removeColorPoint(ColorDirection direction, ColorPoint *controlPoint);
     virtual QVector4D colorAt(ColorDirection direction, float t);
     virtual void orderColorPoints(ColorDirection direction);
 
     virtual QVector<QVector4D> getColors(ColorDirection direction, bool onlyEnabledColorPoints = true);
-    virtual QVector<GLfloat> getColorPositions(ColorDirection direction, bool onlyEnabledColorPoints = true);
+    virtual QVector<float> getColorPositions(ColorDirection direction, bool onlyEnabledColorPoints = true);
 
-    virtual ControlPoint* getClosestControlPoint(QPointF point);
+    virtual ControlPoint *getClosestControlPoint(QPointF point);
     virtual void deselectAllControlPoints();
     virtual float distanceToPoint(QPointF point);
 
@@ -68,8 +63,9 @@ public:
     void setZ(int newZ);
 
 protected:
-    QVector<ControlPoint*> mControlPoints;
-    QVector<ColorPoint*> mLeftColorPoints, mRightColorPoints;
+    QVector<ControlPoint *> mControlPoints;
+    QVector<ColorPoint *> mLeftColorPoints;
+    QVector<ColorPoint *> mRightColorPoints;
     float mThickness;
     bool mSelected;
     int mZ;
