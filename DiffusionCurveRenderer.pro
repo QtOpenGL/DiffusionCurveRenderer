@@ -1,5 +1,4 @@
-QT += core gui
-QT += xml
+QT += core gui xml openglwidgets opengl
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -51,7 +50,6 @@ HEADERS += \
     Widgets/CentralWidget.h \
     Widgets/ControlPointWidget.h \
     Widgets/CurveWidget.h \
-    Widgets/LeftWidget.h \
     Widgets/ModeWidget.h \
     Widgets/OpenGLWidget.h \
     Widgets/ZoomWidget.h
@@ -75,7 +73,6 @@ SOURCES += \
     Widgets/CentralWidget.cpp \
     Widgets/ControlPointWidget.cpp \
     Widgets/CurveWidget.cpp \
-    Widgets/LeftWidget.cpp \
     Widgets/ModeWidget.cpp \
     Widgets/OpenGLWidget.cpp \
     Widgets/ZoomWidget.cpp

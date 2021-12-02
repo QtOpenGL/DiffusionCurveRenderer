@@ -15,7 +15,7 @@ QVector<Curve *> Util::readCurveDataFromXML(QString filename)
     {
         QFile file(filename);
         if (!file.open(QIODevice::ReadOnly)) {
-            qCritical() << "Error while loading file.";
+            qCritical() << "Error occured while loading the file:" << filename;
             return curves;
         }
 

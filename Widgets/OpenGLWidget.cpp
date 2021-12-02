@@ -43,7 +43,7 @@ OpenGLWidget::OpenGLWidget(QWidget *parent)
         mCurves << bezier;
     }
 
-    mCurves = Util::readCurveDataFromXML("Data/zephyr.xml");
+    mCurves = Util::readCurveDataFromXML("Resources/CurveData/zephyr.xml");
 
     setMouseTracking(true);
 }

@@ -1,6 +1,9 @@
+#include "MainController.h"
 #include "MainWindow.h"
 
 #include <QApplication>
+#include <QDebug>
+#include <QFile>
 #include <QFontDatabase>
 #include <QStyleFactory>
 #include <QSurfaceFormat>
@@ -37,14 +40,15 @@ int main(int argc, char *argv[])
     QSurfaceFormat format;
     format.setDepthBufferSize(24);
     format.setSamples(16);
-    format.setVersion(3, 3);
     format.setProfile(QSurfaceFormat::CoreProfile);
     QSurfaceFormat::setDefaultFormat(format);
-    qDebug().noquote() << "QSurfaceFormat:" << QSurfaceFormat::defaultFormat();
 
-    MainWindow w;
-    w.setWindowTitle("Diffusion Curve Renderer");
-    w.show();
+    MainController *mainController = new MainController;
+    MainWindow *mainWindow = new MainWindow;
+    mainWindow->setCentralWidget(mainController->centralWidget());
+    mainWindow->initialize();
+    mainWindow->setWindowTitle("Diffusion Curve Renderer");
+    mainWindow->show();
 
     return app.exec();
 }

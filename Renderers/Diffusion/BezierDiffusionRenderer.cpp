@@ -97,7 +97,7 @@ void BezierDiffusionRenderer::render(QVector<Curve *> curves)
         // Control points
         QVector<QVector2D> controlPoints = curve->getControlPointPositions();
         mShader->setUniformValueArray(mControlPointsLocation, controlPoints.constData(), controlPoints.size());
-        mShader->setUniformValue(mControlPointsCountLocation, controlPoints.size());
+        mShader->setUniformValue(mControlPointsCountLocation, (GLint) controlPoints.size());
 
         // Left colors
         QVector<QVector4D> leftColors = curve->getColors(Curve::Left);
@@ -107,7 +107,7 @@ void BezierDiffusionRenderer::render(QVector<Curve *> curves)
                                       leftColorPositions.constData(),
                                       leftColorPositions.size(),
                                       1);
-        mShader->setUniformValue(mLeftColorsCountLocation, leftColors.size());
+        mShader->setUniformValue(mLeftColorsCountLocation, (GLint) leftColors.size());
 
         // Right colors
         QVector<QVector4D> rightColors = curve->getColors(Curve::Right);
@@ -117,7 +117,7 @@ void BezierDiffusionRenderer::render(QVector<Curve *> curves)
                                       rightColorPositions.constData(),
                                       rightColorPositions.size(),
                                       1);
-        mShader->setUniformValue(mRightColorsCountLocation, rightColors.size());
+        mShader->setUniformValue(mRightColorsCountLocation, (GLint) rightColors.size());
 
         mTicksVertexArray.bind();
         glDrawArrays(GL_POINTS, 0, mTicks.size());

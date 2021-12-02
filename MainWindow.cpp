@@ -3,19 +3,12 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
-{
-    mCentralWidget = new CentralWidget;
-    setCentralWidget(mCentralWidget);
-}
+{}
 
-MainWindow::~MainWindow()
-{
-}
+MainWindow::~MainWindow() {}
 
+void MainWindow::keyPressEvent(QKeyEvent *event) {}
 
-void MainWindow::keyPressEvent(QKeyEvent *event)
-{
+void MainWindow::setCentralWidget(CentralWidget *newCentralWidget) { mCentralWidget = newCentralWidget; }
 
-    mCentralWidget->gLWidget()->onKeyPressed(event->key());
-
-}
+void MainWindow::initialize() { QMainWindow::setCentralWidget(mCentralWidget); }

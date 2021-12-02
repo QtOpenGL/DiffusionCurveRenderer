@@ -1,0 +1,1 @@
+windeployqt %1

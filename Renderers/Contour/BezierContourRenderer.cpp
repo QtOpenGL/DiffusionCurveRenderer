@@ -124,7 +124,7 @@ void BezierContourRenderer::render(Bezier *curve, QVector4D color)
     mShader->setUniformValue(mColorLocation, color);
     mShader->setUniformValue(mThicknessLocation, curve->thickness());
     mShader->setUniformValue(mTicksDeltaLocation, mTicksDelta);
-    mShader->setUniformValue(mControlPointsCountLocation, controlPoints.size());
+    mShader->setUniformValue(mControlPointsCountLocation, (GLint) controlPoints.size());
 
     mTicksVertexArray.bind();
     glDrawArrays(GL_POINTS, 0, mTicks.size());

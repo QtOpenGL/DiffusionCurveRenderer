@@ -1,10 +1,15 @@
 #ifndef CENTRALWIDGET_H
 #define CENTRALWIDGET_H
 
+#include <QCheckBox>
+#include <QGroupBox>
 #include <QWidget>
 
-#include "LeftWidget.h"
-#include "OpenGLWidget.h"
+class OpenGLWidget;
+class ModeWidget;
+class CurveWidget;
+class ControlPointWidget;
+class ZoomWidget;
 
 class CentralWidget : public QWidget
 {
@@ -12,13 +17,25 @@ class CentralWidget : public QWidget
 public:
     explicit CentralWidget(QWidget *parent = nullptr);
 
-    OpenGLWidget *gLWidget() const;
-    void setGLWidget(OpenGLWidget *newGLWidget);
+    void initialize();
+
+    void setOpenGLWidget(OpenGLWidget *newOpenGLWidget);
+    void setModeWidget(ModeWidget *newModeWidget);
+    void setControlPointWidget(ControlPointWidget *newControlPointWidget);
+    void setZoomWidget(ZoomWidget *newZoomWidget);
+    void setCurveWidget(CurveWidget *newCurveWidget);
 
 private:
-    QGroupBox *mGLWidgetContainer;
-    OpenGLWidget *mGLWidget;
-    LeftWidget *mLeftWidget;
+    QGroupBox *mOpenGLWidgetContainer;
+    OpenGLWidget *mOpenGLWidget;
+    ModeWidget *mModeWidget;
+    CurveWidget *mCurveWidget;
+    ControlPointWidget *mControlPointWidget;
+    ZoomWidget *mZoomWidget;
+    QCheckBox *mShowContoursCheckBox;
+
+signals:
+    void showContoursStateChanged(bool state);
 };
 
 #endif // CENTRALWIDGET_H

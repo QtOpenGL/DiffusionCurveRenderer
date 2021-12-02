@@ -1,72 +1,54 @@
 #include "CentralWidget.h"
 
-#include <QHBoxLayout>
-#include <QMenuBar>
+#include "ControlPointWidget.h"
+#include "CurveWidget.h"
+#include "ModeWidget.h"
+#include "OpenGLWidget.h"
+#include "ZoomWidget.h"
+#include <QGridLayout>
 
 CentralWidget::CentralWidget(QWidget *parent)
     : QWidget(parent)
+{}
+
+void CentralWidget::initialize()
 {
-    QHBoxLayout *mainLayout = new QHBoxLayout;
+    QGridLayout *gridLayout = new QGridLayout;
 
-    // Left Widget and OpenGLWidget
-    {
-        mLeftWidget = new LeftWidget;
-        mainLayout->addWidget(mLeftWidget);
+    gridLayout->addWidget(mModeWidget, 0, 0);
+    gridLayout->addWidget(mCurveWidget, 1, 0);
+    gridLayout->addWidget(mControlPointWidget, 2, 0);
+    gridLayout->addWidget(mZoomWidget, 3, 0);
+    gridLayout->addItem(new QSpacerItem(1, 1, QSizePolicy::Ignored, QSizePolicy::Expanding), 4, 0);
 
-        QHBoxLayout *layout = new QHBoxLayout;
-        mGLWidgetContainer = new QGroupBox;
-        mGLWidgetContainer->setTitle("Canvas");
-        mGLWidgetContainer->setLayout(layout);
+    mShowContoursCheckBox = new QCheckBox("Show Contours");
+    mShowContoursCheckBox->setCheckable(true);
+    mShowContoursCheckBox->setChecked(true);
+    gridLayout->addWidget(mShowContoursCheckBox, 5, 0);
+    connect(mShowContoursCheckBox, &QCheckBox::stateChanged, this, [this](int state) {
+        emit showContoursStateChanged(state == 2);
+    });
 
-        mGLWidget = new OpenGLWidget;
-        layout->addWidget(mGLWidget);
-        mainLayout->addWidget(mGLWidgetContainer);
+    QHBoxLayout *layout = new QHBoxLayout;
+    mOpenGLWidgetContainer = new QGroupBox;
+    mOpenGLWidgetContainer->setTitle("Canvas");
+    mOpenGLWidgetContainer->setLayout(layout);
+    layout->addWidget(mOpenGLWidget);
+    gridLayout->addWidget(mOpenGLWidgetContainer, 0, 1, 0, -1);
+    gridLayout->setColumnStretch(1, 1);
 
-        // Connections
-        connect(mGLWidget,
-                &OpenGLWidget::selectedCurveChanged,
-                mLeftWidget->curveWidget(),
-                &CurveWidget::onSelectedCurveChanged);
-
-        connect(mGLWidget,
-                &OpenGLWidget::selectedCurveChanged,
-                mLeftWidget->controlPointWidget(),
-                &ControlPointWidget::onSelectedCurveChanged);
-
-        connect(mGLWidget,
-                &OpenGLWidget::selectedControlPointChanged,
-                mLeftWidget->controlPointWidget(),
-                &ControlPointWidget::onSelectedControlPointChanged);
-
-        connect(mGLWidget, &OpenGLWidget::dirty, mLeftWidget->controlPointWidget(), &ControlPointWidget::onDirty);
-        connect(mGLWidget, &OpenGLWidget::zoomRatioChanged, mLeftWidget->zoomWidget(), &ZoomWidget::onZoomRatioChanged);
-
-        connect(mLeftWidget->zoomWidget(), &ZoomWidget::zoomRatioChanged, mGLWidget, &OpenGLWidget::onZoomRatioChanged);
-        connect(mLeftWidget->curveWidget(), &CurveWidget::dirty, mGLWidget, &OpenGLWidget::onDirty);
-        connect(mLeftWidget->curveWidget(), &CurveWidget::removeCurveButtonClicked, this, [=]() {
-            mGLWidget->onAction(OpenGLWidget::Action::RemoveCurve);
-        });
-
-        connect(mLeftWidget->controlPointWidget(), &ControlPointWidget::dirty, mGLWidget, &OpenGLWidget::onDirty);
-        connect(mLeftWidget->controlPointWidget(),
-                &ControlPointWidget::selectedControlPointChanged,
-                mGLWidget,
-                &OpenGLWidget::onSelectedControlPointChanged);
-        connect(mLeftWidget->controlPointWidget(), &ControlPointWidget::removeControlPointButtonClicked, this, [=]() {
-            mGLWidget->onAction(OpenGLWidget::Action::RemoveControlPoint);
-        });
-
-        connect(mLeftWidget->modeWidget(), &ModeWidget::modeChanged, mGLWidget, &OpenGLWidget::onModeChanged);
-
-        connect(mLeftWidget,
-                &LeftWidget::showContoursStateChanged,
-                mGLWidget,
-                &OpenGLWidget::onShowContoursStateChanged);
-    }
-
-    setLayout(mainLayout);
+    setLayout(gridLayout);
 }
 
-OpenGLWidget *CentralWidget::gLWidget() const { return mGLWidget; }
+void CentralWidget::setOpenGLWidget(OpenGLWidget *newOpenGLWidget) { mOpenGLWidget = newOpenGLWidget; }
 
-void CentralWidget::setGLWidget(OpenGLWidget *newGLWidget) { mGLWidget = newGLWidget; }
+void CentralWidget::setModeWidget(ModeWidget *newModeWidget) { mModeWidget = newModeWidget; }
+
+void CentralWidget::setZoomWidget(ZoomWidget *newZoomWidget) { mZoomWidget = newZoomWidget; }
+
+void CentralWidget::setCurveWidget(CurveWidget *newCurveWidget) { mCurveWidget = newCurveWidget; }
+
+void CentralWidget::setControlPointWidget(ControlPointWidget *newControlPointWidget)
+{
+    mControlPointWidget = newControlPointWidget;
+}
