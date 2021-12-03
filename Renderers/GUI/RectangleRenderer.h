@@ -1,7 +1,6 @@
 #ifndef RECTANGLERENDERER_H
 #define RECTANGLERENDERER_H
 
-#include <Widgets/ModeWidget.h>
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
@@ -42,8 +41,6 @@ private:
     QOpenGLVertexArrayObject mVertexArray;
     QOpenGLBuffer mBuffer;
     QMatrix4x4 mProjectionMatrix;
-
-    bool mInitialized;
 };
 
 #endif // RECTANGLERENDERER_H

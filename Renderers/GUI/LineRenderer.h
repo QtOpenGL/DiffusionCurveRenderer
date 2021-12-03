@@ -54,8 +54,6 @@ private:
 
     float mRareTicksDelta;
     float mDenseTicksDelta;
-
-    bool mInitialized;
 };
 
 #endif // LINERENDERER_H

@@ -2,7 +2,6 @@
 
 RectangleRenderer::RectangleRenderer()
     : mShader(nullptr)
-    , mInitialized(false)
 {}
 
 RectangleRenderer::~RectangleRenderer()
@@ -24,8 +23,8 @@ bool RectangleRenderer::initialize()
 
     if (!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Rectangle/VertexShader.vert")
         || !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Rectangle/GeometryShader.geom")
-        || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Rectangle/FragmentShader.frag")
-        || !mShader->link() || !mShader->bind()) {
+        || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Rectangle/FragmentShader.frag") || !mShader->link()
+        || !mShader->bind()) {
         qCritical() << this << mShader->log();
         return false;
     }
@@ -56,14 +55,11 @@ bool RectangleRenderer::initialize()
 
     mVertexArray.release();
 
-    return mInitialized = true;
+    return true;
 }
 
 void RectangleRenderer::render(const RenderParameters &params)
 {
-    if (!mInitialized)
-        return;
-
     QVector2D topLeft = QVector2D(params.rectangle.topLeft());
 
     float width = static_cast<float>(params.rectangle.width());
@@ -87,4 +83,7 @@ void RectangleRenderer::render(const RenderParameters &params)
     mVertexArray.release();
 }
 
-void RectangleRenderer::setProjectionMatrix(const QMatrix4x4 &newMatrix) { mProjectionMatrix = newMatrix; }
+void RectangleRenderer::setProjectionMatrix(const QMatrix4x4 &newMatrix)
+{
+    mProjectionMatrix = newMatrix;
+}

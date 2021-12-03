@@ -1,9 +1,10 @@
 #ifndef BOUNDINGBOXRENDERER_H
 #define BOUNDINGBOXRENDERER_H
 
+#include "LineRenderer.h"
+#include "RectangleRenderer.h"
+
 #include <Curves/Curve.h>
-#include <Renderers/Base/LineRenderer.h>
-#include <Renderers/Base/RectangleRenderer.h>
 #include <Widgets/ModeWidget.h>
 
 class BoundingBoxRenderer
@@ -26,8 +27,6 @@ private:
     LineRenderer *mLineRenderer;
     ModeWidget::Mode mMode;
     float mZoomRatio;
-
-    bool mInitialized;
 };
 
 #endif // BOUNDINGBOXRENDERER_H

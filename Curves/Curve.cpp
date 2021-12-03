@@ -17,15 +17,30 @@ Curve::~Curve()
         }
 }
 
-float Curve::thickness() const { return mThickness; }
+float Curve::thickness() const
+{
+    return mThickness;
+}
 
-void Curve::setThickness(float newThickness) { mThickness = newThickness; }
+void Curve::setThickness(float newThickness)
+{
+    mThickness = newThickness;
+}
 
-bool Curve::selected() const { return mSelected; }
+bool Curve::selected() const
+{
+    return mSelected;
+}
 
-void Curve::setSelected(bool newSelected) { mSelected = newSelected; }
+void Curve::setSelected(bool newSelected)
+{
+    mSelected = newSelected;
+}
 
-QVector<ControlPoint *> Curve::getControlPoints() { return mControlPoints; }
+QVector<ControlPoint *> Curve::getControlPoints()
+{
+    return mControlPoints;
+}
 
 ControlPoint *Curve::getControlPoint(int index)
 {
@@ -92,9 +107,15 @@ void Curve::removeControlPoint(ControlPoint *controlPoint)
     }
 }
 
-int Curve::getOrder() { return mControlPoints.size(); }
+int Curve::getOrder()
+{
+    return mControlPoints.size();
+}
 
-int Curve::getDegree() { return mControlPoints.size() - 1; }
+int Curve::getDegree()
+{
+    return mControlPoints.size() - 1;
+}
 
 QVector<ColorPoint *> Curve::getColorPoints(ColorDirection direction)
 {
@@ -255,7 +276,10 @@ QVector<float> Curve::getColorPositions(ColorDirection direction, bool onlyEnabl
     return colorPointPositions;
 }
 
-int Curve::getSize() { return mControlPoints.size(); }
+int Curve::getSize()
+{
+    return mControlPoints.size();
+}
 
 ControlPoint *Curve::getClosestControlPoint(QVector2D point)
 {
@@ -307,7 +331,10 @@ void Curve::translate(QVector2D translation)
     }
 }
 
-void Curve::translate(QPointF translation) { translate(QVector2D(translation)); }
+void Curve::translate(QPointF translation)
+{
+    translate(QVector2D(translation));
+}
 
 float Curve::length(int intervals)
 {
@@ -353,9 +380,15 @@ QRectF Curve::getBoundingBox(int intervals)
     return QRectF(xMin, yMin, xMax - xMin, yMax - yMin);
 }
 
-int Curve::z() const { return mZ; }
+int Curve::z() const
+{
+    return mZ;
+}
 
-void Curve::setZ(int newZ) { mZ = newZ; }
+void Curve::setZ(int newZ)
+{
+    mZ = newZ;
+}
 
 void Curve::updateControlPointIndices()
 {

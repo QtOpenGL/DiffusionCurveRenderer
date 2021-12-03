@@ -1,8 +1,9 @@
 #ifndef CONTROLPOINTRENDERER_H
 #define CONTROLPOINTRENDERER_H
 
+#include "PointRenderer.h"
+
 #include <Curves/Curve.h>
-#include <Renderers/Base/PointRenderer.h>
 #include <Widgets/ModeWidget.h>
 
 class ControlPointRenderer
@@ -27,7 +28,6 @@ private:
 
     ModeWidget::Mode mMode;
     float mZoomRatio;
-    bool mInitialized;
 };
 
 #endif // CONTROLPOINTRENDERER_H

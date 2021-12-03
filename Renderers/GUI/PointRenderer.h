@@ -43,8 +43,6 @@ private:
 
     QVector<float> mTicks;
     float mTicksDelta;
-
-    bool mInitialized;
 };
 
 #endif // POINTRENDERER_H

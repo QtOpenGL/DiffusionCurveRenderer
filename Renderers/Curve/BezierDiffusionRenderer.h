@@ -23,6 +23,7 @@ public:
 
 private:
     QOpenGLShaderProgram *mShader;
+
     QOpenGLVertexArrayObject mTicksVertexArray;
     QOpenGLBuffer mTicksBuffer;
 

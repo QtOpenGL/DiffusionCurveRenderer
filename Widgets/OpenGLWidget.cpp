@@ -2,20 +2,25 @@
 
 #include <Util.h>
 
+#include <QOpenGLPaintDevice>
+#include <QPainter>
 #include <QVector4D>
 
 OpenGLWidget::OpenGLWidget(QWidget *parent)
     : QOpenGLWidget(parent)
     , mBezierContourRenderer(nullptr)
-    , mControlPointRenderer(nullptr)
+    , mInitialized(false)
     , mMode(ModeWidget::Select)
     , mMousePressed(false)
     , mMousePressedOnCurve(false)
     , mMousePosition(0, 0)
     , mZoomRatio(1.0f)
     , mCanvasRectangle(0, 0, 0, 0)
-    , mInitialized(false)
+
 {
+    for (int i = 0; i < 4; ++i)
+        mHandles[i].setSize(QSize(10, 10));
+
     setMouseTracking(true);
 }
 
@@ -25,15 +30,6 @@ OpenGLWidget::~OpenGLWidget()
 
     if (mBezierContourRenderer)
         delete mBezierContourRenderer;
-
-    if (mControlPointRenderer)
-        delete mControlPointRenderer;
-
-    if (mBoundingBoxRenderer)
-        delete mBoundingBoxRenderer;
-
-    if (mLineRenderer)
-        delete mLineRenderer;
 
     doneCurrent();
 }
@@ -70,16 +66,7 @@ void OpenGLWidget::initializeGL()
     //    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     mBezierContourRenderer = new BezierContourRenderer;
-    mControlPointRenderer = new ControlPointRenderer;
-    mBoundingBoxRenderer = new BoundingBoxRenderer;
-    mLineRenderer = new LineRenderer;
-
-    mInitialized = true;
-
-    mInitialized &= mBezierContourRenderer->initialize();
-    mInitialized &= mControlPointRenderer->initialize();
-    mInitialized &= mBoundingBoxRenderer->initialize();
-    mInitialized &= mLineRenderer->initialize();
+    mInitialized = mBezierContourRenderer->initialize();
 
     if (!mInitialized)
         qDebug() << this << "Could not initialize OpenGLWidget";
@@ -95,20 +82,78 @@ void OpenGLWidget::paintGL()
         return;
 
     mBezierContourRenderer->render(mCurveContainer->getCurves());
-    mControlPointRenderer->render(mCurveContainer->selectedCurve());
-    mBoundingBoxRenderer->render(mCurveContainer->selectedCurve());
 
-    //    {
-    //        LineRenderer::RenderParameters params;
-    //        params.startingPoint = QVector2D(100, 100);
-    //        params.endPoint = QVector2D(500, 500);
-    //        params.thickness = 4;
-    //        params.color = QVector4D(0,0,0,1);
-    //        params.dashLength = 20;
-    //        params.gapLength = 5;
-    //        params.lineStyle = LineRenderer::Solid;
-    //        mLineRenderer->render(params);
-    //    }
+    QOpenGLPaintDevice device(width(), height());
+    QPainter painter(&device);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+
+    Curve *selectedCurve = mCurveContainer->selectedCurve();
+
+    switch (mMode) {
+    case ModeWidget::Pan:
+        break;
+    case ModeWidget::Add:
+    case ModeWidget::Select: {
+        if (selectedCurve) {
+            QVector<ControlPoint *> controlPoints = selectedCurve->getControlPoints();
+
+            for (int j = 0; j < controlPoints.size(); ++j) {
+                QPointF center = mapToGui(controlPoints[j]->position);
+
+                painter.setPen(QColor(0, 0, 0, 0));
+
+                // Outer disk
+                int outerRadius = controlPoints[j]->selected ? 12 : 10;
+                painter.setBrush(QColor(122, 120, 120, 128));
+                painter.drawEllipse(center, outerRadius, outerRadius);
+
+                // Inner disk
+                int innerRadius = 6;
+                painter.setBrush(QColor(240, 240, 240));
+                painter.drawEllipse(center, innerRadius, innerRadius);
+            }
+
+            break;
+        }
+    }
+    case ModeWidget::Move: {
+        if (selectedCurve) {
+            // Draw bounding box
+            QRectF boundingBox = mapToGui(selectedCurve->getBoundingBox());
+            QPen dashedPen;
+            QVector<qreal> pattern;
+            pattern << 4 << 4;
+            dashedPen.setDashPattern(pattern);
+            dashedPen.setWidth(1);
+            dashedPen.setColor(QColor(128, 128, 128));
+            painter.setPen(dashedPen);
+            painter.drawRect(boundingBox);
+
+            // Draw pivot point
+            QPen pen;
+            pen.setColor(QColor(128, 128, 128));
+            pen.setWidth(1);
+            pen.setJoinStyle(Qt::MiterJoin);
+            painter.setPen(pen);
+            painter.setBrush(QBrush());
+
+            QPointF center = boundingBox.center();
+            painter.drawEllipse(center, 6, 6);
+            painter.drawLine(center.x() - 10, center.y(), center.x() + 10, center.y());
+            painter.drawLine(center.x(), center.y() - 10, center.x(), center.y() + 10);
+
+            // Draw corners
+            pen.setColor(QColor(0, 0, 0));
+            painter.setPen(pen);
+
+            for (int i = 0; i < 4; ++i) {
+                painter.fillRect(mHandles[i], QColor(255, 255, 255));
+                painter.drawRect(mHandles[i]);
+            }
+        }
+        break;
+    }
+    }
 }
 
 void OpenGLWidget::resizeGL(int width, int height)
@@ -228,12 +273,12 @@ void OpenGLWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void OpenGLWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    QPoint mousePosition = event->pos();
+    QPointF mousePosition = event->pos();
 
     switch (mMode) {
     case ModeWidget::Pan: {
         if (mMousePressed) {
-            QPoint translation = mMousePosition - mousePosition;
+            QPointF translation = mMousePosition - mousePosition;
             mCanvasRectangle.translate(translation * mZoomRatio);
             updateProjectionMatrix();
         }
@@ -253,8 +298,9 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent *event)
         if (mMousePressedOnCurve) {
             QPointF translation = mousePosition - mMousePosition;
 
-            if (mCurveContainer->selectedCurve())
+            if (mCurveContainer->selectedCurve()) {
                 mCurveContainer->selectedCurve()->translate(translation * mZoomRatio);
+            }
         }
 
         break;
@@ -268,6 +314,16 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent *event)
 void OpenGLWidget::update()
 {
     QOpenGLWidget::update();
+
+    Curve *selectedCurve = mCurveContainer->selectedCurve();
+    if (selectedCurve) {
+        QRectF boundingBox = mapToGui(selectedCurve->getBoundingBox());
+        mHandles[0].moveCenter(boundingBox.topLeft());
+        mHandles[1].moveCenter(boundingBox.bottomLeft());
+        mHandles[2].moveCenter(boundingBox.topRight());
+        mHandles[3].moveCenter(boundingBox.bottomRight());
+    }
+
     updateCursor();
 }
 
@@ -296,6 +352,28 @@ void OpenGLWidget::updateCursor()
     }
 }
 
+QVector2D OpenGLWidget::mapFromGui(QPointF position)
+{
+    QPointF result = (mCanvasRectangle.topLeft() + mZoomRatio * position);
+    return QVector2D(result.x(), result.y());
+}
+
+QPointF OpenGLWidget::mapToGui(QVector2D position)
+{
+    QPointF result = (position.toPoint() - mCanvasRectangle.topLeft()) / mZoomRatio;
+    return result;
+}
+
+QRectF OpenGLWidget::mapToGui(const QRectF &rect)
+{
+    float w = rect.width() / mZoomRatio;
+    float h = rect.height() / mZoomRatio;
+    QPointF center = rect.center();
+    QPointF centerInGui = (center - mCanvasRectangle.topLeft()) / mZoomRatio;
+
+    return QRectF(centerInGui.x() - 0.5 * w, centerInGui.y() - 0.5 * h, w, h);
+}
+
 void OpenGLWidget::setCurveContainer(CurveContainer *newCurveContainer)
 {
     mCurveContainer = newCurveContainer;
@@ -306,7 +384,7 @@ void OpenGLWidget::zoom(float zoomRatio, QPoint mousePosition)
     if (qFuzzyCompare(zoomRatio, mZoomRatio))
         return;
 
-    QPoint mousePositionOnCanvas = mapFromGui(mousePosition).toPoint();
+    QPointF mousePositionOnCanvas = mapFromGui(mousePosition).toPoint();
 
     if (zoomRatio >= 2)
         zoomRatio = 2;
@@ -318,12 +396,10 @@ void OpenGLWidget::zoom(float zoomRatio, QPoint mousePosition)
     mCanvasRectangle.setWidth(width() * mZoomRatio);
     mCanvasRectangle.setHeight(height() * mZoomRatio);
 
-    QPoint newMousePositionOnCanvas = mapFromGui(mousePosition).toPoint();
+    QPointF newMousePositionOnCanvas = mapFromGui(mousePosition).toPoint();
 
     mCanvasRectangle.translate(mousePositionOnCanvas - newMousePositionOnCanvas);
 
-    mBoundingBoxRenderer->setZoomRatio(mZoomRatio);
-    mControlPointRenderer->setZoomRatio(mZoomRatio);
     mBezierContourRenderer->setZoomRatio(mZoomRatio);
 
     emit zoomRatioChanged(mZoomRatio);
@@ -343,9 +419,6 @@ void OpenGLWidget::updateProjectionMatrix()
                  1);
 
     mBezierContourRenderer->setProjectionMatrix(matrix);
-    mControlPointRenderer->setProjectionMatrix(matrix);
-    mBoundingBoxRenderer->setProjectionMatrix(matrix);
-    mLineRenderer->setProjectionMatrix(matrix);
 }
 
 void OpenGLWidget::onSelectedControlPointChanged(ControlPoint *selectedControlPoint)
@@ -377,8 +450,6 @@ void OpenGLWidget::onModeChanged(ModeWidget::Mode mode)
     mMousePressed = false;
     mMode = mode;
 
-    mControlPointRenderer->setMode(mMode);
-    mBoundingBoxRenderer->setMode(mMode);
     mBezierContourRenderer->setMode(mMode);
 
     update();

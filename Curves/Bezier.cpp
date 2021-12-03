@@ -69,4 +69,7 @@ float Bezier::factorial(int n)
     return result;
 }
 
-float Bezier::choose(int n, int k) { return factorial(n) / (factorial(k) * factorial(n - k)); }
+float Bezier::choose(int n, int k)
+{
+    return factorial(n) / (factorial(k) * factorial(n - k));
+}

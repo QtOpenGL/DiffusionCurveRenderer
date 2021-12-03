@@ -40,18 +40,19 @@ HEADERS += \
     Curves/Curve.h \
     MainController.h \
     MainWindow.h \
-    Renderers/Base/LineRenderer.h \
-    Renderers/Base/PointRenderer.h \
-    Renderers/Base/RectangleRenderer.h \
-    Renderers/Contour/BezierContourRenderer.h \
-    Renderers/Diffusion/BezierDiffusionRenderer.h \
+    Renderers/Curve/BezierContourRenderer.h \
+    Renderers/Curve/BezierDiffusionRenderer.h \
     Renderers/GUI/BoundingBoxRenderer.h \
     Renderers/GUI/ControlPointRenderer.h \
+    Renderers/GUI/LineRenderer.h \
+    Renderers/GUI/PointRenderer.h \
+    Renderers/GUI/RectangleRenderer.h \
     Util.h \
     Widgets/CentralWidget.h \
     Widgets/ControlPointWidget.h \
     Widgets/CurveWidget.h \
     Widgets/ModeWidget.h \
+    Widgets/OpenGLTestWidget.h \
     Widgets/OpenGLWidget.h \
     Widgets/ZoomWidget.h
 
@@ -64,17 +65,18 @@ SOURCES += \
     Main.cpp \
     MainController.cpp \
     MainWindow.cpp \
-    Renderers/Base/LineRenderer.cpp \
-    Renderers/Base/PointRenderer.cpp \
-    Renderers/Base/RectangleRenderer.cpp \
-    Renderers/Contour/BezierContourRenderer.cpp \
-    Renderers/Diffusion/BezierDiffusionRenderer.cpp \
+    Renderers/Curve/BezierContourRenderer.cpp \
+    Renderers/Curve/BezierDiffusionRenderer.cpp \
     Renderers/GUI/BoundingBoxRenderer.cpp \
     Renderers/GUI/ControlPointRenderer.cpp \
+    Renderers/GUI/LineRenderer.cpp \
+    Renderers/GUI/PointRenderer.cpp \
+    Renderers/GUI/RectangleRenderer.cpp \
     Util.cpp \
     Widgets/CentralWidget.cpp \
     Widgets/ControlPointWidget.cpp \
     Widgets/CurveWidget.cpp \
     Widgets/ModeWidget.cpp \
+    Widgets/OpenGLTestWidget.cpp \
     Widgets/OpenGLWidget.cpp \
     Widgets/ZoomWidget.cpp

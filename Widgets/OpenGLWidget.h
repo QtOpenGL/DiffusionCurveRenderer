@@ -7,12 +7,10 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLWidget>
+#include <QPen>
 #include <QWheelEvent>
 
-#include <Renderers/Base/LineRenderer.h>
-#include <Renderers/Contour/BezierContourRenderer.h>
-#include <Renderers/GUI/BoundingBoxRenderer.h>
-#include <Renderers/GUI/ControlPointRenderer.h>
+#include <Renderers/Curve/BezierContourRenderer.h>
 #include <Widgets/ModeWidget.h>
 
 class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
@@ -56,31 +54,26 @@ protected:
     void updateProjectionMatrix();
     void updateCursor();
 
-    BezierContourRenderer *mBezierContourRenderer;
-    ControlPointRenderer *mControlPointRenderer;
-    BoundingBoxRenderer *mBoundingBoxRenderer;
-    LineRenderer *mLineRenderer;
+    QVector2D mapFromGui(QPointF position);
+    QPointF mapToGui(QVector2D position);
+    QRectF mapToGui(const QRectF &rect);
 
+private:
+    BezierContourRenderer *mBezierContourRenderer;
     CurveContainer *mCurveContainer;
+
+    bool mInitialized;
 
     ModeWidget::Mode mMode;
 
     bool mMousePressed;
     bool mMousePressedOnCurve;
-    QPoint mMousePosition;
+    QPointF mMousePosition;
 
     float mZoomRatio;
-    QRect mCanvasRectangle;
+    QRectF mCanvasRectangle;
 
-    inline QVector2D mapFromGui(QPoint position)
-    {
-        QPoint result = (mCanvasRectangle.topLeft() + mZoomRatio * position);
-        return QVector2D(result.x(), result.y());
-    }
-
-    inline QPoint mapToGui(QVector2D position) { return (position.toPoint() - mCanvasRectangle.topLeft()) / mZoomRatio; }
-
-    bool mInitialized;
+    QRectF mHandles[4];
 };
 
 #endif // OPENGLWIDGET_H

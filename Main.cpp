@@ -8,6 +8,8 @@
 #include <QStyleFactory>
 #include <QSurfaceFormat>
 
+#include <Widgets/OpenGLTestWidget.h>
+
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
@@ -49,6 +51,9 @@ int main(int argc, char *argv[])
     mainWindow->initialize();
     mainWindow->setWindowTitle("Diffusion Curve Renderer");
     mainWindow->show();
+
+    OpenGLTestWidget *widget = new OpenGLTestWidget;
+    widget->showMaximized();
 
     return app.exec();
 }

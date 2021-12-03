@@ -3,7 +3,6 @@
 
 PointRenderer::PointRenderer()
     : mShader(nullptr)
-    , mInitialized(false)
 {}
 
 PointRenderer::~PointRenderer()
@@ -25,8 +24,7 @@ bool PointRenderer::initialize()
 
     if (!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Point/VertexShader.vert")
         || !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Point/GeometryShader.geom")
-        || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Point/FragmentShader.frag")
-        || !mShader->link() || !mShader->bind()) {
+        || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Point/FragmentShader.frag") || !mShader->link() || !mShader->bind()) {
         qCritical() << this << mShader->log();
         return false;
     }
@@ -65,14 +63,11 @@ bool PointRenderer::initialize()
 
     mTicksVertexArray.release();
 
-    return mInitialized = true;
+    return true;
 }
 
 void PointRenderer::render(const RenderParameters &params)
 {
-    if (!mInitialized)
-        return;
-
     mShader->bind();
 
     mShader->setUniformValue(mProjectionMatrixLocation, mProjectionMatrix);
@@ -90,4 +85,7 @@ void PointRenderer::render(const RenderParameters &params)
     mShader->release();
 }
 
-void PointRenderer::setProjectionMatrix(const QMatrix4x4 &newMatrix) { mProjectionMatrix = newMatrix; }
+void PointRenderer::setProjectionMatrix(const QMatrix4x4 &newMatrix)
+{
+    mProjectionMatrix = newMatrix;
+}

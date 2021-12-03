@@ -4,7 +4,6 @@ BoundingBoxRenderer::BoundingBoxRenderer()
     : mRectangleRenderer(nullptr)
     , mLineRenderer(nullptr)
     , mZoomRatio(1.0)
-    , mInitialized(false)
 {}
 
 BoundingBoxRenderer::~BoundingBoxRenderer()
@@ -27,21 +26,21 @@ bool BoundingBoxRenderer::initialize()
     if (!mLineRenderer->initialize())
         return false;
 
-    return mInitialized = true;
+    return true;
 }
 
 void BoundingBoxRenderer::render(Curve *curve)
 {
-    if (!mInitialized)
-        return;
-
     if (curve == nullptr)
         return;
 
     switch (mMode) {
-    case ModeWidget::Pan: break;
-    case ModeWidget::Select: break;
-    case ModeWidget::Add: break;
+    case ModeWidget::Pan:
+        break;
+    case ModeWidget::Select:
+        break;
+    case ModeWidget::Add:
+        break;
     case ModeWidget::Move: {
         if (curve->selected()) {
             QRectF boundingBox = curve->getBoundingBox();
@@ -105,10 +104,22 @@ void BoundingBoxRenderer::setProjectionMatrix(const QMatrix4x4 &newMatrix)
     mLineRenderer->setProjectionMatrix(newMatrix);
 }
 
-ModeWidget::Mode BoundingBoxRenderer::mode() const { return mMode; }
+ModeWidget::Mode BoundingBoxRenderer::mode() const
+{
+    return mMode;
+}
 
-void BoundingBoxRenderer::setMode(ModeWidget::Mode newMode) { mMode = newMode; }
+void BoundingBoxRenderer::setMode(ModeWidget::Mode newMode)
+{
+    mMode = newMode;
+}
 
-float BoundingBoxRenderer::zoomRatio() const { return mZoomRatio; }
+float BoundingBoxRenderer::zoomRatio() const
+{
+    return mZoomRatio;
+}
 
-void BoundingBoxRenderer::setZoomRatio(float newZoomRatio) { mZoomRatio = newZoomRatio; }
+void BoundingBoxRenderer::setZoomRatio(float newZoomRatio)
+{
+    mZoomRatio = newZoomRatio;
+}

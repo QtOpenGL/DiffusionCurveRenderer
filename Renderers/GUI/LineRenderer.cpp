@@ -2,7 +2,6 @@
 
 LineRenderer::LineRenderer()
     : mShader(nullptr)
-    , mInitialized(false)
 {}
 
 LineRenderer::~LineRenderer()
@@ -27,8 +26,7 @@ bool LineRenderer::initialize()
 
     if (!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Line/VertexShader.vert")
         || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Line/FragmentShader.frag")
-        || !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Line/GeometryShader.geom")
-        || !mShader->link() || !mShader->bind()) {
+        || !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Line/GeometryShader.geom") || !mShader->link() || !mShader->bind()) {
         qCritical() << this << mShader->log();
         return false;
     }
@@ -93,14 +91,11 @@ bool LineRenderer::initialize()
         mDenseTicksVertexArray.release();
     }
 
-    return mInitialized = true;
+    return true;
 }
 
 void LineRenderer::render(const RenderParameters &params)
 {
-    if (!mInitialized)
-        return;
-
     mShader->bind();
 
     mShader->setUniformValue(mProjectionMatrixLocation, mProjectionMatrix);
@@ -130,4 +125,7 @@ void LineRenderer::render(const RenderParameters &params)
     mShader->release();
 }
 
-void LineRenderer::setProjectionMatrix(const QMatrix4x4 &newMatrix) { mProjectionMatrix = newMatrix; }
+void LineRenderer::setProjectionMatrix(const QMatrix4x4 &newMatrix)
+{
+    mProjectionMatrix = newMatrix;
+}
