@@ -45,9 +45,9 @@ public:
     virtual QVector<QVector4D> getColors(ColorDirection direction, bool onlyEnabledColorPoints = true);
     virtual QVector<float> getColorPositions(ColorDirection direction, bool onlyEnabledColorPoints = true);
 
-    virtual ControlPoint *getClosestControlPoint(QPointF point);
+    virtual ControlPoint *getClosestControlPoint(QVector2D point);
     virtual void deselectAllControlPoints();
-    virtual float distanceToPoint(QPointF point);
+    virtual float distanceToPoint(QVector2D point);
 
     virtual void translate(QVector2D translation);
     virtual void translate(QPointF translation);

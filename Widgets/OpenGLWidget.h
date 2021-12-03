@@ -1,6 +1,7 @@
 #ifndef OPENGLWIDGET_H
 #define OPENGLWIDGET_H
 
+#include <CurveContainer.h>
 #include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
@@ -21,15 +22,15 @@ public:
     OpenGLWidget(QWidget *parent = nullptr);
     ~OpenGLWidget();
 
+    enum Action { RemoveCurve = 0, RemoveControlPoint = 1 };
+
     QSize minimumSizeHint() const override;
     QSize sizeHint() const override;
 
-    enum Action { RemoveCurve = 0, RemoveControlPoint = 1 };
+    void setCurveContainer(CurveContainer *newCurveContainer);
 
 signals:
     void dirty();
-    void selectedCurveChanged(Curve *selectedCurve);
-    void selectedControlPointChanged(ControlPoint *selectedControlPoint);
     void zoomRatioChanged(float zoomRatio);
 
 public slots:
@@ -37,7 +38,7 @@ public slots:
     void onSelectedControlPointChanged(ControlPoint *selectedControlPoint);
     void onModeChanged(ModeWidget::Mode mode);
     void onAction(OpenGLWidget::Action action);
-    void onKeyPressed(int key);
+    void onKeyPressed(Qt::Key key);
     void onZoomRatioChanged(float zoomRatio);
     void onShowContoursStateChanged(bool state);
 
@@ -51,15 +52,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *event) override;
     void update();
 
-    void deselectAllCurves();
-    void setSelectedCurve(Curve *selectedCurve);
-    void setSelectedControlPoint(ControlPoint *selectedControlPoint);
-    Curve *selectCurve(QPointF mousePosition, float radius = 20.0f);
-    void removeCurve(int index);
-    void removeCurve(Curve *curve);
-
-    ControlPoint *getClosestControlPoint(QPointF mousePosition);
-    void zoom(float zoomRatio, QPointF mousePosition);
+    void zoom(float zoomRatio, QPoint mousePosition);
     void updateProjectionMatrix();
     void updateCursor();
 
@@ -68,22 +61,24 @@ protected:
     BoundingBoxRenderer *mBoundingBoxRenderer;
     LineRenderer *mLineRenderer;
 
-    QVector<Curve *> mCurves;
+    CurveContainer *mCurveContainer;
 
-    Curve *mSelectedCurve;
-    ControlPoint *mSelectedControlPoint;
     ModeWidget::Mode mMode;
 
     bool mMousePressed;
     bool mMousePressedOnCurve;
-    QPointF mMousePosition;
+    QPoint mMousePosition;
 
     float mZoomRatio;
-    QRectF mCanvasRectangle;
+    QRect mCanvasRectangle;
 
-    inline QPointF g2c(QPointF position) { return mCanvasRectangle.topLeft() + mZoomRatio * position; }
+    inline QVector2D mapFromGui(QPoint position)
+    {
+        QPoint result = (mCanvasRectangle.topLeft() + mZoomRatio * position);
+        return QVector2D(result.x(), result.y());
+    }
 
-    inline QPointF c2g(QPointF position) { return (position - mCanvasRectangle.topLeft()) / mZoomRatio; }
+    inline QPoint mapToGui(QVector2D position) { return (position.toPoint() - mCanvasRectangle.topLeft()) / mZoomRatio; }
 
     bool mInitialized;
 };

@@ -33,6 +33,7 @@ DISTFILES += \
 
 HEADERS += \
     Constants.h \
+    CurveContainer.h \
     Curves/Bezier.h \
     Curves/ColorPoint.h \
     Curves/ControlPoint.h \
@@ -55,6 +56,7 @@ HEADERS += \
     Widgets/ZoomWidget.h
 
 SOURCES += \
+    CurveContainer.cpp \
     Curves/Bezier.cpp \
     Curves/ColorPoint.cpp \
     Curves/ControlPoint.cpp \

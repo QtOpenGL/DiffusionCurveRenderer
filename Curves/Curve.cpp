@@ -257,7 +257,7 @@ QVector<float> Curve::getColorPositions(ColorDirection direction, bool onlyEnabl
 
 int Curve::getSize() { return mControlPoints.size(); }
 
-ControlPoint *Curve::getClosestControlPoint(QPointF point)
+ControlPoint *Curve::getClosestControlPoint(QVector2D point)
 {
     if (mControlPoints.size() == 0)
         return nullptr;
@@ -266,7 +266,7 @@ ControlPoint *Curve::getClosestControlPoint(QPointF point)
     int index = 0;
 
     for (int i = 0; i < mControlPoints.size(); ++i) {
-        float distance = mControlPoints[i]->position.distanceToPoint(QVector2D(point));
+        float distance = mControlPoints[i]->position.distanceToPoint(point);
 
         if (distance < minimumDistance) {
             minimumDistance = distance;
@@ -284,12 +284,12 @@ void Curve::deselectAllControlPoints()
     }
 }
 
-float Curve::distanceToPoint(QPointF point)
+float Curve::distanceToPoint(QVector2D point)
 {
     float minDistance = std::numeric_limits<float>::infinity();
     float t = 0;
     for (int i = 0; i < 100; ++i) {
-        float distance = valueAt(t).distanceToPoint(QVector2D(point));
+        float distance = valueAt(t).distanceToPoint(point);
         if (distance < minDistance)
             minDistance = distance;
 

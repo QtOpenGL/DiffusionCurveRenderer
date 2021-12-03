@@ -16,6 +16,9 @@ MainController::MainController(QObject *parent)
     mCurveWidget = new CurveWidget;
     mControlPointWidget = new ControlPointWidget;
     mZoomWidget = new ZoomWidget;
+    mCurveContainer = new CurveContainer;
+
+    mOpenGLWidget->setCurveContainer(mCurveContainer);
 
     mCentralWidget->setOpenGLWidget(mOpenGLWidget);
     mCentralWidget->setModeWidget(mModeWidget);
@@ -25,40 +28,31 @@ MainController::MainController(QObject *parent)
 
     mCentralWidget->initialize();
 
-    connect(mOpenGLWidget, &OpenGLWidget::selectedCurveChanged, mCurveWidget, &CurveWidget::onSelectedCurveChanged);
-    connect(mOpenGLWidget,
-            &OpenGLWidget::selectedCurveChanged,
-            mControlPointWidget,
-            &ControlPointWidget::onSelectedCurveChanged);
-    connect(mOpenGLWidget,
-            &OpenGLWidget::selectedControlPointChanged,
-            mControlPointWidget,
-            &ControlPointWidget::onSelectedControlPointChanged);
+    connect(mCurveContainer, &CurveContainer::selectedCurveChanged, mCurveWidget, &CurveWidget::onSelectedCurveChanged);
+    connect(mCurveContainer, &CurveContainer::selectedCurveChanged, mControlPointWidget, &ControlPointWidget::onSelectedCurveChanged);
+    connect(mCurveContainer, &CurveContainer::selectedControlPointChanged, mControlPointWidget, &ControlPointWidget::onSelectedControlPointChanged);
+
     connect(mOpenGLWidget, &OpenGLWidget::dirty, mControlPointWidget, &ControlPointWidget::onDirty);
     connect(mOpenGLWidget, &OpenGLWidget::zoomRatioChanged, mZoomWidget, &ZoomWidget::onZoomRatioChanged);
 
     connect(mZoomWidget, &ZoomWidget::zoomRatioChanged, mOpenGLWidget, &OpenGLWidget::onZoomRatioChanged);
 
     connect(mCurveWidget, &CurveWidget::dirty, mOpenGLWidget, &OpenGLWidget::onDirty);
-    connect(mCurveWidget, &CurveWidget::removeCurveButtonClicked, this, [=]() {
-        mOpenGLWidget->onAction(OpenGLWidget::Action::RemoveCurve);
-    });
+    connect(mCurveWidget, &CurveWidget::removeCurveButtonClicked, this, [=]() { mOpenGLWidget->onAction(OpenGLWidget::Action::RemoveCurve); });
 
     connect(mControlPointWidget, &ControlPointWidget::dirty, mOpenGLWidget, &OpenGLWidget::onDirty);
-    connect(mControlPointWidget,
-            &ControlPointWidget::selectedControlPointChanged,
-            mOpenGLWidget,
-            &OpenGLWidget::onSelectedControlPointChanged);
+    connect(mControlPointWidget, &ControlPointWidget::selectedControlPointChanged, mOpenGLWidget, &OpenGLWidget::onSelectedControlPointChanged);
+
     connect(mControlPointWidget, &ControlPointWidget::removeControlPointButtonClicked, this, [=]() {
         mOpenGLWidget->onAction(OpenGLWidget::Action::RemoveControlPoint);
     });
 
     connect(mModeWidget, &ModeWidget::modeChanged, mOpenGLWidget, &OpenGLWidget::onModeChanged);
 
-    connect(mCentralWidget,
-            &CentralWidget::showContoursStateChanged,
-            mOpenGLWidget,
-            &OpenGLWidget::onShowContoursStateChanged);
+    connect(mCentralWidget, &CentralWidget::showContoursStateChanged, mOpenGLWidget, &OpenGLWidget::onShowContoursStateChanged);
 }
 
-CentralWidget *MainController::centralWidget() const { return mCentralWidget; }
+CentralWidget *MainController::centralWidget() const
+{
+    return mCentralWidget;
+}

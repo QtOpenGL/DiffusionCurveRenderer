@@ -1,7 +1,12 @@
-#ifndef MAINCONTROLLER_H
+﻿#ifndef MAINCONTROLLER_H
 #define MAINCONTROLLER_H
 
+#include "CurveContainer.h"
+
 #include <QObject>
+
+#include <Curves/Curve.h>
+#include <Widgets/ModeWidget.h>
 
 class CentralWidget;
 class OpenGLWidget;
@@ -18,6 +23,7 @@ public:
 
     CentralWidget *centralWidget() const;
 
+protected:
 private:
     CentralWidget *mCentralWidget;
     OpenGLWidget *mOpenGLWidget;
@@ -25,6 +31,7 @@ private:
     CurveWidget *mCurveWidget;
     ControlPointWidget *mControlPointWidget;
     ZoomWidget *mZoomWidget;
+    CurveContainer *mCurveContainer;
 };
 
 #endif // MAINCONTROLLER_H

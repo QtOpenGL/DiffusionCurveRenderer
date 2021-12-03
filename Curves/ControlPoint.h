@@ -10,6 +10,7 @@ public:
     ControlPoint();
     ControlPoint(float x, float y);
     ControlPoint(QPointF point);
+    ControlPoint(QVector2D point);
 
     QVector2D position;
     bool selected;

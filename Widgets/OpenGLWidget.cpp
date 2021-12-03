@@ -1,14 +1,13 @@
 #include "OpenGLWidget.h"
 
 #include <Util.h>
+
 #include <QVector4D>
 
 OpenGLWidget::OpenGLWidget(QWidget *parent)
     : QOpenGLWidget(parent)
     , mBezierContourRenderer(nullptr)
     , mControlPointRenderer(nullptr)
-    , mSelectedCurve(nullptr)
-    , mSelectedControlPoint(nullptr)
     , mMode(ModeWidget::Select)
     , mMousePressed(false)
     , mMousePressedOnCurve(false)
@@ -17,34 +16,6 @@ OpenGLWidget::OpenGLWidget(QWidget *parent)
     , mCanvasRectangle(0, 0, 0, 0)
     , mInitialized(false)
 {
-    //    {
-    //        Bezier* bezier = new Bezier;
-    //        bezier->addControlPoint(new ControlPoint(250, 500));// First
-    //        bezier->addControlPoint(new ControlPoint(750, 500)); // Last
-    //        bezier->addControlPoint(new ControlPoint(150, 250));
-    //        bezier->addControlPoint(new ControlPoint(200, 50));
-    //        bezier->setColor(QVector4D(0.4f, 0.32f, 0.82f, 1.0f));
-    //        mCurves << bezier;
-    //    }
-
-    //    {
-    //        Bezier* bezier = new Bezier;
-    //        bezier->addControlPoint(new ControlPoint(50, 550));// First
-    //        bezier->addControlPoint(new ControlPoint(300, 550)); // Last
-    //        bezier->addControlPoint(new ControlPoint(250, 650));
-    //        bezier->setColor(QVector4D(0.74f, 0.3f, 0.3f, 1.0f));
-    //        mCurves << bezier;
-    //    }
-
-    {
-        Bezier *bezier = new Bezier();
-        bezier->addControlPoint(new ControlPoint(50.0f, 250.0f));  // First
-        bezier->addControlPoint(new ControlPoint(300.0f, 250.0f)); // Last
-        mCurves << bezier;
-    }
-
-    mCurves = Util::readCurveDataFromXML("Resources/CurveData/zephyr.xml");
-
     setMouseTracking(true);
 }
 
@@ -64,24 +35,34 @@ OpenGLWidget::~OpenGLWidget()
     if (mLineRenderer)
         delete mLineRenderer;
 
-    for (auto &curve : mCurves) {
-        if (curve)
-            delete curve;
-
-        curve = nullptr;
-    }
-
     doneCurrent();
 }
 
-QSize OpenGLWidget::minimumSizeHint() const { return QSize(50, 50); }
+QSize OpenGLWidget::minimumSizeHint() const
+{
+    return QSize(50, 50);
+}
 
-QSize OpenGLWidget::sizeHint() const { return QSize(750, 750); }
+QSize OpenGLWidget::sizeHint() const
+{
+    return QSize(750, 750);
+}
 
-void OpenGLWidget::onDirty() { update(); }
+void OpenGLWidget::onDirty()
+{
+    update();
+}
 
 void OpenGLWidget::initializeGL()
 {
+    Bezier *bezier = new Bezier();
+    bezier->addControlPoint(new ControlPoint(50.0f, 250.0f));  // First
+    bezier->addControlPoint(new ControlPoint(300.0f, 250.0f)); // Last
+    mCurveContainer->addCurve(bezier);
+
+    QVector<Curve *> curves = Util::readCurveDataFromXML("Resources/CurveData/zephyr.xml");
+    mCurveContainer->addCurves(curves);
+
     initializeOpenGLFunctions();
     glClearColor(0, 0, 0, 1);
     glEnable(GL_MULTISAMPLE);
@@ -103,7 +84,6 @@ void OpenGLWidget::initializeGL()
     if (!mInitialized)
         qDebug() << this << "Could not initialize OpenGLWidget";
 }
-
 void OpenGLWidget::paintGL()
 {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -114,9 +94,9 @@ void OpenGLWidget::paintGL()
     if (!mInitialized)
         return;
 
-    mBezierContourRenderer->render(mCurves);
-    mControlPointRenderer->render(mSelectedCurve);
-    mBoundingBoxRenderer->render(mSelectedCurve);
+    mBezierContourRenderer->render(mCurveContainer->getCurves());
+    mControlPointRenderer->render(mCurveContainer->selectedCurve());
+    mBoundingBoxRenderer->render(mCurveContainer->selectedCurve());
 
     //    {
     //        LineRenderer::RenderParameters params;
@@ -148,9 +128,9 @@ void OpenGLWidget::wheelEvent(QWheelEvent *event)
     int delta = event->angleDelta().y();
 
     if (delta < 0)
-        zoom(mZoomRatio * 1.125, event->position());
+        zoom(mZoomRatio * 1.125, event->position().toPoint());
     if (delta > 0)
-        zoom(mZoomRatio / 1.125, event->position());
+        zoom(mZoomRatio / 1.125, event->position().toPoint());
 }
 
 void OpenGLWidget::mousePressEvent(QMouseEvent *event)
@@ -159,78 +139,67 @@ void OpenGLWidget::mousePressEvent(QMouseEvent *event)
     mMousePressed = true;
 
     switch (mMode) {
-    case ModeWidget::Pan: break;
+    case ModeWidget::Pan:
+        break;
     case ModeWidget::Select: {
-        if (mSelectedCurve) {
-            ControlPoint *controlPoint = mSelectedCurve->getClosestControlPoint(g2c(mMousePosition));
+        ControlPoint *controlPoint = mCurveContainer->getClosestControlPointOnSelectedCurve(mapFromGui(mMousePosition), 20 * mZoomRatio);
+        mCurveContainer->setSelectedControlPoint(controlPoint);
 
-            if (controlPoint) {
-                if (controlPoint->position.distanceToPoint(QVector2D(g2c(mMousePosition))) > 20 * mZoomRatio)
-                    controlPoint = nullptr;
-            }
-
-            setSelectedControlPoint(controlPoint);
-            if (controlPoint) {
-                update();
-                return;
-            } else
-                setSelectedCurve(nullptr);
+        if (controlPoint) {
+            update();
+            return;
         }
 
-        Curve *selectedCurve = selectCurve(mMousePosition);
+        Curve *selectedCurve = mCurveContainer->selectCurve(mapFromGui(mMousePosition), 20 * mZoomRatio);
 
-        if (selectedCurve) {
-            mMousePressedOnCurve = true;
-            setSelectedCurve(selectedCurve);
-            if (mSelectedControlPoint)
-                setSelectedControlPoint(nullptr);
-        } else {
-            mMousePressedOnCurve = false;
-        }
+        mMousePressedOnCurve = selectedCurve ? true : false;
+        mCurveContainer->setSelectedCurve(selectedCurve);
 
+        //            if (mSelectedControlPoint)
+        //                setSelectedControlPoint(nullptr);
         break;
     }
     case ModeWidget::Add: {
-        if (mSelectedCurve) {
-            if (mSelectedCurve->getSize() >= Constants::MAX_CONTROL_POINT_COUNT)
+        if (mCurveContainer->selectedCurve()) {
+            if (mCurveContainer->selectedCurve()->getSize() >= Constants::MAX_CONTROL_POINT_COUNT)
                 return;
 
-            ControlPoint *controlPoint = new ControlPoint(g2c(mMousePosition));
+            ControlPoint *controlPoint = new ControlPoint(mapFromGui(mMousePosition));
             controlPoint->selected = true;
-            mSelectedCurve->addControlPoint(controlPoint);
-            setSelectedControlPoint(controlPoint);
+            mCurveContainer->selectedCurve()->addControlPoint(controlPoint);
+            mCurveContainer->setSelectedControlPoint(controlPoint);
         } else {
-            ControlPoint *controlPoint = new ControlPoint(g2c(mMousePosition));
+            ControlPoint *controlPoint = new ControlPoint(mapFromGui(mMousePosition));
             controlPoint->selected = true;
 
             Bezier *curve = new Bezier();
             curve->addControlPoint(controlPoint);
-            mCurves << curve;
-            setSelectedCurve(curve);
-            setSelectedControlPoint(controlPoint);
+            mCurveContainer->addCurve(curve);
+            mCurveContainer->setSelectedCurve(curve);
+            mCurveContainer->setSelectedControlPoint(controlPoint);
         }
         break;
     }
     case ModeWidget::Move: {
         // If there is no selected curve, then we must select one first.
-        if (mSelectedCurve == nullptr) {
-            Curve *selectedCurve = selectCurve(mMousePosition);
+        if (mCurveContainer->selectedCurve() == nullptr) {
+            Curve *selectedCurve = mCurveContainer->selectCurve(mapFromGui(mMousePosition), 20 * mZoomRatio);
+            mMousePressedOnCurve = selectedCurve ? true : false;
+
             if (selectedCurve) {
-                mMousePressedOnCurve = true;
-                setSelectedCurve(selectedCurve);
+                mCurveContainer->setSelectedCurve(selectedCurve);
                 update();
                 return;
-            } else {
-                mMousePressedOnCurve = false;
             }
-        } else {
-            Curve *selectedCurve = selectCurve(mMousePosition);
-            QRectF boundingBox = mSelectedCurve->getBoundingBox();
 
-            if (boundingBox.contains(g2c(mMousePosition))) {
+        } else {
+            Curve *selectedCurve = mCurveContainer->selectCurve(mapFromGui(mMousePosition), 20 * mZoomRatio);
+            QRectF boundingBox = mCurveContainer->selectedCurve()->getBoundingBox();
+
+            if (boundingBox.contains(mapFromGui(mMousePosition).toPoint())) {
                 mMousePressedOnCurve = true;
             } else {
-                setSelectedCurve(selectedCurve);
+                mCurveContainer->setSelectedCurve(selectedCurve);
                 mMousePressedOnCurve = selectedCurve ? true : false;
             }
         }
@@ -259,20 +228,20 @@ void OpenGLWidget::mouseReleaseEvent(QMouseEvent *event)
 
 void OpenGLWidget::mouseMoveEvent(QMouseEvent *event)
 {
-    QPointF mousePosition = event->pos();
+    QPoint mousePosition = event->pos();
 
     switch (mMode) {
     case ModeWidget::Pan: {
         if (mMousePressed) {
-            QPointF translation = mMousePosition - mousePosition;
+            QPoint translation = mMousePosition - mousePosition;
             mCanvasRectangle.translate(translation * mZoomRatio);
             updateProjectionMatrix();
         }
         break;
     }
     case ModeWidget::Select: {
-        if (mSelectedControlPoint && mMousePressed) {
-            mSelectedControlPoint->position = QVector2D(g2c(mousePosition));
+        if (mCurveContainer->selectedControlPoint() && mMousePressed) {
+            mCurveContainer->selectedControlPoint()->position = mapFromGui(mousePosition);
             emit dirty();
         }
         break;
@@ -284,8 +253,8 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent *event)
         if (mMousePressedOnCurve) {
             QPointF translation = mousePosition - mMousePosition;
 
-            if (mSelectedCurve)
-                mSelectedCurve->translate(translation * mZoomRatio);
+            if (mCurveContainer->selectedCurve())
+                mCurveContainer->selectedCurve()->translate(translation * mZoomRatio);
         }
 
         break;
@@ -302,53 +271,21 @@ void OpenGLWidget::update()
     updateCursor();
 }
 
-void OpenGLWidget::deselectAllCurves()
-{
-    for (int i = 0; i < mCurves.size(); ++i)
-        mCurves[i]->setSelected(false);
-
-    mSelectedCurve = nullptr;
-}
-
-void OpenGLWidget::setSelectedCurve(Curve *selectedCurve)
-{
-    if (mSelectedCurve == selectedCurve)
-        return;
-
-    if (mSelectedCurve)
-        mSelectedCurve->setSelected(false);
-
-    if (selectedCurve)
-        selectedCurve->setSelected(true);
-
-    mSelectedCurve = selectedCurve;
-    emit selectedCurveChanged(selectedCurve);
-}
-
-void OpenGLWidget::setSelectedControlPoint(ControlPoint *selectedControlPoint)
-{
-    if (mSelectedControlPoint == selectedControlPoint)
-        return;
-
-    if (mSelectedControlPoint)
-        mSelectedControlPoint->selected = false;
-
-    if (selectedControlPoint)
-        selectedControlPoint->selected = true;
-
-    mSelectedControlPoint = selectedControlPoint;
-    emit selectedControlPointChanged(selectedControlPoint);
-}
-
 void OpenGLWidget::updateCursor()
 {
     switch (mMode) {
-    case ModeWidget::Pan: setCursor(mMousePressed ? Qt::ClosedHandCursor : Qt::OpenHandCursor); break;
-    case ModeWidget::Select: setCursor(Qt::ArrowCursor); break;
-    case ModeWidget::Add: setCursor(Qt::CrossCursor); break;
+    case ModeWidget::Pan:
+        setCursor(mMousePressed ? Qt::ClosedHandCursor : Qt::OpenHandCursor);
+        break;
+    case ModeWidget::Select:
+        setCursor(Qt::ArrowCursor);
+        break;
+    case ModeWidget::Add:
+        setCursor(Qt::CrossCursor);
+        break;
     case ModeWidget::Move: {
-        if (mSelectedCurve) {
-            if (mSelectedCurve->getBoundingBox().contains(g2c(mMousePosition)))
+        if (mCurveContainer->selectedCurve()) {
+            if (mCurveContainer->selectedCurve()->getBoundingBox().contains(mapFromGui(mMousePosition).toPointF()))
                 setCursor(Qt::SizeAllCursor);
             else
                 setCursor(Qt::ArrowCursor);
@@ -359,66 +296,17 @@ void OpenGLWidget::updateCursor()
     }
 }
 
-ControlPoint *OpenGLWidget::getClosestControlPoint(QPointF mousePosition)
+void OpenGLWidget::setCurveContainer(CurveContainer *newCurveContainer)
 {
-    if (!mSelectedCurve)
-        return nullptr;
-
-    ControlPoint *controlPoint = mSelectedCurve->getClosestControlPoint(g2c(mousePosition));
-
-    if (controlPoint) {
-        if (controlPoint->position.distanceToPoint(QVector2D(g2c(mousePosition))) > 20 * mZoomRatio)
-            controlPoint = nullptr;
-    }
-
-    return controlPoint;
+    mCurveContainer = newCurveContainer;
 }
 
-void OpenGLWidget::removeCurve(int index)
-{
-    if (0 <= index && index < mCurves.size()) {
-        Curve *curve = mCurves[index];
-        mCurves.removeAt(index);
-        delete curve;
-    }
-}
-
-void OpenGLWidget::removeCurve(Curve *curve)
-{
-    for (int i = 0; i < mCurves.size(); ++i) {
-        if (mCurves[i] == curve) {
-            removeCurve(i);
-            return;
-        }
-    }
-}
-
-Curve *OpenGLWidget::selectCurve(QPointF mousePosition, float radius)
-{
-    float minDistance = std::numeric_limits<float>::infinity();
-
-    Curve *selectedCurve = nullptr;
-
-    for (int i = 0; i < mCurves.size(); ++i) {
-        float distance = mCurves[i]->distanceToPoint(g2c(mousePosition));
-        if (distance < minDistance) {
-            minDistance = distance;
-            selectedCurve = mCurves[i];
-        }
-    }
-
-    if (minDistance < radius)
-        return selectedCurve;
-
-    return nullptr;
-}
-
-void OpenGLWidget::zoom(float zoomRatio, QPointF mousePosition)
+void OpenGLWidget::zoom(float zoomRatio, QPoint mousePosition)
 {
     if (qFuzzyCompare(zoomRatio, mZoomRatio))
         return;
 
-    QPointF mousePositionOnCanvas = g2c(mousePosition);
+    QPoint mousePositionOnCanvas = mapFromGui(mousePosition).toPoint();
 
     if (zoomRatio >= 2)
         zoomRatio = 2;
@@ -430,7 +318,7 @@ void OpenGLWidget::zoom(float zoomRatio, QPointF mousePosition)
     mCanvasRectangle.setWidth(width() * mZoomRatio);
     mCanvasRectangle.setHeight(height() * mZoomRatio);
 
-    QPointF newMousePositionOnCanvas = g2c(mousePosition);
+    QPoint newMousePositionOnCanvas = mapFromGui(mousePosition).toPoint();
 
     mCanvasRectangle.translate(mousePositionOnCanvas - newMousePositionOnCanvas);
 
@@ -462,7 +350,7 @@ void OpenGLWidget::updateProjectionMatrix()
 
 void OpenGLWidget::onSelectedControlPointChanged(ControlPoint *selectedControlPoint)
 {
-    setSelectedControlPoint(selectedControlPoint);
+    mCurveContainer->setSelectedControlPoint(selectedControlPoint);
     update();
 }
 
@@ -473,13 +361,15 @@ void OpenGLWidget::onModeChanged(ModeWidget::Mode mode)
 
     switch (mode) {
     case ModeWidget::Pan:
-        setSelectedCurve(nullptr);
-        setSelectedControlPoint(nullptr);
+        mCurveContainer->setSelectedCurve(nullptr);
+        mCurveContainer->setSelectedControlPoint(nullptr);
         break;
-    case ModeWidget::Select: break;
-    case ModeWidget::Add: break;
+    case ModeWidget::Select:
+        break;
+    case ModeWidget::Add:
+        break;
     case ModeWidget::Move: {
-        setSelectedControlPoint(nullptr);
+        mCurveContainer->setSelectedControlPoint(nullptr);
         break;
     }
     }
@@ -499,31 +389,21 @@ void OpenGLWidget::onAction(Action action)
 {
     switch (action) {
     case OpenGLWidget::RemoveCurve: {
-        if (mSelectedCurve) {
-            for (int i = 0; i < mCurves.size(); ++i) {
-                Curve *curve = mCurves[i];
-
-                if (mSelectedCurve == curve) {
-                    setSelectedCurve(nullptr);
-                    setSelectedControlPoint(nullptr);
-                    removeCurve(i);
-                    update();
-                    return;
-                }
-            }
-        }
+        mCurveContainer->removeCurve(mCurveContainer->selectedCurve());
+        mCurveContainer->setSelectedCurve(nullptr);
+        mCurveContainer->setSelectedControlPoint(nullptr);
         break;
     }
     case OpenGLWidget::RemoveControlPoint: {
-        ControlPoint *selectedControlPoint = mSelectedControlPoint;
-        Curve *selectedCurve = mSelectedCurve;
+        ControlPoint *selectedControlPoint = mCurveContainer->selectedControlPoint();
+        Curve *selectedCurve = mCurveContainer->selectedCurve();
 
         if (selectedCurve && selectedControlPoint) {
-            setSelectedControlPoint(nullptr);
-            mSelectedCurve->removeControlPoint(selectedControlPoint);
-            if (mSelectedCurve->getSize() == 0) {
-                setSelectedCurve(nullptr);
-                removeCurve(selectedCurve);
+            mCurveContainer->setSelectedControlPoint(nullptr);
+            selectedCurve->removeControlPoint(selectedControlPoint);
+            if (selectedCurve->getSize() == 0) {
+                mCurveContainer->setSelectedCurve(nullptr);
+                mCurveContainer->removeCurve(selectedCurve);
             }
             update();
         }
@@ -533,17 +413,20 @@ void OpenGLWidget::onAction(Action action)
     }
 }
 
-void OpenGLWidget::onKeyPressed(int key)
+void OpenGLWidget::onKeyPressed(Qt::Key key)
 {
     if (key == Qt::Key_Delete) {
-        if (mSelectedControlPoint)
+        if (mCurveContainer->selectedControlPoint())
             onAction(Action::RemoveControlPoint);
-        else if (mSelectedCurve)
+        else if (mCurveContainer->selectedCurve())
             onAction(Action::RemoveCurve);
     }
 }
 
-void OpenGLWidget::onZoomRatioChanged(float zoomRatio) { zoom(zoomRatio, QPointF(0.5 * width(), 0.5 * height())); }
+void OpenGLWidget::onZoomRatioChanged(float zoomRatio)
+{
+    zoom(zoomRatio, QPoint(0.5 * width(), 0.5 * height()));
+}
 
 void OpenGLWidget::onShowContoursStateChanged(bool state)
 {
