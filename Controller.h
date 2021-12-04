@@ -1,5 +1,5 @@
-﻿#ifndef MAINCONTROLLER_H
-#define MAINCONTROLLER_H
+#ifndef CONTROLLER_H
+#define CONTROLLER_H
 
 #include "CurveContainer.h"
 
@@ -15,11 +15,11 @@ class CurveWidget;
 class ControlPointWidget;
 class ZoomWidget;
 
-class MainController : public QObject
+class Controller : public QObject
 {
     Q_OBJECT
 public:
-    explicit MainController(QObject *parent = nullptr);
+    explicit Controller(QObject *parent = nullptr);
 
     CentralWidget *centralWidget() const;
 
@@ -34,4 +34,4 @@ private:
     CurveContainer *mCurveContainer;
 };
 
-#endif // MAINCONTROLLER_H
+#endif // CONTROLLER_H

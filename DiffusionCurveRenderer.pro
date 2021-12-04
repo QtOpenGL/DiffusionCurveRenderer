@@ -33,13 +33,12 @@ DISTFILES += \
 
 HEADERS += \
     Constants.h \
+    Controller.h \
     CurveContainer.h \
     Curves/Bezier.h \
     Curves/ColorPoint.h \
     Curves/ControlPoint.h \
     Curves/Curve.h \
-    MainController.h \
-    MainWindow.h \
     Renderers/Curve/BezierContourRenderer.h \
     Renderers/Curve/BezierDiffusionRenderer.h \
     Renderers/GUI/BoundingBoxRenderer.h \
@@ -54,17 +53,17 @@ HEADERS += \
     Widgets/ModeWidget.h \
     Widgets/OpenGLTestWidget.h \
     Widgets/OpenGLWidget.h \
-    Widgets/ZoomWidget.h
+    Widgets/ZoomWidget.h \
+    Window.h
 
 SOURCES += \
+    Controller.cpp \
     CurveContainer.cpp \
     Curves/Bezier.cpp \
     Curves/ColorPoint.cpp \
     Curves/ControlPoint.cpp \
     Curves/Curve.cpp \
     Main.cpp \
-    MainController.cpp \
-    MainWindow.cpp \
     Renderers/Curve/BezierContourRenderer.cpp \
     Renderers/Curve/BezierDiffusionRenderer.cpp \
     Renderers/GUI/BoundingBoxRenderer.cpp \
@@ -79,4 +78,5 @@ SOURCES += \
     Widgets/ModeWidget.cpp \
     Widgets/OpenGLTestWidget.cpp \
     Widgets/OpenGLWidget.cpp \
-    Widgets/ZoomWidget.cpp
+    Widgets/ZoomWidget.cpp \
+    Window.cpp

@@ -1,4 +1,4 @@
-#include "MainController.h"
+#include "Controller.h"
 
 #include <Widgets/CentralWidget.h>
 #include <Widgets/ControlPointWidget.h>
@@ -7,7 +7,7 @@
 #include <Widgets/OpenGLWidget.h>
 #include <Widgets/ZoomWidget.h>
 
-MainController::MainController(QObject *parent)
+Controller::Controller(QObject *parent)
     : QObject(parent)
 {
     mCentralWidget = new CentralWidget;
@@ -52,7 +52,7 @@ MainController::MainController(QObject *parent)
     connect(mCentralWidget, &CentralWidget::showContoursStateChanged, mOpenGLWidget, &OpenGLWidget::onShowContoursStateChanged);
 }
 
-CentralWidget *MainController::centralWidget() const
+CentralWidget *Controller::centralWidget() const
 {
     return mCentralWidget;
 }

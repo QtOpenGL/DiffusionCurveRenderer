@@ -1,14 +1,14 @@
-#include "MainController.h"
-#include "MainWindow.h"
+#include "Controller.h"
+#include "Window.h"
 
+#include <Widgets/OpenGLTestWidget.h>
 #include <QApplication>
 #include <QDebug>
 #include <QFile>
 #include <QFontDatabase>
+#include <QScreen>
 #include <QStyleFactory>
 #include <QSurfaceFormat>
-
-#include <Widgets/OpenGLTestWidget.h>
 
 int main(int argc, char *argv[])
 {
@@ -45,15 +45,15 @@ int main(int argc, char *argv[])
     format.setProfile(QSurfaceFormat::CoreProfile);
     QSurfaceFormat::setDefaultFormat(format);
 
-    MainController *mainController = new MainController;
-    MainWindow *mainWindow = new MainWindow;
-    mainWindow->setCentralWidget(mainController->centralWidget());
-    mainWindow->initialize();
-    mainWindow->setWindowTitle("Diffusion Curve Renderer");
-    mainWindow->show();
+    Controller *controller = new Controller;
+    Window *window = new Window;
+    window->setCentralWidget(controller->centralWidget());
+    window->initialize();
+    window->setWindowTitle("Diffusion Curve Renderer");
+    window->show();
 
-    OpenGLTestWidget *widget = new OpenGLTestWidget;
-    widget->showMaximized();
+    //    OpenGLTestWidget *widget = new OpenGLTestWidget;
+    //    widget->showMaximized();
 
     return app.exec();
 }

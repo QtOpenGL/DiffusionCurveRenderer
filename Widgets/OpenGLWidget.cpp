@@ -83,7 +83,8 @@ void OpenGLWidget::paintGL()
 
     mBezierContourRenderer->render(mCurveContainer->getCurves());
 
-    QOpenGLPaintDevice device(width(), height());
+    float pixelRatio = QPaintDevice::devicePixelRatioF();
+    QOpenGLPaintDevice device(width() * pixelRatio, height() * pixelRatio);
     QPainter painter(&device);
     painter.setRenderHint(QPainter::Antialiasing, true);
 
@@ -139,15 +140,16 @@ void OpenGLWidget::paintGL()
 
             QPointF center = boundingBox.center();
             painter.drawEllipse(center, 6, 6);
-            painter.drawLine(center.x() - 10, center.y(), center.x() + 10, center.y());
-            painter.drawLine(center.x(), center.y() - 10, center.x(), center.y() + 10);
+            painter.drawLine(center.x() - 10, center.y() + 0.5, center.x() + 10, center.y() + 0.5);
+            painter.drawLine(center.x() + 0.5, center.y() - 10, center.x() + 0.5, center.y() + 10);
 
             // Draw corners
             pen.setColor(QColor(0, 0, 0));
             painter.setPen(pen);
+            painter.setBrush(QColor(0, 0, 0, 0));
 
             for (int i = 0; i < 4; ++i) {
-                painter.fillRect(mHandles[i], QColor(255, 255, 255));
+                //painter.fillRect(mHandles[i], QColor(255, 255, 255));
                 painter.drawRect(mHandles[i]);
             }
         }
@@ -158,9 +160,6 @@ void OpenGLWidget::paintGL()
 
 void OpenGLWidget::resizeGL(int width, int height)
 {
-    if (!mInitialized)
-        return;
-
     mCanvasRectangle.setWidth(width * mZoomRatio);
     mCanvasRectangle.setHeight(height * mZoomRatio);
 
@@ -354,22 +353,24 @@ void OpenGLWidget::updateCursor()
 
 QVector2D OpenGLWidget::mapFromGui(QPointF position)
 {
-    QPointF result = (mCanvasRectangle.topLeft() + mZoomRatio * position);
+    QPointF result = mCanvasRectangle.topLeft() + mZoomRatio * position;
     return QVector2D(result.x(), result.y());
 }
 
 QPointF OpenGLWidget::mapToGui(QVector2D position)
 {
-    QPointF result = (position.toPoint() - mCanvasRectangle.topLeft()) / mZoomRatio;
+    float pixelRatio = QPaintDevice::devicePixelRatioF();
+    QPointF result = (position.toPoint() - mCanvasRectangle.topLeft()) / mZoomRatio * pixelRatio;
     return result;
 }
 
 QRectF OpenGLWidget::mapToGui(const QRectF &rect)
 {
-    float w = rect.width() / mZoomRatio;
-    float h = rect.height() / mZoomRatio;
+    float pixelRatio = QPaintDevice::devicePixelRatioF();
+    float w = rect.width() / mZoomRatio * pixelRatio;
+    float h = rect.height() / mZoomRatio * pixelRatio;
     QPointF center = rect.center();
-    QPointF centerInGui = (center - mCanvasRectangle.topLeft()) / mZoomRatio;
+    QPointF centerInGui = (center - mCanvasRectangle.topLeft()) / mZoomRatio * pixelRatio;
 
     return QRectF(centerInGui.x() - 0.5 * w, centerInGui.y() - 0.5 * h, w, h);
 }
@@ -397,9 +398,7 @@ void OpenGLWidget::zoom(float zoomRatio, QPoint mousePosition)
     mCanvasRectangle.setHeight(height() * mZoomRatio);
 
     QPointF newMousePositionOnCanvas = mapFromGui(mousePosition).toPoint();
-
     mCanvasRectangle.translate(mousePositionOnCanvas - newMousePositionOnCanvas);
-
     mBezierContourRenderer->setZoomRatio(mZoomRatio);
 
     emit zoomRatioChanged(mZoomRatio);
