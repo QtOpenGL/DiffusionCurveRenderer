@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
         qDebug() << "Could not find style sheet. Using the default one.";
     }
 
-    int id = QFontDatabase::addApplicationFont("Resources/Fonts/Helvetica/FreeSans.ttf");
+    int id = QFontDatabase::addApplicationFont("Resources/Fonts/Segoe/Segoe UI.ttf");
     if (id == -1) {
         QFont font = qApp->font();
         font.setPixelSize(12);

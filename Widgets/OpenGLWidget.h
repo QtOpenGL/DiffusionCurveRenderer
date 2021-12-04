@@ -10,8 +10,9 @@
 #include <QPen>
 #include <QWheelEvent>
 
+#include "CurveWidget.h"
+#include "ModeWidget.h"
 #include <Renderers/Curve/BezierContourRenderer.h>
-#include <Widgets/ModeWidget.h>
 
 class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -19,8 +20,6 @@ class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 public:
     OpenGLWidget(QWidget *parent = nullptr);
     ~OpenGLWidget();
-
-    enum Action { RemoveCurve = 0, RemoveControlPoint = 1 };
 
     QSize minimumSizeHint() const override;
     QSize sizeHint() const override;
@@ -35,7 +34,7 @@ public slots:
     void onDirty();
     void onSelectedControlPointChanged(ControlPoint *selectedControlPoint);
     void onModeChanged(ModeWidget::Mode mode);
-    void onAction(OpenGLWidget::Action action);
+    void onAction(Action action);
     void onKeyPressed(Qt::Key key);
     void onZoomRatioChanged(float zoomRatio);
     void onShowContoursStateChanged(bool state);
@@ -49,6 +48,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void update();
+    bool highlightSelectedCurve();
 
     void zoom(float zoomRatio, QPoint mousePosition);
     void updateProjectionMatrix();

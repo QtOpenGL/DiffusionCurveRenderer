@@ -50,6 +50,7 @@ HEADERS += \
     Widgets/CentralWidget.h \
     Widgets/ControlPointWidget.h \
     Widgets/CurveWidget.h \
+    Widgets/Enums.h \
     Widgets/ModeWidget.h \
     Widgets/OpenGLTestWidget.h \
     Widgets/OpenGLWidget.h \

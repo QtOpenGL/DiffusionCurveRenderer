@@ -19,11 +19,13 @@ CurveContainer::~CurveContainer()
 void CurveContainer::addCurve(Curve *curve)
 {
     mCurves << curve;
+    sortCurves();
 }
 
 void CurveContainer::addCurves(const QVector<Curve *> curves)
 {
     mCurves << curves;
+    sortCurves();
 }
 
 QVector<Curve *> &CurveContainer::getCurves()
@@ -62,6 +64,7 @@ void CurveContainer::removeCurve(int index)
         Curve *curve = mCurves[index];
         mCurves.removeAt(index);
         delete curve;
+        sortCurves();
     }
 }
 
@@ -70,6 +73,7 @@ void CurveContainer::removeCurve(Curve *curve)
     for (int i = 0; i < mCurves.size(); ++i) {
         if (mCurves[i] == curve) {
             removeCurve(i);
+            sortCurves();
             return;
         }
     }
@@ -131,4 +135,28 @@ void CurveContainer::setSelectedControlPoint(ControlPoint *selectedControlPoint)
 
     mSelectedControlPoint = selectedControlPoint;
     emit selectedControlPointChanged(selectedControlPoint);
+}
+
+void CurveContainer::sortCurves()
+{
+    if (mCurves.size() == 0)
+        return;
+
+    QVector<Curve *> sortedCurves;
+
+    sortedCurves << mCurves[0];
+
+    for (int i = 1; i < mCurves.size(); i++) {
+        Curve *curve = mCurves[i];
+        if (sortedCurves.last()->z() <= curve->z())
+            sortedCurves << curve;
+        else
+            for (int j = 0; j < sortedCurves.size(); j++)
+                if (sortedCurves[j]->z() > curve->z()) {
+                    sortedCurves.insert(j, curve);
+                    break;
+                }
+    }
+
+    mCurves = sortedCurves;
 }

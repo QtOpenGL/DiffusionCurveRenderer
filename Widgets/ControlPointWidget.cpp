@@ -84,7 +84,7 @@ ControlPointWidget::ControlPointWidget(QGroupBox *parent)
         mRemoveButton->setAutoFillBackground(false);
         mRemoveButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-        connect(mRemoveButton, &QPushButton::clicked, this, [this]() { emit removeControlPointButtonClicked(); });
+        connect(mRemoveButton, &QPushButton::clicked, this, [this]() { emit action(Action::RemoveControlPoint); });
 
         QHBoxLayout *layout = new QHBoxLayout;
         //layout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Expanding, QSizePolicy::Minimum));

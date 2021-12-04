@@ -38,14 +38,12 @@ Controller::Controller(QObject *parent)
     connect(mZoomWidget, &ZoomWidget::zoomRatioChanged, mOpenGLWidget, &OpenGLWidget::onZoomRatioChanged);
 
     connect(mCurveWidget, &CurveWidget::dirty, mOpenGLWidget, &OpenGLWidget::onDirty);
-    connect(mCurveWidget, &CurveWidget::removeCurveButtonClicked, this, [=]() { mOpenGLWidget->onAction(OpenGLWidget::Action::RemoveCurve); });
+    connect(mCurveWidget, &CurveWidget::action, mOpenGLWidget, &OpenGLWidget::onAction);
+    connect(mCurveWidget, &CurveWidget::action, mCurveContainer, &CurveContainer::sortCurves);
 
     connect(mControlPointWidget, &ControlPointWidget::dirty, mOpenGLWidget, &OpenGLWidget::onDirty);
     connect(mControlPointWidget, &ControlPointWidget::selectedControlPointChanged, mOpenGLWidget, &OpenGLWidget::onSelectedControlPointChanged);
-
-    connect(mControlPointWidget, &ControlPointWidget::removeControlPointButtonClicked, this, [=]() {
-        mOpenGLWidget->onAction(OpenGLWidget::Action::RemoveControlPoint);
-    });
+    connect(mControlPointWidget, &ControlPointWidget::action, mOpenGLWidget, &OpenGLWidget::onAction);
 
     connect(mModeWidget, &ModeWidget::modeChanged, mOpenGLWidget, &OpenGLWidget::onModeChanged);
 

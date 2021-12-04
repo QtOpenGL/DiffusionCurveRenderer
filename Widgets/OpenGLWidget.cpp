@@ -81,7 +81,7 @@ void OpenGLWidget::paintGL()
     if (!mInitialized)
         return;
 
-    mBezierContourRenderer->render(mCurveContainer->getCurves());
+    mBezierContourRenderer->render(mCurveContainer->getCurves(), highlightSelectedCurve());
 
     float pixelRatio = QPaintDevice::devicePixelRatioF();
     QOpenGLPaintDevice device(width() * pixelRatio, height() * pixelRatio);
@@ -149,7 +149,6 @@ void OpenGLWidget::paintGL()
             painter.setBrush(QColor(0, 0, 0, 0));
 
             for (int i = 0; i < 4; ++i) {
-                //painter.fillRect(mHandles[i], QColor(255, 255, 255));
                 painter.drawRect(mHandles[i]);
             }
         }
@@ -326,6 +325,21 @@ void OpenGLWidget::update()
     updateCursor();
 }
 
+bool OpenGLWidget::highlightSelectedCurve()
+{
+    switch (mMode) {
+    case ModeWidget::Select:
+    case ModeWidget::Add:
+    case ModeWidget::Move:
+        if (mCurveContainer->selectedCurve())
+            return true;
+        else
+            return false;
+    case ModeWidget::Pan:
+        return false;
+    }
+}
+
 void OpenGLWidget::updateCursor()
 {
     switch (mMode) {
@@ -458,16 +472,17 @@ void OpenGLWidget::onModeChanged(ModeWidget::Mode mode)
 void OpenGLWidget::onAction(Action action)
 {
     switch (action) {
-    case OpenGLWidget::RemoveCurve: {
+    case Action::ZIndexChanged:
+        break;
+    case Action::RemoveCurve: {
         mCurveContainer->removeCurve(mCurveContainer->selectedCurve());
         mCurveContainer->setSelectedCurve(nullptr);
         mCurveContainer->setSelectedControlPoint(nullptr);
         break;
     }
-    case OpenGLWidget::RemoveControlPoint: {
+    case Action::RemoveControlPoint: {
         ControlPoint *selectedControlPoint = mCurveContainer->selectedControlPoint();
         Curve *selectedCurve = mCurveContainer->selectedCurve();
-
         if (selectedCurve && selectedControlPoint) {
             mCurveContainer->setSelectedControlPoint(nullptr);
             selectedCurve->removeControlPoint(selectedControlPoint);

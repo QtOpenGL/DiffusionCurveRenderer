@@ -26,8 +26,8 @@ bool BezierContourRenderer::initialize()
 
     if (!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Bezier/Contour/VertexShader.vert")
         || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Bezier/Contour/FragmentShader.frag")
-        || !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Bezier/Contour/GeometryShader.geom")
-        || !mShader->link() || !mShader->bind()) {
+        || !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Bezier/Contour/GeometryShader.geom") || !mShader->link()
+        || !mShader->bind()) {
         qCritical() << this << mShader->log();
         return false;
     }
@@ -46,10 +46,7 @@ bool BezierContourRenderer::initialize()
     glGenBuffers(1, &mControlPointsBuffer);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, mControlPointsBuffer);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, mControlPointsBuffer);
-    glBufferData(GL_SHADER_STORAGE_BUFFER,
-                 Constants::MAX_CONTROL_POINT_COUNT * sizeof(QVector2D),
-                 nullptr,
-                 GL_DYNAMIC_COPY);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, Constants::MAX_CONTROL_POINT_COUNT * sizeof(QVector2D), nullptr, GL_DYNAMIC_COPY);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
     // Ticks
@@ -76,38 +73,26 @@ bool BezierContourRenderer::initialize()
     return mInitialized = true;
 }
 
-void BezierContourRenderer::render(QVector<Curve *> curves)
+void BezierContourRenderer::render(QVector<Curve *> curves, bool highlightSelectedCurve)
 {
     if (!mInitialized)
         return;
 
-    QVector<Curve *> orderedCurves = orderCurves(curves);
-
-    bool highlightOnlySelectedCurve = false;
-
-    for (int i = 0; i < orderedCurves.size(); ++i) {
-        Bezier *curve = dynamic_cast<Bezier *>(orderedCurves[i]);
-        if (curve == nullptr)
-            continue;
-        if (curve->selected())
-            highlightOnlySelectedCurve = true;
-    }
-
-    if (mMode == ModeWidget::Pan)
-        highlightOnlySelectedCurve = false;
-
-    for (int i = 0; i < orderedCurves.size(); ++i) {
-        Bezier *curve = dynamic_cast<Bezier *>(orderedCurves[i]);
+    for (int i = 0; i < curves.size(); ++i) {
+        Bezier *curve = dynamic_cast<Bezier *>(curves[i]);
         if (curve == nullptr)
             continue;
         if (curve->selected())
             render(curve, QVector4D(0, 0, 0, 1));
         else if (mShowContours)
-            render(curve, highlightOnlySelectedCurve ? QVector4D(0.9, 0.9, 0.9, 1) : QVector4D(0, 0, 0, 1));
+            render(curve, highlightSelectedCurve ? QVector4D(0.9, 0.9, 0.9, 1) : QVector4D(0, 0, 0, 1));
     }
 }
 
-void BezierContourRenderer::setProjectionMatrix(const QMatrix4x4 &newMatrix) { mProjectionMatrix = newMatrix; }
+void BezierContourRenderer::setProjectionMatrix(const QMatrix4x4 &newMatrix)
+{
+    mProjectionMatrix = newMatrix;
+}
 
 void BezierContourRenderer::render(Bezier *curve, QVector4D color)
 {
@@ -150,32 +135,17 @@ QVector4D BezierContourRenderer::lighter(QVector4D color, float factor)
     return QVector4D(x, y, z, w);
 }
 
-QVector<Curve *> BezierContourRenderer::orderCurves(QVector<Curve *> curves)
+void BezierContourRenderer::setShowContours(bool newShowContours)
 {
-    QVector<Curve *> orderedCurves;
-
-    if (curves.size() == 0)
-        return orderedCurves;
-
-    orderedCurves << curves[0];
-
-    for (int i = 1; i < curves.size(); i++) {
-        Curve *curve = curves[i];
-        if (orderedCurves.last()->z() <= curve->z())
-            orderedCurves << curve;
-        else
-            for (int j = 0; j < orderedCurves.size(); j++)
-                if (orderedCurves[j]->z() > curve->z()) {
-                    orderedCurves.insert(j, curve);
-                    break;
-                }
-    }
-
-    return orderedCurves;
+    mShowContours = newShowContours;
 }
 
-void BezierContourRenderer::setShowContours(bool newShowContours) { mShowContours = newShowContours; }
+void BezierContourRenderer::setZoomRatio(float newZoomRatio)
+{
+    mZoomRatio = newZoomRatio;
+}
 
-void BezierContourRenderer::setZoomRatio(float newZoomRatio) { mZoomRatio = newZoomRatio; }
-
-void BezierContourRenderer::setMode(ModeWidget::Mode newMode) { mMode = newMode; }
+void BezierContourRenderer::setMode(ModeWidget::Mode newMode)
+{
+    mMode = newMode;
+}

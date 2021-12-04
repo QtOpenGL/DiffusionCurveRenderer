@@ -29,6 +29,9 @@ public:
     Curve *selectCurve(QVector2D position, float radius = 20.0f);
     ControlPoint *getClosestControlPointOnSelectedCurve(QVector2D position, float radius = 20.0f);
 
+public slots:
+    void sortCurves();
+
 signals:
     void selectedCurveChanged(Curve *selectedCurve);
     void selectedControlPointChanged(ControlPoint *selectedControlPoint);

@@ -1,14 +1,15 @@
 #ifndef CURVEWIDGET_H
 #define CURVEWIDGET_H
 
+#include <QCheckBox>
+#include <QComboBox>
 #include <QGroupBox>
 #include <QLabel>
-#include <QComboBox>
 #include <QLineEdit>
 #include <QPushButton>
-#include <QCheckBox>
 
 #include "Curves/Curve.h"
+#include "Enums.h"
 
 class CurveWidget : public QGroupBox
 {
@@ -17,20 +18,19 @@ public:
     explicit CurveWidget(QGroupBox *parent = nullptr);
 
 public slots:
-    void onSelectedCurveChanged(Curve* selectedCurve);
+    void onSelectedCurveChanged(Curve *selectedCurve);
     void reset();
 
 signals:
     void dirty();
-    void removeCurveButtonClicked();
+    void action(Action action);
 
 private:
-    QLineEdit* mZLineEdit;
-    QLineEdit* mThicknessLineEdit;
-    QPushButton* mRemoveButton;
+    QLineEdit *mZLineEdit;
+    QLineEdit *mThicknessLineEdit;
+    QPushButton *mRemoveButton;
 
-    Curve* mSelectedCurve;
-
+    Curve *mSelectedCurve;
 };
 
 #endif // CURVEWIDGET_H

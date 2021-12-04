@@ -16,7 +16,7 @@ public:
     ~BezierContourRenderer();
 
     bool initialize();
-    void render(QVector<Curve *> curves);
+    void render(QVector<Curve *> curves, bool highlightSelectedCurve);
     void setProjectionMatrix(const QMatrix4x4 &newMatrix);
 
     void setMode(ModeWidget::Mode newMode);
@@ -26,7 +26,6 @@ public:
 private:
     void render(Bezier *curve, QVector4D color);
     QVector4D lighter(QVector4D color, float factor); // 0 < factor < 1
-    QVector<Curve *> orderCurves(QVector<Curve *> curves);
 
     QOpenGLShaderProgram *mShader;
 

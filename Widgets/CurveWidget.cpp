@@ -24,6 +24,7 @@ CurveWidget::CurveWidget(QGroupBox *parent)
             if (mSelectedCurve)
                 mSelectedCurve->setZ(text.toInt());
 
+            emit action(Action::ZIndexChanged);
             emit dirty();
         });
 
@@ -61,7 +62,7 @@ CurveWidget::CurveWidget(QGroupBox *parent)
         mRemoveButton->setAutoFillBackground(false);
         mRemoveButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-        connect(mRemoveButton, &QPushButton::clicked, this, [this]() { emit removeCurveButtonClicked(); });
+        connect(mRemoveButton, &QPushButton::clicked, this, [this]() { emit action(Action::RemoveCurve); });
 
         QHBoxLayout *layout = new QHBoxLayout;
         //layout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Expanding, QSizePolicy::Minimum));
