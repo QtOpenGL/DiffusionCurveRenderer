@@ -19,9 +19,9 @@ uniform float dashLength;
 uniform float gapLength;
 
 
-out vec4 vertexColor;
+out vec4 fs_Color;
 
-in float tick[];
+in float gs_Tick[];
 
 vec2 tangent = normalize(endPoint - startingPoint);
 vec2 normal = vec2(-tangent.y, tangent.x);
@@ -36,30 +36,30 @@ void main()
 {
     if(lineStyle == 0)
     {
-        float t0 = tick[0];
+        float t0 = gs_Tick[0];
         float t1 = t0 + rareTicksDelta;
 
         gl_Position = projectionMatrix * vec4(valueAt(t0) + 0.5 * thickness * normal, 0, 1);
-        vertexColor = color;
+        fs_Color = color;
         EmitVertex();
 
         gl_Position = projectionMatrix * vec4(valueAt(t0) - 0.5 * thickness * normal, 0, 1);
-        vertexColor = color;
+        fs_Color = color;
         EmitVertex();
 
         gl_Position = projectionMatrix * vec4(valueAt(t1) + 0.5 * thickness * normal, 0, 1);
-        vertexColor = color;
+        fs_Color = color;
         EmitVertex();
 
         gl_Position = projectionMatrix * vec4(valueAt(t1) - 0.5 * thickness * normal, 0, 1);
-        vertexColor = color;
+        fs_Color = color;
         EmitVertex();
 
         EndPrimitive();
     }
     else
     {
-        float t0 = tick[0];
+        float t0 = gs_Tick[0];
 
         if(int(t0 * lineLength) % int(dashAndGapLength) > dashLength)
             return;
@@ -67,19 +67,19 @@ void main()
         float t1 = t0 + denseTicksDelta;
 
         gl_Position = projectionMatrix * vec4(valueAt(t0) + 0.5 * thickness * normal, 0, 1);
-        vertexColor = color;
+        fs_Color = color;
         EmitVertex();
 
         gl_Position = projectionMatrix * vec4(valueAt(t0) - 0.5 * thickness * normal, 0, 1);
-        vertexColor = color;
+        fs_Color = color;
         EmitVertex();
 
         gl_Position = projectionMatrix * vec4(valueAt(t1) + 0.5 * thickness * normal, 0, 1);
-        vertexColor = color;
+        fs_Color = color;
         EmitVertex();
 
         gl_Position = projectionMatrix * vec4(valueAt(t1) - 0.5 * thickness * normal, 0, 1);
-        vertexColor = color;
+        fs_Color = color;
         EmitVertex();
 
         EndPrimitive();

@@ -8,7 +8,7 @@
 
 OpenGLWidget::OpenGLWidget(QWidget *parent)
     : QOpenGLWidget(parent)
-    , mBezierContourRenderer(nullptr)
+    , mContourRenderer(nullptr)
     , mInitialized(false)
     , mMode(ModeWidget::Select)
     , mMousePressed(false)
@@ -16,6 +16,10 @@ OpenGLWidget::OpenGLWidget(QWidget *parent)
     , mMousePosition(0, 0)
     , mZoomRatio(1.0f)
     , mCanvasRectangle(0, 0, 0, 0)
+#ifndef USE_QPAINTER
+    , mControlPointRenderer(nullptr)
+    , mBoundingBoxRenderer(nullptr)
+#endif
 
 {
     for (int i = 0; i < 4; ++i)
@@ -28,8 +32,21 @@ OpenGLWidget::~OpenGLWidget()
 {
     makeCurrent();
 
-    if (mBezierContourRenderer)
-        delete mBezierContourRenderer;
+    if (mContourRenderer)
+        delete mContourRenderer;
+
+#ifndef USE_QPAINTER
+    if (mControlPointRenderer)
+        delete mControlPointRenderer;
+
+    if (mBoundingBoxRenderer)
+        delete mBoundingBoxRenderer;
+
+    mControlPointRenderer = nullptr;
+    mBoundingBoxRenderer = nullptr;
+#endif
+
+    mContourRenderer = nullptr;
 
     doneCurrent();
 }
@@ -60,17 +77,21 @@ void OpenGLWidget::initializeGL()
     mCurveContainer->addCurves(curves);
 
     initializeOpenGLFunctions();
-    glClearColor(0, 0, 0, 1);
     glEnable(GL_MULTISAMPLE);
     //    glEnable(GL_BLEND);
     //    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    mBezierContourRenderer = new BezierContourRenderer;
-    mInitialized = mBezierContourRenderer->initialize();
+    mContourRenderer = new ContourRenderer;
+    mInitialized = mContourRenderer->initialize();
 
-    if (!mInitialized)
-        qDebug() << this << "Could not initialize OpenGLWidget";
+#ifndef USE_QPAINTER
+    mControlPointRenderer = new ControlPointRenderer;
+    mBoundingBoxRenderer = new BoundingBoxRenderer;
+    mInitialized &= mControlPointRenderer->initialize();
+    mInitialized &= mBoundingBoxRenderer->initialize();
+#endif
 }
+
 void OpenGLWidget::paintGL()
 {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -81,7 +102,7 @@ void OpenGLWidget::paintGL()
     if (!mInitialized)
         return;
 
-    mBezierContourRenderer->render(mCurveContainer->getCurves(), highlightSelectedCurve());
+    mContourRenderer->render(mCurveContainer->getCurves(), highlightSelectedCurve());
 
     float pixelRatio = QPaintDevice::devicePixelRatioF();
     QOpenGLPaintDevice device(width() * pixelRatio, height() * pixelRatio);
@@ -96,6 +117,9 @@ void OpenGLWidget::paintGL()
     case ModeWidget::Add:
     case ModeWidget::Select: {
         if (selectedCurve) {
+#ifndef USE_QPAINTER
+            mControlPointRenderer->render(selectedCurve);
+#else
             QVector<ControlPoint *> controlPoints = selectedCurve->getControlPoints();
 
             for (int j = 0; j < controlPoints.size(); ++j) {
@@ -113,12 +137,15 @@ void OpenGLWidget::paintGL()
                 painter.setBrush(QColor(240, 240, 240));
                 painter.drawEllipse(center, innerRadius, innerRadius);
             }
-
-            break;
+#endif
         }
+        break;
     }
     case ModeWidget::Move: {
         if (selectedCurve) {
+#ifndef USE_QPAINTER
+            mBoundingBoxRenderer->render(selectedCurve);
+#else
             // Draw bounding box
             QRectF boundingBox = mapToGui(selectedCurve->getBoundingBox());
             QPen dashedPen;
@@ -151,6 +178,7 @@ void OpenGLWidget::paintGL()
             for (int i = 0; i < 4; ++i) {
                 painter.drawRect(mHandles[i]);
             }
+#endif
         }
         break;
     }
@@ -197,9 +225,6 @@ void OpenGLWidget::mousePressEvent(QMouseEvent *event)
 
         mMousePressedOnCurve = selectedCurve ? true : false;
         mCurveContainer->setSelectedCurve(selectedCurve);
-
-        //            if (mSelectedControlPoint)
-        //                setSelectedControlPoint(nullptr);
         break;
     }
     case ModeWidget::Add: {
@@ -254,7 +279,7 @@ void OpenGLWidget::mousePressEvent(QMouseEvent *event)
     update();
 }
 
-void OpenGLWidget::mouseReleaseEvent(QMouseEvent *event)
+void OpenGLWidget::mouseReleaseEvent(QMouseEvent *)
 {
     switch (mMode) {
     case ModeWidget::Pan:
@@ -338,6 +363,8 @@ bool OpenGLWidget::highlightSelectedCurve()
     case ModeWidget::Pan:
         return false;
     }
+
+    return false;
 }
 
 void OpenGLWidget::updateCursor()
@@ -374,7 +401,7 @@ QVector2D OpenGLWidget::mapFromGui(QPointF position)
 QPointF OpenGLWidget::mapToGui(QVector2D position)
 {
     float pixelRatio = QPaintDevice::devicePixelRatioF();
-    QPointF result = (position.toPoint() - mCanvasRectangle.topLeft()) / mZoomRatio * pixelRatio;
+    QPointF result = (position.toPointF() - mCanvasRectangle.topLeft()) / mZoomRatio * pixelRatio;
     return result;
 }
 
@@ -413,7 +440,13 @@ void OpenGLWidget::zoom(float zoomRatio, QPoint mousePosition)
 
     QPointF newMousePositionOnCanvas = mapFromGui(mousePosition).toPoint();
     mCanvasRectangle.translate(mousePositionOnCanvas - newMousePositionOnCanvas);
-    mBezierContourRenderer->setZoomRatio(mZoomRatio);
+
+    mContourRenderer->setZoomRatio(mZoomRatio);
+
+#ifndef USE_QPAINTER
+    mControlPointRenderer->setZoomRatio(mZoomRatio);
+    mBoundingBoxRenderer->setZoomRatio(mZoomRatio);
+#endif
 
     emit zoomRatioChanged(mZoomRatio);
     updateProjectionMatrix();
@@ -431,7 +464,12 @@ void OpenGLWidget::updateProjectionMatrix()
                  -1,
                  1);
 
-    mBezierContourRenderer->setProjectionMatrix(matrix);
+    mContourRenderer->setProjectionMatrix(matrix);
+
+#ifndef USE_QPAINTER
+    mControlPointRenderer->setProjectionMatrix(matrix);
+    mBoundingBoxRenderer->setProjectionMatrix(matrix);
+#endif
 }
 
 void OpenGLWidget::onSelectedControlPointChanged(ControlPoint *selectedControlPoint)
@@ -462,8 +500,6 @@ void OpenGLWidget::onModeChanged(ModeWidget::Mode mode)
 
     mMousePressed = false;
     mMode = mode;
-
-    mBezierContourRenderer->setMode(mMode);
 
     update();
     emit dirty();
@@ -515,6 +551,6 @@ void OpenGLWidget::onZoomRatioChanged(float zoomRatio)
 
 void OpenGLWidget::onShowContoursStateChanged(bool state)
 {
-    mBezierContourRenderer->setShowContours(state);
+    mContourRenderer->setShowContours(state);
     update();
 }

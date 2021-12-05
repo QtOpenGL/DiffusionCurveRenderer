@@ -6,6 +6,8 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
 
+#include <Renderers/Base/Ticks.h>
+
 class LineRenderer : protected QOpenGLFunctions
 {
 public:
@@ -31,10 +33,10 @@ public:
 
 private:
     QOpenGLShaderProgram *mShader;
-    QOpenGLVertexArrayObject mRareTicksVertexArray;
-    QOpenGLVertexArrayObject mDenseTicksVertexArray;
-    QOpenGLBuffer mRareTicksBuffer;
-    QOpenGLBuffer mDenseTicksBuffer;
+
+    Ticks *mDenseTicks;
+    Ticks *mRareTicks;
+
     QMatrix4x4 mProjectionMatrix;
 
     int mProjectionMatrixLocation;
@@ -48,12 +50,6 @@ private:
     int mGapLengthLocation;
     int mRareTicksDeltaLocation;
     int mDenseTicksDeltaLocation;
-
-    QVector<float> mRareTicks;
-    QVector<float> mDenseTicks;
-
-    float mRareTicksDelta;
-    float mDenseTicksDelta;
 };
 
 #endif // LINERENDERER_H

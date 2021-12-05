@@ -1,32 +1,33 @@
-#include "BezierContourRenderer.h"
+#include "ContourRenderer.h"
 
-BezierContourRenderer::BezierContourRenderer()
+ContourRenderer::ContourRenderer()
     : mShader(nullptr)
-    , mMode(ModeWidget::Select)
+    , mTicks(nullptr)
     , mZoomRatio(1.0f)
     , mShowContours(true)
     , mInitialized(false)
 {}
 
-BezierContourRenderer::~BezierContourRenderer()
+ContourRenderer::~ContourRenderer()
 {
-    mTicksBuffer.destroy();
-    mTicksVertexArray.destroy();
-
     if (mShader)
         delete mShader;
 
+    if (mTicks)
+        delete mTicks;
+
     mShader = nullptr;
+    mTicks = nullptr;
 }
 
-bool BezierContourRenderer::initialize()
+bool ContourRenderer::initialize()
 {
     initializeOpenGLFunctions();
     mShader = new QOpenGLShaderProgram;
 
-    if (!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Bezier/Contour/VertexShader.vert")
-        || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Bezier/Contour/FragmentShader.frag")
-        || !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Bezier/Contour/GeometryShader.geom") || !mShader->link()
+    if (!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Contour/VertexShader.vert")
+        || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Contour/FragmentShader.frag")
+        || !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Contour/GeometryShader.geom") || !mShader->link()
         || !mShader->bind()) {
         qCritical() << this << mShader->log();
         return false;
@@ -50,30 +51,13 @@ bool BezierContourRenderer::initialize()
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
     // Ticks
-    mTicks = QVector<float>(200, 0.0);
-    for (int i = 0; i < mTicks.size(); ++i)
-        mTicks[i] = i / static_cast<float>(mTicks.size());
-
-    mTicksDelta = 1.0f / static_cast<float>(mTicks.size());
-
-    // VAO and VBO
-    mTicksVertexArray.create();
-    mTicksVertexArray.bind();
-
-    mTicksBuffer.create();
-    mTicksBuffer.bind();
-    mTicksBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
-    mTicksBuffer.allocate(mTicks.constData(), mTicks.size() * sizeof(GLfloat));
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, 0, nullptr);
-    mTicksBuffer.release();
-
-    mTicksVertexArray.release();
+    mTicks = new Ticks(0, 1, 200);
+    mTicks->create();
 
     return mInitialized = true;
 }
 
-void BezierContourRenderer::render(QVector<Curve *> curves, bool highlightSelectedCurve)
+void ContourRenderer::render(QVector<Curve *> curves, bool highlightSelectedCurve)
 {
     if (!mInitialized)
         return;
@@ -85,16 +69,16 @@ void BezierContourRenderer::render(QVector<Curve *> curves, bool highlightSelect
         if (curve->selected())
             render(curve, QVector4D(0, 0, 0, 1));
         else if (mShowContours)
-            render(curve, highlightSelectedCurve ? QVector4D(0.9, 0.9, 0.9, 1) : QVector4D(0, 0, 0, 1));
+            render(curve, highlightSelectedCurve ? QVector4D(0.9f, 0.9f, 0.9f, 1.0f) : QVector4D(0.0f, 0.0f, 0.0f, 1.0f));
     }
 }
 
-void BezierContourRenderer::setProjectionMatrix(const QMatrix4x4 &newMatrix)
+void ContourRenderer::setProjectionMatrix(const QMatrix4x4 &newMatrix)
 {
     mProjectionMatrix = newMatrix;
 }
 
-void BezierContourRenderer::render(Bezier *curve, QVector4D color)
+void ContourRenderer::render(Bezier *curve, QVector4D color)
 {
     mShader->bind();
 
@@ -108,17 +92,17 @@ void BezierContourRenderer::render(Bezier *curve, QVector4D color)
     mShader->setUniformValue(mProjectionMatrixLocation, mProjectionMatrix);
     mShader->setUniformValue(mColorLocation, color);
     mShader->setUniformValue(mThicknessLocation, curve->thickness());
-    mShader->setUniformValue(mTicksDeltaLocation, mTicksDelta);
+    mShader->setUniformValue(mTicksDeltaLocation, mTicks->ticksDelta());
     mShader->setUniformValue(mControlPointsCountLocation, (GLint) controlPoints.size());
 
-    mTicksVertexArray.bind();
-    glDrawArrays(GL_POINTS, 0, mTicks.size());
-    mTicksVertexArray.release();
+    mTicks->bind();
+    glDrawArrays(GL_POINTS, 0, mTicks->size());
+    mTicks->release();
 
     mShader->release();
 }
 
-QVector4D BezierContourRenderer::lighter(QVector4D color, float factor)
+QVector4D ContourRenderer::lighter(QVector4D color, float factor)
 {
     float x = color.x() + factor * (1 - color.x());
     float y = color.y() + factor * (1 - color.y());
@@ -135,17 +119,12 @@ QVector4D BezierContourRenderer::lighter(QVector4D color, float factor)
     return QVector4D(x, y, z, w);
 }
 
-void BezierContourRenderer::setShowContours(bool newShowContours)
+void ContourRenderer::setShowContours(bool newShowContours)
 {
     mShowContours = newShowContours;
 }
 
-void BezierContourRenderer::setZoomRatio(float newZoomRatio)
+void ContourRenderer::setZoomRatio(float newZoomRatio)
 {
     mZoomRatio = newZoomRatio;
-}
-
-void BezierContourRenderer::setMode(ModeWidget::Mode newMode)
-{
-    mMode = newMode;
 }

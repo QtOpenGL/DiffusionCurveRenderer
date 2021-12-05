@@ -1,12 +1,12 @@
 #ifndef RECTANGLERENDERER_H
 #define RECTANGLERENDERER_H
 
-#include <QOpenGLBuffer>
 #include <QOpenGLFunctions>
 #include <QOpenGLShaderProgram>
-#include <QOpenGLVertexArrayObject>
 #include <QVector4D>
 #include <QVector>
+
+#include <Renderers/Base/Ticks.h>
 
 class RectangleRenderer : protected QOpenGLFunctions
 {
@@ -29,6 +29,7 @@ public:
 
 private:
     QOpenGLShaderProgram *mShader;
+    Ticks *mTicks;
 
     int mProjectionMatrixLocation;
     int mFillColorLocation;
@@ -37,9 +38,8 @@ private:
     int mBorderColorLocation;
     int mWidthLocation;
     int mHeightLocation;
+    int mRectangleTopLeftLocation;
 
-    QOpenGLVertexArrayObject mVertexArray;
-    QOpenGLBuffer mBuffer;
     QMatrix4x4 mProjectionMatrix;
 };
 

@@ -7,7 +7,7 @@ Window::Window(QMainWindow *parent)
 
 Window::~Window() {}
 
-void Window::keyPressEvent(QKeyEvent *event) {}
+void Window::keyPressEvent(QKeyEvent *) {}
 
 void Window::setCentralWidget(CentralWidget *newCentralWidget)
 {

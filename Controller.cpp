@@ -35,8 +35,6 @@ Controller::Controller(QObject *parent)
     connect(mOpenGLWidget, &OpenGLWidget::dirty, mControlPointWidget, &ControlPointWidget::onDirty);
     connect(mOpenGLWidget, &OpenGLWidget::zoomRatioChanged, mZoomWidget, &ZoomWidget::onZoomRatioChanged);
 
-    connect(mZoomWidget, &ZoomWidget::zoomRatioChanged, mOpenGLWidget, &OpenGLWidget::onZoomRatioChanged);
-
     connect(mCurveWidget, &CurveWidget::dirty, mOpenGLWidget, &OpenGLWidget::onDirty);
     connect(mCurveWidget, &CurveWidget::action, mOpenGLWidget, &OpenGLWidget::onAction);
     connect(mCurveWidget, &CurveWidget::action, mCurveContainer, &CurveContainer::sortCurves);
@@ -48,6 +46,8 @@ Controller::Controller(QObject *parent)
     connect(mModeWidget, &ModeWidget::modeChanged, mOpenGLWidget, &OpenGLWidget::onModeChanged);
 
     connect(mCentralWidget, &CentralWidget::showContoursStateChanged, mOpenGLWidget, &OpenGLWidget::onShowContoursStateChanged);
+
+    connect(mZoomWidget, &ZoomWidget::zoomRatioChanged, mOpenGLWidget, &OpenGLWidget::onZoomRatioChanged);
 }
 
 CentralWidget *Controller::centralWidget() const

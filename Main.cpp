@@ -40,7 +40,6 @@ int main(int argc, char *argv[])
     }
 
     QSurfaceFormat format;
-    format.setDepthBufferSize(24);
     format.setSamples(16);
     format.setProfile(QSurfaceFormat::CoreProfile);
     QSurfaceFormat::setDefaultFormat(format);
@@ -52,8 +51,8 @@ int main(int argc, char *argv[])
     window->setWindowTitle("Diffusion Curve Renderer");
     window->show();
 
-    //    OpenGLTestWidget *widget = new OpenGLTestWidget;
-    //    widget->showMaximized();
+    OpenGLTestWidget *widget = new OpenGLTestWidget;
+    widget->showMaximized();
 
     return app.exec();
 }

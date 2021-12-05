@@ -311,13 +311,13 @@ void Curve::deselectAllControlPoints()
 float Curve::distanceToPoint(QVector2D point)
 {
     float minDistance = std::numeric_limits<float>::infinity();
-    float t = 0;
+    float t = 0.0f;
     for (int i = 0; i < 100; ++i) {
         float distance = valueAt(t).distanceToPoint(point);
         if (distance < minDistance)
             minDistance = distance;
 
-        t += 0.01;
+        t += 0.01f;
     }
 
     return minDistance;

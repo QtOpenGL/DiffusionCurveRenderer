@@ -1,9 +1,9 @@
 #version 330 core
-layout (location = 0) in float vertex;
+layout (location = 0) in float vs_Tick;
 
-out float tick;
+out float gs_Tick;
 
 void main()
 {
-    tick = vertex;
+    gs_Tick = vs_Tick;
 }

@@ -2,17 +2,19 @@
 
 RectangleRenderer::RectangleRenderer()
     : mShader(nullptr)
+    , mTicks(nullptr)
 {}
 
 RectangleRenderer::~RectangleRenderer()
 {
-    mBuffer.destroy();
-    mVertexArray.destroy();
-
     if (mShader)
         delete mShader;
 
+    if (mTicks)
+        delete mTicks;
+
     mShader = nullptr;
+    mTicks = nullptr;
 }
 
 bool RectangleRenderer::initialize()
@@ -37,23 +39,13 @@ bool RectangleRenderer::initialize()
     mBorderColorLocation = mShader->uniformLocation("borderColor");
     mWidthLocation = mShader->uniformLocation("width");
     mHeightLocation = mShader->uniformLocation("height");
+    mRectangleTopLeftLocation = mShader->uniformLocation("topLeft");
 
     //Bind locations
-    mShader->bindAttributeLocation("topLeft", 0);
+    mShader->bindAttributeLocation("vs_Tick", 0);
 
-    // Vertex Array and Buffer
-    mVertexArray.create();
-    mVertexArray.bind();
-
-    mBuffer.create();
-    mBuffer.bind();
-    mBuffer.setUsagePattern(QOpenGLBuffer::DynamicDraw);
-    mBuffer.allocate(sizeof(QVector2D));
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-    mBuffer.release();
-
-    mVertexArray.release();
+    mTicks = new Ticks(0, 1, 1);
+    mTicks->create();
 
     return true;
 }
@@ -73,14 +65,11 @@ void RectangleRenderer::render(const RenderParameters &params)
     mShader->setUniformValue(mBorderColorLocation, params.borderColor);
     mShader->setUniformValue(mWidthLocation, width);
     mShader->setUniformValue(mHeightLocation, height);
+    mShader->setUniformValue(mRectangleTopLeftLocation, topLeft);
 
-    mBuffer.bind();
-    mBuffer.write(0, &topLeft, sizeof(QVector2D));
-    mBuffer.release();
-
-    mVertexArray.bind();
-    glDrawArrays(GL_POINTS, 0, 1);
-    mVertexArray.release();
+    mTicks->bind();
+    glDrawArrays(GL_POINTS, 0, mTicks->size());
+    mTicks->release();
 }
 
 void RectangleRenderer::setProjectionMatrix(const QMatrix4x4 &newMatrix)

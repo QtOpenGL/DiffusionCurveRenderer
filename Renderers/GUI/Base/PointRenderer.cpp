@@ -3,17 +3,19 @@
 
 PointRenderer::PointRenderer()
     : mShader(nullptr)
+    , mTicks(nullptr)
 {}
 
 PointRenderer::~PointRenderer()
 {
-    mTicksBuffer.destroy();
-    mTicksVertexArray.destroy();
-
     if (mShader)
         delete mShader;
 
+    if (mTicks)
+        delete mTicks;
+
     mShader = nullptr;
+    mTicks = nullptr;
 }
 
 bool PointRenderer::initialize()
@@ -39,29 +41,11 @@ bool PointRenderer::initialize()
     mTicksDeltaLocation = mShader->uniformLocation("ticksDelta");
 
     //Bind locations
-    mShader->bindAttributeLocation("vertex", 0);
+    mShader->bindAttributeLocation("vs_Tick", 0);
 
     // Ticks
-    mTicks = QVector<float>(100, 0);
-    for (int i = 0; i < mTicks.size(); ++i)
-        mTicks[i] = (i * 2 * M_PI) / static_cast<float>(mTicks.size());
-
-    mTicksDelta = (2 * M_PI) / static_cast<float>(mTicks.size());
-
-    // Vertex Array and Buffer
-
-    mTicksVertexArray.create();
-    mTicksVertexArray.bind();
-
-    mTicksBuffer.create();
-    mTicksBuffer.bind();
-    mTicksBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
-    mTicksBuffer.allocate(mTicks.constData(), mTicks.size() * sizeof(GLfloat));
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, 0, nullptr);
-    mTicksBuffer.release();
-
-    mTicksVertexArray.release();
+    mTicks = new Ticks(0, 2 * static_cast<float>(M_PI), 100);
+    mTicks->create();
 
     return true;
 }
@@ -76,11 +60,11 @@ void PointRenderer::render(const RenderParameters &params)
     mShader->setUniformValue(mOuterRadiusLocation, params.outerRadius);
     mShader->setUniformValue(mInnerColorLocation, params.innerColor);
     mShader->setUniformValue(mOuterColorLocation, params.outerColor);
-    mShader->setUniformValue(mTicksDeltaLocation, mTicksDelta);
+    mShader->setUniformValue(mTicksDeltaLocation, mTicks->ticksDelta());
 
-    mTicksVertexArray.bind();
-    glDrawArrays(GL_POINTS, 0, mTicks.size());
-    mTicksVertexArray.release();
+    mTicks->bind();
+    glDrawArrays(GL_POINTS, 0, mTicks->size());
+    mTicks->release();
 
     mShader->release();
 }

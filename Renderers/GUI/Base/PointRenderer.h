@@ -7,6 +7,8 @@
 #include <QOpenGLVertexArrayObject>
 #include <QVector2D>
 
+#include <Renderers/Base/Ticks.h>
+
 class PointRenderer : protected QOpenGLFunctions
 {
 public:
@@ -28,8 +30,7 @@ public:
 
 private:
     QOpenGLShaderProgram *mShader;
-    QOpenGLVertexArrayObject mTicksVertexArray;
-    QOpenGLBuffer mTicksBuffer;
+    Ticks *mTicks;
 
     int mProjectionMatrixLocation;
     int mPointLocation;
@@ -40,9 +41,6 @@ private:
     int mTicksDeltaLocation;
 
     QMatrix4x4 mProjectionMatrix;
-
-    QVector<float> mTicks;
-    float mTicksDelta;
 };
 
 #endif // POINTRENDERER_H

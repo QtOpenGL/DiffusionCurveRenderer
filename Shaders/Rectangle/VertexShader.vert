@@ -1,7 +1,9 @@
 #version 330 core
-layout (location = 0) in vec2 topLeft;
+layout (location = 0) in float vs_Tick;
+
+out float gs_Tick;
 
 void main()
 {
-    gl_Position = vec4(topLeft, 0, 1);
+    gs_Tick = vs_Tick;
 }

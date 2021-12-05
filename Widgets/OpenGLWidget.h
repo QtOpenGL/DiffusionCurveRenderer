@@ -10,9 +10,13 @@
 #include <QPen>
 #include <QWheelEvent>
 
+#include <Renderers/Contour/ContourRenderer.h>
+
+#include <Renderers/GUI/BoundingBoxRenderer.h>
+#include <Renderers/GUI/ControlPointRenderer.h>
+
 #include "CurveWidget.h"
 #include "ModeWidget.h"
-#include <Renderers/Curve/BezierContourRenderer.h>
 
 class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -59,9 +63,8 @@ protected:
     QRectF mapToGui(const QRectF &rect);
 
 private:
-    BezierContourRenderer *mBezierContourRenderer;
+    ContourRenderer *mContourRenderer;
     CurveContainer *mCurveContainer;
-
     bool mInitialized;
 
     ModeWidget::Mode mMode;
@@ -74,6 +77,11 @@ private:
     QRectF mCanvasRectangle;
 
     QRectF mHandles[4];
+
+#ifndef USE_QPAINTER
+    ControlPointRenderer *mControlPointRenderer;
+    BoundingBoxRenderer *mBoundingBoxRenderer;
+#endif
 };
 
 #endif // OPENGLWIDGET_H

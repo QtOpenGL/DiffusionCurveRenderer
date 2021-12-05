@@ -1,4 +1,4 @@
-#version 330 core
+#version 430 core
 
 out vec4 out_Color;
 in vec4 fs_Color;

@@ -1,11 +1,9 @@
 #ifndef BOUNDINGBOXRENDERER_H
 #define BOUNDINGBOXRENDERER_H
 
-#include "LineRenderer.h"
-#include "RectangleRenderer.h"
-
 #include <Curves/Curve.h>
-#include <Widgets/ModeWidget.h>
+#include <Renderers/GUI/Base/LineRenderer.h>
+#include <Renderers/GUI/Base/RectangleRenderer.h>
 
 class BoundingBoxRenderer
 {
@@ -17,15 +15,11 @@ public:
     void render(Curve *curve);
     void setProjectionMatrix(const QMatrix4x4 &newMatrix);
 
-    ModeWidget::Mode mode() const;
-    void setMode(ModeWidget::Mode newMode);
-    float zoomRatio() const;
     void setZoomRatio(float newZoomRatio);
 
 private:
     RectangleRenderer *mRectangleRenderer;
     LineRenderer *mLineRenderer;
-    ModeWidget::Mode mMode;
     float mZoomRatio;
 };
 

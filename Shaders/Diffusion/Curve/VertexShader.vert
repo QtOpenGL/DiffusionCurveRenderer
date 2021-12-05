@@ -1,4 +1,4 @@
-#version 330 core
+#version 430 core
 layout (location = 0) in float vs_Tick;
 
 out float gs_Tick;

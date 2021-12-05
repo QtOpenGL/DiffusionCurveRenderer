@@ -7,19 +7,18 @@
 #include <QOpenGLVertexArrayObject>
 
 #include <Curves/Bezier.h>
+#include <Renderers/Base/Ticks.h>
 #include <Widgets/ModeWidget.h>
 
-class BezierContourRenderer : protected QOpenGLExtraFunctions
+class ContourRenderer : protected QOpenGLExtraFunctions
 {
 public:
-    BezierContourRenderer();
-    ~BezierContourRenderer();
+    ContourRenderer();
+    ~ContourRenderer();
 
     bool initialize();
     void render(QVector<Curve *> curves, bool highlightSelectedCurve);
     void setProjectionMatrix(const QMatrix4x4 &newMatrix);
-
-    void setMode(ModeWidget::Mode newMode);
     void setZoomRatio(float newZoomRatio);
     void setShowContours(bool newShowContours);
 
@@ -28,6 +27,7 @@ private:
     QVector4D lighter(QVector4D color, float factor); // 0 < factor < 1
 
     QOpenGLShaderProgram *mShader;
+    Ticks *mTicks;
 
     int mProjectionMatrixLocation;
     int mThicknessLocation;
@@ -35,19 +35,12 @@ private:
     int mTicksDeltaLocation;
     int mControlPointsCountLocation;
 
-    QOpenGLVertexArrayObject mTicksVertexArray;
-    QOpenGLBuffer mTicksBuffer;
     GLuint mControlPointsBuffer;
 
     QMatrix4x4 mProjectionMatrix;
 
-    QVector<float> mTicks;
-    float mTicksDelta;
-
-    ModeWidget::Mode mMode;
     float mZoomRatio;
     bool mShowContours;
-
     bool mInitialized;
 };
 

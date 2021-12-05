@@ -2,20 +2,24 @@
 
 LineRenderer::LineRenderer()
     : mShader(nullptr)
+    , mDenseTicks(nullptr)
+    , mRareTicks(nullptr)
 {}
 
 LineRenderer::~LineRenderer()
 {
-    mRareTicksBuffer.destroy();
-    mRareTicksVertexArray.destroy();
-
-    mDenseTicksBuffer.destroy();
-    mDenseTicksVertexArray.destroy();
-
     if (mShader)
         delete mShader;
 
+    if (mDenseTicks)
+        delete mDenseTicks;
+
+    if (mRareTicks)
+        delete mRareTicks;
+
     mShader = nullptr;
+    mDenseTicks = nullptr;
+    mRareTicks = nullptr;
 }
 
 bool LineRenderer::initialize()
@@ -45,51 +49,14 @@ bool LineRenderer::initialize()
     mGapLengthLocation = mShader->uniformLocation("gapLength");
 
     // Vertex Attribute Location
-    mShader->bindAttributeLocation("vertex", 0);
+    mShader->bindAttributeLocation("vs_Tick", 0);
 
-    // Rare Ticks
-    {
-        mRareTicksVertexArray.create();
-        mRareTicksVertexArray.bind();
+    // Ticks
+    mRareTicks = new Ticks(0, 1, 10);
+    mRareTicks->create();
 
-        mRareTicks = QVector<float>(10, 0);
-        for (int i = 0; i < mRareTicks.size(); i++)
-            mRareTicks[i] = static_cast<float>(i) / mRareTicks.size();
-
-        mRareTicksDelta = 1.0f / mRareTicks.size();
-
-        mRareTicksBuffer.create();
-        mRareTicksBuffer.bind();
-        mRareTicksBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
-        mRareTicksBuffer.allocate(mRareTicks.constData(), mRareTicks.size() * sizeof(GL_FLOAT));
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, 0, nullptr);
-        mRareTicksBuffer.release();
-
-        mRareTicksVertexArray.release();
-    }
-
-    // Dense Ticks
-    {
-        mDenseTicksVertexArray.create();
-        mDenseTicksVertexArray.bind();
-
-        mDenseTicks = QVector<float>(1000, 0);
-        for (int i = 0; i < mDenseTicks.size(); i++)
-            mDenseTicks[i] = static_cast<float>(i) / mDenseTicks.size();
-
-        mDenseTicksDelta = 1.0f / mDenseTicks.size();
-
-        mDenseTicksBuffer.create();
-        mDenseTicksBuffer.bind();
-        mDenseTicksBuffer.setUsagePattern(QOpenGLBuffer::StaticDraw);
-        mDenseTicksBuffer.allocate(mDenseTicks.constData(), mDenseTicks.size() * sizeof(GL_FLOAT));
-        glEnableVertexAttribArray(0);
-        glVertexAttribPointer(0, 1, GL_FLOAT, GL_FALSE, 0, nullptr);
-        mDenseTicksBuffer.release();
-
-        mDenseTicksVertexArray.release();
-    }
+    mDenseTicks = new Ticks(0, 1, 1000);
+    mDenseTicks->create();
 
     return true;
 }
@@ -99,8 +66,8 @@ void LineRenderer::render(const RenderParameters &params)
     mShader->bind();
 
     mShader->setUniformValue(mProjectionMatrixLocation, mProjectionMatrix);
-    mShader->setUniformValue(mRareTicksDeltaLocation, mRareTicksDelta);
-    mShader->setUniformValue(mDenseTicksDeltaLocation, mDenseTicksDelta);
+    mShader->setUniformValue(mRareTicksDeltaLocation, mRareTicks->ticksDelta());
+    mShader->setUniformValue(mDenseTicksDeltaLocation, mDenseTicks->ticksDelta());
 
     mShader->setUniformValue(mStartingPointLocation, params.startingPoint);
     mShader->setUniformValue(mEndPointLocation, params.endPoint);
@@ -112,14 +79,14 @@ void LineRenderer::render(const RenderParameters &params)
     mShader->setUniformValue(mGapLengthLocation, params.gapLength);
 
     if (params.lineStyle == LineStyle::Solid) {
-        mRareTicksVertexArray.bind();
-        glDrawArrays(GL_POINTS, 0, mRareTicks.size());
-        mRareTicksVertexArray.release();
+        mRareTicks->bind();
+        glDrawArrays(GL_POINTS, 0, mRareTicks->size());
+        mRareTicks->release();
 
     } else if (params.lineStyle == LineStyle::Dashed) {
-        mDenseTicksVertexArray.bind();
-        glDrawArrays(GL_POINTS, 0, mDenseTicks.size());
-        mDenseTicksVertexArray.release();
+        mDenseTicks->bind();
+        glDrawArrays(GL_POINTS, 0, mDenseTicks->size());
+        mDenseTicks->release();
     }
 
     mShader->release();

@@ -18,9 +18,9 @@ uniform float rightColorPositions[64];
 uniform int rightColorsCount;
 
 
-out vec4 vertexColor;
+out vec4 fs_Color;
 
-in float tick[];
+in float gs_Tick[];
 
 
 float customPow(float x, float y)
@@ -121,23 +121,25 @@ vec4 rightColorAt(float t)
 void main()
 {
 
-    float t0 = tick[0];
+    float t0 = gs_Tick[0];
     float t1 = t0 + ticksDelta;
 
+
+
     gl_Position = projectionMatrix * vec4(valueAt(t0) + 0.5f * thickness * normalAt(t0), 0, 1);
-    vertexColor = rightColorAt(t0);
+    fs_Color = rightColorAt(t0);
     EmitVertex();
 
     gl_Position = projectionMatrix * vec4(valueAt(t0) - 0.5f * thickness * normalAt(t0), 0, 1);
-    vertexColor = leftColorAt(t0);
+    fs_Color = leftColorAt(t0);
     EmitVertex();
 
     gl_Position = projectionMatrix * vec4(valueAt(t1) + 0.5f * thickness * normalAt(t1), 0, 1);
-    vertexColor = rightColorAt(t1);
+    fs_Color = rightColorAt(t1);
     EmitVertex();
 
     gl_Position = projectionMatrix * vec4(valueAt(t1) - 0.5f * thickness * normalAt(t1), 0, 1);
-    vertexColor = leftColorAt(t1);
+    fs_Color = leftColorAt(t1);
     EmitVertex();
 
     EndPrimitive();
