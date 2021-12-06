@@ -18,7 +18,7 @@ PointRenderer::~PointRenderer()
     mTicks = nullptr;
 }
 
-bool PointRenderer::initialize()
+bool PointRenderer::init()
 {
     initializeOpenGLFunctions();
 
@@ -27,7 +27,7 @@ bool PointRenderer::initialize()
     if (!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Point/VertexShader.vert")
         || !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Point/GeometryShader.geom")
         || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Point/FragmentShader.frag") || !mShader->link() || !mShader->bind()) {
-        qCritical() << this << mShader->log();
+        qCritical() << mShader->log();
         return false;
     }
 
@@ -50,16 +50,16 @@ bool PointRenderer::initialize()
     return true;
 }
 
-void PointRenderer::render(const RenderParameters &params)
+void PointRenderer::render(const Parameters &parameters, const QMatrix4x4 &projectionMatrix)
 {
     mShader->bind();
 
-    mShader->setUniformValue(mProjectionMatrixLocation, mProjectionMatrix);
-    mShader->setUniformValue(mPointLocation, params.point);
-    mShader->setUniformValue(mInnerRadiusLocation, params.innerRadius);
-    mShader->setUniformValue(mOuterRadiusLocation, params.outerRadius);
-    mShader->setUniformValue(mInnerColorLocation, params.innerColor);
-    mShader->setUniformValue(mOuterColorLocation, params.outerColor);
+    mShader->setUniformValue(mProjectionMatrixLocation, projectionMatrix);
+    mShader->setUniformValue(mPointLocation, parameters.point);
+    mShader->setUniformValue(mInnerRadiusLocation, parameters.innerRadius);
+    mShader->setUniformValue(mOuterRadiusLocation, parameters.outerRadius);
+    mShader->setUniformValue(mInnerColorLocation, parameters.innerColor);
+    mShader->setUniformValue(mOuterColorLocation, parameters.outerColor);
     mShader->setUniformValue(mTicksDeltaLocation, mTicks->ticksDelta());
 
     mTicks->bind();
@@ -67,9 +67,4 @@ void PointRenderer::render(const RenderParameters &params)
     mTicks->release();
 
     mShader->release();
-}
-
-void PointRenderer::setProjectionMatrix(const QMatrix4x4 &newMatrix)
-{
-    mProjectionMatrix = newMatrix;
 }

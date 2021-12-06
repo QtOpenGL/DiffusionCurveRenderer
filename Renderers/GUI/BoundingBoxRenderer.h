@@ -11,15 +11,17 @@ public:
     BoundingBoxRenderer();
     ~BoundingBoxRenderer();
 
-    bool initialize();
-    void render(Curve *curve);
-    void setProjectionMatrix(const QMatrix4x4 &newMatrix);
-
+    bool init();
+    void render(Curve *curve, const QMatrix4x4 &projectionMatrix);
     void setZoomRatio(float newZoomRatio);
 
 private:
     RectangleRenderer *mRectangleRenderer;
     LineRenderer *mLineRenderer;
+
+    LineRenderer::Parameters mLineRendererParameters;
+    RectangleRenderer::Parameters mRectangleRendererParameters;
+
     float mZoomRatio;
 };
 

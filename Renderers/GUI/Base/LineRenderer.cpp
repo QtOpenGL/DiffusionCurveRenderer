@@ -22,7 +22,7 @@ LineRenderer::~LineRenderer()
     mRareTicks = nullptr;
 }
 
-bool LineRenderer::initialize()
+bool LineRenderer::init()
 {
     initializeOpenGLFunctions();
 
@@ -31,7 +31,7 @@ bool LineRenderer::initialize()
     if (!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Line/VertexShader.vert")
         || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Line/FragmentShader.frag")
         || !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Line/GeometryShader.geom") || !mShader->link() || !mShader->bind()) {
-        qCritical() << this << mShader->log();
+        qCritical() << mShader->log();
         return false;
     }
 
@@ -61,38 +61,33 @@ bool LineRenderer::initialize()
     return true;
 }
 
-void LineRenderer::render(const RenderParameters &params)
+void LineRenderer::render(const Parameters &parameters, const QMatrix4x4 &projectionMatrix)
 {
     mShader->bind();
 
-    mShader->setUniformValue(mProjectionMatrixLocation, mProjectionMatrix);
+    mShader->setUniformValue(mProjectionMatrixLocation, projectionMatrix);
     mShader->setUniformValue(mRareTicksDeltaLocation, mRareTicks->ticksDelta());
     mShader->setUniformValue(mDenseTicksDeltaLocation, mDenseTicks->ticksDelta());
 
-    mShader->setUniformValue(mStartingPointLocation, params.startingPoint);
-    mShader->setUniformValue(mEndPointLocation, params.endPoint);
-    mShader->setUniformValue(mColorLocation, params.color);
-    mShader->setUniformValue(mThicknessLocation, params.thickness);
-    mShader->setUniformValue(mLineStyleLocation, params.lineStyle);
-    mShader->setUniformValue(mLineLengthLocation, params.startingPoint.distanceToPoint(params.endPoint));
-    mShader->setUniformValue(mDashLengthLocation, params.dashLength);
-    mShader->setUniformValue(mGapLengthLocation, params.gapLength);
+    mShader->setUniformValue(mStartingPointLocation, parameters.startingPoint);
+    mShader->setUniformValue(mEndPointLocation, parameters.endPoint);
+    mShader->setUniformValue(mColorLocation, parameters.color);
+    mShader->setUniformValue(mThicknessLocation, parameters.thickness);
+    mShader->setUniformValue(mLineStyleLocation, parameters.lineStyle);
+    mShader->setUniformValue(mLineLengthLocation, parameters.startingPoint.distanceToPoint(parameters.endPoint));
+    mShader->setUniformValue(mDashLengthLocation, parameters.dashLength);
+    mShader->setUniformValue(mGapLengthLocation, parameters.gapLength);
 
-    if (params.lineStyle == LineStyle::Solid) {
+    if (parameters.lineStyle == LineStyle::Solid) {
         mRareTicks->bind();
         glDrawArrays(GL_POINTS, 0, mRareTicks->size());
         mRareTicks->release();
 
-    } else if (params.lineStyle == LineStyle::Dashed) {
+    } else if (parameters.lineStyle == LineStyle::Dashed) {
         mDenseTicks->bind();
         glDrawArrays(GL_POINTS, 0, mDenseTicks->size());
         mDenseTicks->release();
     }
 
     mShader->release();
-}
-
-void LineRenderer::setProjectionMatrix(const QMatrix4x4 &newMatrix)
-{
-    mProjectionMatrix = newMatrix;
 }

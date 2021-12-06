@@ -1,7 +1,5 @@
 #include "ScreenRenderer.h"
 
-#include <QOpenGLFramebufferObject>
-
 ScreenRenderer::ScreenRenderer()
     : mShader(nullptr)
     , mQuads(nullptr)
@@ -20,7 +18,7 @@ ScreenRenderer::~ScreenRenderer()
     }
 }
 
-bool ScreenRenderer::initialize()
+bool ScreenRenderer::init()
 {
     initializeOpenGLFunctions();
     mShader = new QOpenGLShaderProgram;
@@ -33,8 +31,8 @@ bool ScreenRenderer::initialize()
         return false;
     }
 
-    mFramebufferToTargetWidthRatioLocation = mShader->uniformLocation("frameBufferToTargetWidthRatio");
-    mFramebufferToTargetHeightRatioLocation = mShader->uniformLocation("frameBufferToTargetHeightRatio");
+    mWidthRatioLocation = mShader->uniformLocation("widthRatio");
+    mHeightRatioLocation = mShader->uniformLocation("heightRatio");
 
     mShader->bindAttributeLocation("vs_Position", 0);
     mShader->bindAttributeLocation("vs_TextureCoords", 1);
@@ -46,22 +44,17 @@ bool ScreenRenderer::initialize()
     return true;
 }
 
-void ScreenRenderer::render(GLuint textureId, float framebufferToTargetWidthRatio, float framebufferToTargetHeightRatio)
+void ScreenRenderer::render(const Parameters &parameters)
 {
     mShader->bind();
 
-    QOpenGLFramebufferObject::bindDefault();
-    glBindTexture(GL_TEXTURE_2D, textureId);
-    glClearColor(0, 1, 0, 1);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glBindTexture(GL_TEXTURE_2D, parameters.texture);
 
-    mShader->setUniformValue(mFramebufferToTargetWidthRatioLocation, framebufferToTargetWidthRatio);
-    mShader->setUniformValue(mFramebufferToTargetHeightRatioLocation, framebufferToTargetHeightRatio);
+    mShader->setUniformValue(mWidthRatioLocation, parameters.widthRatio);
+    mShader->setUniformValue(mHeightRatioLocation, parameters.heightRatio);
 
     mQuads->bind();
-    glDisable(GL_DEPTH_TEST);
     glDrawArrays(GL_TRIANGLES, 0, 6);
-    glEnable(GL_DEPTH_TEST);
     mQuads->release();
 
     mShader->release();

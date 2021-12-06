@@ -15,7 +15,7 @@ public:
     PointRenderer();
     ~PointRenderer();
 
-    struct RenderParameters
+    struct Parameters
     {
         QVector2D point;
         float innerRadius;
@@ -24,9 +24,8 @@ public:
         QVector4D outerColor;
     };
 
-    bool initialize();
-    void render(const RenderParameters &params);
-    void setProjectionMatrix(const QMatrix4x4 &newMatrix);
+    bool init();
+    void render(const Parameters &parameters, const QMatrix4x4 &projectionMatrix);
 
 private:
     QOpenGLShaderProgram *mShader;
@@ -39,8 +38,6 @@ private:
     int mInnerRadiusLocation;
     int mOuterRadiusLocation;
     int mTicksDeltaLocation;
-
-    QMatrix4x4 mProjectionMatrix;
 };
 
 #endif // POINTRENDERER_H

@@ -28,7 +28,7 @@ void CurveContainer::addCurves(const QVector<Curve *> curves)
     sortCurves();
 }
 
-QVector<Curve *> &CurveContainer::getCurves()
+QVector<Curve *> &CurveContainer::getCurves() const
 {
     return mCurves;
 }

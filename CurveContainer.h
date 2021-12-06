@@ -13,7 +13,7 @@ public:
     void addCurve(Curve *curve);
     void addCurves(const QVector<Curve *> curves);
 
-    QVector<Curve *> &getCurves();
+    QVector<Curve *> &getCurves() const;
 
     Curve *selectedCurve();
     void setSelectedCurve(Curve *selectedCurve);
@@ -37,7 +37,7 @@ signals:
     void selectedControlPointChanged(ControlPoint *selectedControlPoint);
 
 private:
-    QVector<Curve *> mCurves;
+    mutable QVector<Curve *> mCurves;
     Curve *mSelectedCurve;
     ControlPoint *mSelectedControlPoint;
 };

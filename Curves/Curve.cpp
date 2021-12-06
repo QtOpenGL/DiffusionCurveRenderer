@@ -3,7 +3,9 @@
 #include <QRectF>
 
 Curve::Curve()
-    : mThickness(4)
+    : mCurveColor(0, 0, 0, 1)
+    , mShowContour(true)
+    , mThickness(4)
     , mSelected(false)
     , mZ(0)
 {}
@@ -388,6 +390,26 @@ int Curve::z() const
 void Curve::setZ(int newZ)
 {
     mZ = newZ;
+}
+
+const QVector4D &Curve::curveColor() const
+{
+    return mCurveColor;
+}
+
+void Curve::setCurveColor(const QVector4D &newCurveColor)
+{
+    mCurveColor = newCurveColor;
+}
+
+bool Curve::showContour() const
+{
+    return mShowContour;
+}
+
+void Curve::setShowContour(bool newShowContour)
+{
+    mShowContour = newShowContour;
 }
 
 void Curve::updateControlPointIndices()

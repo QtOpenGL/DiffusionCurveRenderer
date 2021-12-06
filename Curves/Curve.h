@@ -62,10 +62,21 @@ public:
     int z() const;
     void setZ(int newZ);
 
+    const QVector4D &curveColor() const;
+    void setCurveColor(const QVector4D &newCurveColor);
+
+    bool showContour() const;
+    void setShowContour(bool newShowContour);
+
 protected:
     QVector<ControlPoint *> mControlPoints;
+
     QVector<ColorPoint *> mLeftColorPoints;
     QVector<ColorPoint *> mRightColorPoints;
+
+    QVector4D mCurveColor;
+    bool mShowContour;
+
     float mThickness;
     bool mSelected;
     int mZ;

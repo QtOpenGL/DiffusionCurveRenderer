@@ -9,9 +9,8 @@ uniform vec4 color;
 uniform float ticksDelta;
 uniform int controlPointsCount;
 
-out vec4 vertexColor;
-
-in float tick[];
+in float gs_Tick[];
+out vec4 fs_Color;
 
 layout(std430, binding = 1) buffer ControlPointsBuffer
 {
@@ -88,23 +87,23 @@ vec2 normalAt(float t)
 void main()
 {
 
-    float t0 = tick[0];
+    float t0 = gs_Tick[0];
     float t1 = t0 + ticksDelta;
 
     gl_Position = projectionMatrix * vec4(valueAt(t0) + 0.5f * thickness * normalAt(t0), 0, 1);
-    vertexColor = color;
+    fs_Color = color;
     EmitVertex();
 
     gl_Position = projectionMatrix * vec4(valueAt(t0) - 0.5f * thickness * normalAt(t0), 0, 1);
-    vertexColor = color;
+    fs_Color = color;
     EmitVertex();
 
     gl_Position = projectionMatrix * vec4(valueAt(t1) + 0.5f * thickness * normalAt(t1), 0, 1);
-    vertexColor = color;
+    fs_Color = color;
     EmitVertex();
 
     gl_Position = projectionMatrix * vec4(valueAt(t1) - 0.5f * thickness * normalAt(t1), 0, 1);
-    vertexColor = color;
+    fs_Color = color;
     EmitVertex();
 
     EndPrimitive();

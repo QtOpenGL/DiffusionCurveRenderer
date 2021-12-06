@@ -13,13 +13,17 @@ ControlPointRenderer::~ControlPointRenderer()
     mPointRenderer = nullptr;
 }
 
-bool ControlPointRenderer::initialize()
+bool ControlPointRenderer::init()
 {
     mPointRenderer = new PointRenderer;
-    return mPointRenderer->initialize();
+
+    mPointRendererParameters.innerColor = QVector4D(240 / 255.0f, 240 / 255.0f, 240 / 255.0f, 1);
+    mPointRendererParameters.outerColor = QVector4D(120 / 255.0f, 120 / 255.0f, 120 / 255.0f, 0.75f);
+
+    return mPointRenderer->init();
 }
 
-void ControlPointRenderer::render(Curve *curve)
+void ControlPointRenderer::render(Curve *curve, const QMatrix4x4 &projectionMatrix)
 {
     if (curve == nullptr)
         return;
@@ -27,20 +31,11 @@ void ControlPointRenderer::render(Curve *curve)
     QVector<ControlPoint *> controlPoints = curve->getControlPoints();
 
     for (int j = 0; j < controlPoints.size(); ++j) {
-        PointRenderer::RenderParameters params;
-        params.point = controlPoints[j]->position;
-        params.innerRadius = mZoomRatio * (controlPoints[j]->selected ? 6 : 6);
-        params.outerRadius = mZoomRatio * (controlPoints[j]->selected ? 12 : 10);
-        params.innerColor = QVector4D(240 / 255.0f, 240 / 255.0f, 240 / 255.0f, 1);
-        params.outerColor = QVector4D(120 / 255.0f, 120 / 255.0f, 120 / 255.0f, 0.75f);
-
-        mPointRenderer->render(params);
+        mPointRendererParameters.point = controlPoints[j]->position;
+        mPointRendererParameters.innerRadius = mZoomRatio * (controlPoints[j]->selected ? 6 : 6);
+        mPointRendererParameters.outerRadius = mZoomRatio * (controlPoints[j]->selected ? 12 : 10);
+        mPointRenderer->render(mPointRendererParameters, projectionMatrix);
     }
-}
-
-void ControlPointRenderer::setProjectionMatrix(const QMatrix4x4 &newMatrix)
-{
-    mPointRenderer->setProjectionMatrix(newMatrix);
 }
 
 void ControlPointRenderer::setZoomRatio(float newZoomRatio)

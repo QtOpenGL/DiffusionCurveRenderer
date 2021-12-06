@@ -2,12 +2,8 @@
 
 #include <Curves/Bezier.h>
 
-DiffusionRenderer::DiffusionRenderer(float bufferWidth, float bufferHeight)
-    : mBufferWidth(bufferWidth)
-    , mBufferHeight(bufferHeight)
-    , mShader(nullptr)
-    , mMultisampleFramebuffer(nullptr)
-    , mDownsampledFramebuffer(nullptr)
+DiffusionRenderer::DiffusionRenderer()
+    : mShader(nullptr)
     , mTicks(nullptr)
 {}
 
@@ -16,37 +12,16 @@ DiffusionRenderer::~DiffusionRenderer()
     if (mShader)
         delete mShader;
 
-    if (mMultisampleFramebuffer)
-        delete mMultisampleFramebuffer;
-
-    if (mDownsampledFramebuffer)
-        delete mDownsampledFramebuffer;
-
     if (mTicks)
         delete mTicks;
 
     mShader = nullptr;
-    mMultisampleFramebuffer = nullptr;
-    mDownsampledFramebuffer = nullptr;
     mTicks = nullptr;
 }
 
-bool DiffusionRenderer::initialize()
+bool DiffusionRenderer::init()
 {
     initializeOpenGLFunctions();
-
-    mMultisampleFrambufferFormat.setAttachment(QOpenGLFramebufferObject::NoAttachment);
-    mMultisampleFrambufferFormat.setMipmap(true);
-    mMultisampleFrambufferFormat.setSamples(32);
-    mMultisampleFrambufferFormat.setTextureTarget(GL_TEXTURE_2D);
-    mMultisampleFrambufferFormat.setInternalTextureFormat(GL_RGBA8);
-    mMultisampleFramebuffer = new QOpenGLFramebufferObject(mBufferWidth, mBufferHeight, mMultisampleFrambufferFormat);
-
-    mDownsampledFrambufferFormat.setAttachment(QOpenGLFramebufferObject::NoAttachment);
-    mDownsampledFrambufferFormat.setMipmap(true);
-    mDownsampledFrambufferFormat.setTextureTarget(GL_TEXTURE_2D);
-    mDownsampledFrambufferFormat.setInternalTextureFormat(GL_RGBA8);
-    mDownsampledFramebuffer = new QOpenGLFramebufferObject(mBufferWidth, mBufferHeight, mDownsampledFrambufferFormat);
 
     mShader = new QOpenGLShaderProgram;
 
@@ -85,15 +60,12 @@ bool DiffusionRenderer::initialize()
     return true;
 }
 
-void DiffusionRenderer::render(const QVector<Curve *> &curves)
+void DiffusionRenderer::render(const QVector<Curve *> &curves, const QMatrix4x4 &projectionMatrix)
 {
     mShader->bind();
     mTicks->bind();
-    mMultisampleFramebuffer->bind();
-    glClearColor(1, 1, 1, 1);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    mShader->setUniformValue(mProjectionMatrixLocation, mProjectionMatrix);
+    mShader->setUniformValue(mProjectionMatrixLocation, projectionMatrix);
     mShader->setUniformValue(mTicksDeltaLocation, mTicks->ticksDelta());
 
     for (int i = 0; i < curves.size(); ++i) {
@@ -126,44 +98,6 @@ void DiffusionRenderer::render(const QVector<Curve *> &curves)
         glDrawArrays(GL_POINTS, 0, mTicks->size());
     }
 
-    //static int i = 0;
-    //mMultisampleFramebuffer->toImage().save(QString("MultisampleFramebuffer %1.png").arg(i));
-
-    QOpenGLFramebufferObject::blitFramebuffer(mDownsampledFramebuffer, mMultisampleFramebuffer);
-
-    //mDownsampledFramebuffer->toImage().save(QString("DownsampledFramebuffer %1.png").arg(i++));
-
-    //    QOpenGLFramebufferObject *target,
-    //    const QRect &targetRect,
-    //    QOpenGLFramebufferObject *source,
-    //    const QRect &sourceRect,
-    //    GLbitfield buffers,
-    //    GLenum filter,
-    //    int readColorAttachmentIndex,
-    //    int drawColorAttachmentIndex,
-    //    QOpenGLFramebufferObject::FramebufferRestorePolicy restorePolicy
-
-    mMultisampleFramebuffer->release();
     mTicks->release();
     mShader->release();
-}
-
-GLuint DiffusionRenderer::getTexture() const
-{
-    return mDownsampledFramebuffer->texture();
-}
-
-void DiffusionRenderer::setProjectionMatrix(const QMatrix4x4 &newProjectionMatrix)
-{
-    mProjectionMatrix = newProjectionMatrix;
-}
-
-float DiffusionRenderer::bufferWidth() const
-{
-    return mBufferWidth;
-}
-
-float DiffusionRenderer::bufferHeight() const
-{
-    return mBufferHeight;
 }

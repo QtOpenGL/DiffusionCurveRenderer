@@ -3,9 +3,6 @@
 ContourRenderer::ContourRenderer()
     : mShader(nullptr)
     , mTicks(nullptr)
-    , mZoomRatio(1.0f)
-    , mShowContours(true)
-    , mInitialized(false)
 {}
 
 ContourRenderer::~ContourRenderer()
@@ -20,7 +17,7 @@ ContourRenderer::~ContourRenderer()
     mTicks = nullptr;
 }
 
-bool ContourRenderer::initialize()
+bool ContourRenderer::init()
 {
     initializeOpenGLFunctions();
     mShader = new QOpenGLShaderProgram;
@@ -29,7 +26,7 @@ bool ContourRenderer::initialize()
         || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Contour/FragmentShader.frag")
         || !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Contour/GeometryShader.geom") || !mShader->link()
         || !mShader->bind()) {
-        qCritical() << this << mShader->log();
+        qCritical() << mShader->log();
         return false;
     }
 
@@ -41,7 +38,7 @@ bool ContourRenderer::initialize()
     mControlPointsCountLocation = mShader->uniformLocation("controlPointsCount");
 
     // Locations
-    mShader->bindAttributeLocation("vertex", 0);
+    mShader->bindAttributeLocation("vs_Tick", 0);
 
     // Shader Storage Buffer Object;
     glGenBuffers(1, &mControlPointsBuffer);
@@ -54,52 +51,40 @@ bool ContourRenderer::initialize()
     mTicks = new Ticks(0, 1, 200);
     mTicks->create();
 
-    return mInitialized = true;
+    return true;
 }
 
-void ContourRenderer::render(QVector<Curve *> curves, bool highlightSelectedCurve)
+void ContourRenderer::render(QVector<Curve *> curves, const QMatrix4x4 &projectionMatrix)
 {
-    if (!mInitialized)
-        return;
-
     for (int i = 0; i < curves.size(); ++i) {
         Bezier *curve = dynamic_cast<Bezier *>(curves[i]);
+
         if (curve == nullptr)
             continue;
-        if (curve->selected())
-            render(curve, QVector4D(0, 0, 0, 1));
-        else if (mShowContours)
-            render(curve, highlightSelectedCurve ? QVector4D(0.9f, 0.9f, 0.9f, 1.0f) : QVector4D(0.0f, 0.0f, 0.0f, 1.0f));
+
+        if (curve->showContour()) {
+            mShader->bind();
+
+            // Control Points Buffer
+            QVector<QVector2D> controlPoints = curve->getControlPointPositions();
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, mControlPointsBuffer);
+            glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(QVector2D) * controlPoints.size(), controlPoints.constData());
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+            // Uniform Variables
+            mShader->setUniformValue(mProjectionMatrixLocation, projectionMatrix);
+            mShader->setUniformValue(mColorLocation, curve->curveColor());
+            mShader->setUniformValue(mThicknessLocation, curve->thickness());
+            mShader->setUniformValue(mTicksDeltaLocation, mTicks->ticksDelta());
+            mShader->setUniformValue(mControlPointsCountLocation, (GLint) controlPoints.size());
+
+            mTicks->bind();
+            glDrawArrays(GL_POINTS, 0, mTicks->size());
+            mTicks->release();
+
+            mShader->release();
+        }
     }
-}
-
-void ContourRenderer::setProjectionMatrix(const QMatrix4x4 &newMatrix)
-{
-    mProjectionMatrix = newMatrix;
-}
-
-void ContourRenderer::render(Bezier *curve, QVector4D color)
-{
-    mShader->bind();
-
-    // Control Points Buffer
-    QVector<QVector2D> controlPoints = curve->getControlPointPositions();
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, mControlPointsBuffer);
-    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(QVector2D) * controlPoints.size(), controlPoints.constData());
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
-    // Uniform Variables
-    mShader->setUniformValue(mProjectionMatrixLocation, mProjectionMatrix);
-    mShader->setUniformValue(mColorLocation, color);
-    mShader->setUniformValue(mThicknessLocation, curve->thickness());
-    mShader->setUniformValue(mTicksDeltaLocation, mTicks->ticksDelta());
-    mShader->setUniformValue(mControlPointsCountLocation, (GLint) controlPoints.size());
-
-    mTicks->bind();
-    glDrawArrays(GL_POINTS, 0, mTicks->size());
-    mTicks->release();
-
-    mShader->release();
 }
 
 QVector4D ContourRenderer::lighter(QVector4D color, float factor)
@@ -117,14 +102,4 @@ QVector4D ContourRenderer::lighter(QVector4D color, float factor)
         z = 1;
 
     return QVector4D(x, y, z, w);
-}
-
-void ContourRenderer::setShowContours(bool newShowContours)
-{
-    mShowContours = newShowContours;
-}
-
-void ContourRenderer::setZoomRatio(float newZoomRatio)
-{
-    mZoomRatio = newZoomRatio;
 }

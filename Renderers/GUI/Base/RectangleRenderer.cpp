@@ -17,7 +17,7 @@ RectangleRenderer::~RectangleRenderer()
     mTicks = nullptr;
 }
 
-bool RectangleRenderer::initialize()
+bool RectangleRenderer::init()
 {
     initializeOpenGLFunctions();
 
@@ -27,7 +27,7 @@ bool RectangleRenderer::initialize()
         || !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Rectangle/GeometryShader.geom")
         || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Rectangle/FragmentShader.frag") || !mShader->link()
         || !mShader->bind()) {
-        qCritical() << this << mShader->log();
+        qCritical() << mShader->log();
         return false;
     }
 
@@ -50,19 +50,20 @@ bool RectangleRenderer::initialize()
     return true;
 }
 
-void RectangleRenderer::render(const RenderParameters &params)
+void RectangleRenderer::render(const Parameters &parameters, const QMatrix4x4 &projectionMatrix)
 {
-    QVector2D topLeft = QVector2D(params.rectangle.topLeft());
+    QVector2D topLeft = QVector2D(parameters.rectangle.topLeft());
 
-    float width = static_cast<float>(params.rectangle.width());
-    float height = static_cast<float>(params.rectangle.height());
+    float width = static_cast<float>(parameters.rectangle.width());
+    float height = static_cast<float>(parameters.rectangle.height());
 
     mShader->bind();
-    mShader->setUniformValue(mProjectionMatrixLocation, mProjectionMatrix);
-    mShader->setUniformValue(mFillColorLocation, params.fillColor);
-    mShader->setUniformValue(mBorderEnabledLocation, params.borderEnabled);
-    mShader->setUniformValue(mBorderWidthLocation, params.borderWidth);
-    mShader->setUniformValue(mBorderColorLocation, params.borderColor);
+
+    mShader->setUniformValue(mProjectionMatrixLocation, projectionMatrix);
+    mShader->setUniformValue(mFillColorLocation, parameters.fillColor);
+    mShader->setUniformValue(mBorderEnabledLocation, parameters.borderEnabled);
+    mShader->setUniformValue(mBorderWidthLocation, parameters.borderWidth);
+    mShader->setUniformValue(mBorderColorLocation, parameters.borderColor);
     mShader->setUniformValue(mWidthLocation, width);
     mShader->setUniformValue(mHeightLocation, height);
     mShader->setUniformValue(mRectangleTopLeftLocation, topLeft);
@@ -70,9 +71,6 @@ void RectangleRenderer::render(const RenderParameters &params)
     mTicks->bind();
     glDrawArrays(GL_POINTS, 0, mTicks->size());
     mTicks->release();
-}
 
-void RectangleRenderer::setProjectionMatrix(const QMatrix4x4 &newMatrix)
-{
-    mProjectionMatrix = newMatrix;
+    mShader->release();
 }

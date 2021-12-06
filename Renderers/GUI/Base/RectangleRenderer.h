@@ -14,7 +14,7 @@ public:
     RectangleRenderer();
     ~RectangleRenderer();
 
-    struct RenderParameters
+    struct Parameters
     {
         QRectF rectangle;
         QVector4D fillColor;
@@ -23,9 +23,8 @@ public:
         float borderWidth;
     };
 
-    bool initialize();
-    void render(const RenderParameters &params);
-    void setProjectionMatrix(const QMatrix4x4 &newMatrix);
+    bool init();
+    void render(const Parameters &parameters, const QMatrix4x4 &projectionMatrix);
 
 private:
     QOpenGLShaderProgram *mShader;
@@ -39,8 +38,6 @@ private:
     int mWidthLocation;
     int mHeightLocation;
     int mRectangleTopLeftLocation;
-
-    QMatrix4x4 mProjectionMatrix;
 };
 
 #endif // RECTANGLERENDERER_H

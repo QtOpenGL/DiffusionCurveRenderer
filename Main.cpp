@@ -1,7 +1,6 @@
 #include "Controller.h"
 #include "Window.h"
 
-#include <Widgets/OpenGLTestWidget.h>
 #include <QApplication>
 #include <QDebug>
 #include <QFile>
@@ -50,9 +49,6 @@ int main(int argc, char *argv[])
     window->initialize();
     window->setWindowTitle("Diffusion Curve Renderer");
     window->show();
-
-    OpenGLTestWidget *widget = new OpenGLTestWidget;
-    widget->showMaximized();
 
     return app.exec();
 }

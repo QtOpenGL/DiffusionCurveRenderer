@@ -18,10 +18,22 @@
 #include "CurveWidget.h"
 #include "ModeWidget.h"
 
+class RendererManager;
+
 class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
     Q_OBJECT
 public:
+    struct ProjectionParameters
+    {
+        float left;
+        float right;
+        float bottom;
+        float top;
+        float canvasWidth;
+        float canvasHeight;
+    };
+
     OpenGLWidget(QWidget *parent = nullptr);
     ~OpenGLWidget();
 
@@ -29,6 +41,7 @@ public:
     QSize sizeHint() const override;
 
     void setCurveContainer(CurveContainer *newCurveContainer);
+    void setRendererManager(RendererManager *newRendererManager);
 
 signals:
     void dirty();
@@ -52,20 +65,17 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void update();
-    bool highlightSelectedCurve();
-
-    void zoom(float zoomRatio, QPoint mousePosition);
-    void updateProjectionMatrix();
     void updateCursor();
+    void zoom(float zoomRatio, QPointF mousePosition);
 
-    QVector2D mapFromGui(QPointF position);
-    QPointF mapToGui(QVector2D position);
-    QRectF mapToGui(const QRectF &rect);
+    QVector2D mapFromGui(const QPointF &position) const;
+    QPointF mapToGui(const QVector2D &position) const;
+    QRectF mapToGui(const QRectF &rect) const;
 
 private:
-    ContourRenderer *mContourRenderer;
+    RendererManager *mRendererManager;
     CurveContainer *mCurveContainer;
-    bool mInitialized;
+    bool mInit;
 
     ModeWidget::Mode mMode;
 
@@ -74,14 +84,11 @@ private:
     QPointF mMousePosition;
 
     float mZoomRatio;
-    QRectF mCanvasRectangle;
+    ProjectionParameters *mProjectionParameters;
 
     QRectF mHandles[4];
 
-#ifndef USE_QPAINTER
-    ControlPointRenderer *mControlPointRenderer;
-    BoundingBoxRenderer *mBoundingBoxRenderer;
-#endif
+    const float mZoomStep;
 };
 
 #endif // OPENGLWIDGET_H

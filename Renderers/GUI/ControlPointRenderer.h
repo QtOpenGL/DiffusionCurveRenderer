@@ -10,14 +10,14 @@ public:
     ControlPointRenderer();
     ~ControlPointRenderer();
 
-    bool initialize();
-    void render(Curve *curve);
-
-    void setProjectionMatrix(const QMatrix4x4 &newMatrix);
+    bool init();
+    void render(Curve *curve, const QMatrix4x4 &projectionMatrix);
     void setZoomRatio(float newZoomRatio);
 
 private:
     PointRenderer *mPointRenderer;
+    PointRenderer::Parameters mPointRendererParameters;
+
     float mZoomRatio;
 };
 

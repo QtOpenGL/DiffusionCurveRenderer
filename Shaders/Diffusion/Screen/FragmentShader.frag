@@ -1,17 +1,14 @@
 #version 430 core
 
 in vec2 fs_TextureCoords;
-uniform sampler2D screenTexture;
-uniform float frameBufferToTargetWidthRatio;
-uniform float frameBufferToTargetHeightRatio;
+uniform sampler2D fs_Texture;
+uniform float widthRatio;
+uniform float heightRatio;
 
 out vec4 out_Color;
 
 void main()
 {
-
-    vec2 textureCoords = vec2(fs_TextureCoords.s / frameBufferToTargetWidthRatio, fs_TextureCoords.t / frameBufferToTargetHeightRatio);
-    vec3 color = texture(screenTexture, textureCoords).rgb;
-
-    out_Color = vec4(color, 1.0);
+    vec2 textureCoords = vec2(fs_TextureCoords.s * widthRatio, fs_TextureCoords.t * heightRatio);
+    out_Color = texture(fs_Texture, textureCoords).rgba;
 }

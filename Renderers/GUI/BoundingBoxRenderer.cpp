@@ -18,21 +18,31 @@ BoundingBoxRenderer::~BoundingBoxRenderer()
     mLineRenderer = nullptr;
 }
 
-bool BoundingBoxRenderer::initialize()
+bool BoundingBoxRenderer::init()
 {
     mRectangleRenderer = new RectangleRenderer;
     mLineRenderer = new LineRenderer;
 
-    if (!mRectangleRenderer->initialize())
+    if (!mRectangleRenderer->init())
         return false;
 
-    if (!mLineRenderer->initialize())
+    if (!mLineRenderer->init())
         return false;
+
+    mLineRendererParameters.color = QVector4D(0.6f, 0.6f, 0.6f, 1.0f);
+    mLineRendererParameters.dashLength = 4;
+    mLineRendererParameters.gapLength = 4;
+    mLineRendererParameters.lineStyle = LineRenderer::Dashed;
+
+    mRectangleRendererParameters.fillColor = QVector4D(0.6f, 0.6f, 0.6f, 1);
+    mRectangleRendererParameters.borderEnabled = false;
+    mRectangleRendererParameters.borderWidth = 0;
+    mRectangleRendererParameters.borderColor = QVector4D(1, 1, 1, 1);
 
     return true;
 }
 
-void BoundingBoxRenderer::render(Curve *curve)
+void BoundingBoxRenderer::render(Curve *curve, const QMatrix4x4 &projectionMatrix)
 {
     if (curve == nullptr)
         return;
@@ -41,57 +51,41 @@ void BoundingBoxRenderer::render(Curve *curve)
 
     // Dashed Lines
     {
-        LineRenderer::RenderParameters params;
-        params.color = QVector4D(0.6f, 0.6f, 0.6f, 1.0f);
-        params.thickness = mZoomRatio * 1;
-        params.dashLength = 4;
-        params.gapLength = 4;
-        params.lineStyle = LineRenderer::Dashed;
+        mLineRendererParameters.thickness = mZoomRatio * 1;
 
-        params.startingPoint = QVector2D(boundingBox.topLeft()) + mZoomRatio * QVector2D(0, 5);
-        params.endPoint = QVector2D(boundingBox.topRight()) + mZoomRatio * QVector2D(0, 5);
-        mLineRenderer->render(params);
+        mLineRendererParameters.startingPoint = QVector2D(boundingBox.topLeft()) + mZoomRatio * QVector2D(0, 5);
+        mLineRendererParameters.endPoint = QVector2D(boundingBox.topRight()) + mZoomRatio * QVector2D(0, 5);
+        mLineRenderer->render(mLineRendererParameters, projectionMatrix);
 
-        params.startingPoint = QVector2D(boundingBox.topRight()) + mZoomRatio * QVector2D(5, 0);
-        params.endPoint = QVector2D(boundingBox.bottomRight()) + mZoomRatio * QVector2D(5, 0);
-        mLineRenderer->render(params);
+        mLineRendererParameters.startingPoint = QVector2D(boundingBox.topRight()) + mZoomRatio * QVector2D(5, 0);
+        mLineRendererParameters.endPoint = QVector2D(boundingBox.bottomRight()) + mZoomRatio * QVector2D(5, 0);
+        mLineRenderer->render(mLineRendererParameters, projectionMatrix);
 
-        params.startingPoint = QVector2D(boundingBox.bottomRight()) + mZoomRatio * QVector2D(0, 5);
-        params.endPoint = QVector2D(boundingBox.bottomLeft()) + mZoomRatio * QVector2D(0, 5);
-        mLineRenderer->render(params);
+        mLineRendererParameters.startingPoint = QVector2D(boundingBox.bottomRight()) + mZoomRatio * QVector2D(0, 5);
+        mLineRendererParameters.endPoint = QVector2D(boundingBox.bottomLeft()) + mZoomRatio * QVector2D(0, 5);
+        mLineRenderer->render(mLineRendererParameters, projectionMatrix);
 
-        params.startingPoint = QVector2D(boundingBox.bottomLeft()) + mZoomRatio * QVector2D(5, 0);
-        params.endPoint = QVector2D(boundingBox.topLeft()) + mZoomRatio * QVector2D(5, 0);
-        mLineRenderer->render(params);
+        mLineRendererParameters.startingPoint = QVector2D(boundingBox.bottomLeft()) + mZoomRatio * QVector2D(5, 0);
+        mLineRendererParameters.endPoint = QVector2D(boundingBox.topLeft()) + mZoomRatio * QVector2D(5, 0);
+        mLineRenderer->render(mLineRendererParameters, projectionMatrix);
     }
 
     // Corners
     {
-        RectangleRenderer::RenderParameters params;
-        params.fillColor = QVector4D(0.6f, 0.6f, 0.6f, 1);
-        params.borderEnabled = false;
-        params.borderWidth = 0;
-        params.borderColor = QVector4D(1, 1, 1, 1);
         QSizeF size = mZoomRatio * QSizeF(10, 10);
 
-        params.rectangle = QRectF(boundingBox.topLeft(), size);
-        mRectangleRenderer->render(params);
+        mRectangleRendererParameters.rectangle = QRectF(boundingBox.topLeft(), size);
+        mRectangleRenderer->render(mRectangleRendererParameters, projectionMatrix);
 
-        params.rectangle = QRectF(boundingBox.topRight(), size);
-        mRectangleRenderer->render(params);
+        mRectangleRendererParameters.rectangle = QRectF(boundingBox.topRight(), size);
+        mRectangleRenderer->render(mRectangleRendererParameters, projectionMatrix);
 
-        params.rectangle = QRectF(boundingBox.bottomLeft(), size);
-        mRectangleRenderer->render(params);
+        mRectangleRendererParameters.rectangle = QRectF(boundingBox.bottomLeft(), size);
+        mRectangleRenderer->render(mRectangleRendererParameters, projectionMatrix);
 
-        params.rectangle = QRectF(boundingBox.bottomRight(), size);
-        mRectangleRenderer->render(params);
+        mRectangleRendererParameters.rectangle = QRectF(boundingBox.bottomRight(), size);
+        mRectangleRenderer->render(mRectangleRendererParameters, projectionMatrix);
     }
-}
-
-void BoundingBoxRenderer::setProjectionMatrix(const QMatrix4x4 &newMatrix)
-{
-    mRectangleRenderer->setProjectionMatrix(newMatrix);
-    mLineRenderer->setProjectionMatrix(newMatrix);
 }
 
 void BoundingBoxRenderer::setZoomRatio(float newZoomRatio)

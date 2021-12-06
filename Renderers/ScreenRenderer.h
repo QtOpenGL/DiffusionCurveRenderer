@@ -11,19 +11,25 @@
 class ScreenRenderer : protected QOpenGLFunctions
 {
 public:
+    struct Parameters
+    {
+        GLuint texture;
+        float widthRatio;
+        float heightRatio;
+    };
+
     ScreenRenderer();
     ~ScreenRenderer();
 
-    bool initialize();
-    void render(GLuint textureId, float framebufferToTargetWidthRatio, float framebufferToTargetHeightRatio);
+    bool init();
+    void render(const Parameters &parameters);
 
 private:
     QOpenGLShaderProgram *mShader;
     Quads *mQuads;
 
-    int mScreenTextureLocation;
-    int mFramebufferToTargetWidthRatioLocation;
-    int mFramebufferToTargetHeightRatioLocation;
+    int mWidthRatioLocation;
+    int mHeightRatioLocation;
 };
 
 #endif // SCREENRENDERER_H

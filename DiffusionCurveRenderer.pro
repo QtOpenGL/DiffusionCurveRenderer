@@ -28,19 +28,19 @@ HEADERS += \
     Renderers/Base/Ticks.h \
     Renderers/Contour/ContourRenderer.h \
     Renderers/Diffusion/DiffusionRenderer.h \
-    Renderers/Diffusion/ScreenRenderer.h \
     Renderers/GUI/Base/LineRenderer.h \
     Renderers/GUI/Base/PointRenderer.h \
     Renderers/GUI/Base/RectangleRenderer.h \
     Renderers/GUI/BoundingBoxRenderer.h \
     Renderers/GUI/ControlPointRenderer.h \
+    Renderers/RendererManager.h \
+    Renderers/ScreenRenderer.h \
     Util.h \
     Widgets/CentralWidget.h \
     Widgets/ControlPointWidget.h \
     Widgets/CurveWidget.h \
     Widgets/Enums.h \
     Widgets/ModeWidget.h \
-    Widgets/OpenGLTestWidget.h \
     Widgets/OpenGLWidget.h \
     Widgets/ZoomWidget.h \
     Window.h
@@ -57,18 +57,18 @@ SOURCES += \
     Renderers/Base/Ticks.cpp \
     Renderers/Contour/ContourRenderer.cpp \
     Renderers/Diffusion/DiffusionRenderer.cpp \
-    Renderers/Diffusion/ScreenRenderer.cpp \
     Renderers/GUI/Base/LineRenderer.cpp \
     Renderers/GUI/Base/PointRenderer.cpp \
     Renderers/GUI/Base/RectangleRenderer.cpp \
     Renderers/GUI/BoundingBoxRenderer.cpp \
     Renderers/GUI/ControlPointRenderer.cpp \
+    Renderers/RendererManager.cpp \
+    Renderers/ScreenRenderer.cpp \
     Util.cpp \
     Widgets/CentralWidget.cpp \
     Widgets/ControlPointWidget.cpp \
     Widgets/CurveWidget.cpp \
     Widgets/ModeWidget.cpp \
-    Widgets/OpenGLTestWidget.cpp \
     Widgets/OpenGLWidget.cpp \
     Widgets/ZoomWidget.cpp \
     Window.cpp

@@ -16,7 +16,7 @@ public:
 
     enum LineStyle { Solid = 0, Dashed = 1 };
 
-    struct RenderParameters
+    struct Parameters
     {
         QVector2D startingPoint;
         QVector2D endPoint;
@@ -27,17 +27,14 @@ public:
         float gapLength;
     };
 
-    bool initialize();
-    void render(const RenderParameters &params);
-    void setProjectionMatrix(const QMatrix4x4 &newMatrix);
+    bool init();
+    void render(const Parameters &parameters, const QMatrix4x4 &projectionMatrix);
 
 private:
     QOpenGLShaderProgram *mShader;
 
     Ticks *mDenseTicks;
     Ticks *mRareTicks;
-
-    QMatrix4x4 mProjectionMatrix;
 
     int mProjectionMatrixLocation;
     int mStartingPointLocation;
