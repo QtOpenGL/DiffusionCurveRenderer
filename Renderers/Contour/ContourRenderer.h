@@ -14,7 +14,7 @@ public:
     ~ContourRenderer();
 
     bool init();
-    void render(QVector<Curve *> curves, const QMatrix4x4 &projectionMatrix);
+    void render(const QVector<Curve *> &curves, const QMatrix4x4 &projectionMatrix);
 
 private:
     QVector4D lighter(QVector4D color, float factor); // 0 < factor < 1

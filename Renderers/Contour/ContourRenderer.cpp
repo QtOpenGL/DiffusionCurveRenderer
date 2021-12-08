@@ -54,7 +54,7 @@ bool ContourRenderer::init()
     return true;
 }
 
-void ContourRenderer::render(QVector<Curve *> curves, const QMatrix4x4 &projectionMatrix)
+void ContourRenderer::render(const QVector<Curve *> &curves, const QMatrix4x4 &projectionMatrix)
 {
     for (int i = 0; i < curves.size(); ++i) {
         Bezier *curve = dynamic_cast<Bezier *>(curves[i]);

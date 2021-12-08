@@ -1,103 +1,72 @@
 #include "DiffusionRenderer.h"
 
-#include <Curves/Bezier.h>
-
 DiffusionRenderer::DiffusionRenderer()
-    : mShader(nullptr)
-    , mTicks(nullptr)
+    : mColorCurveRenderer(nullptr)
+    , mDownsampler(nullptr)
+    , mUpsampler(nullptr)
+    , mInit(false)
 {}
 
 DiffusionRenderer::~DiffusionRenderer()
 {
-    if (mShader)
-        delete mShader;
+    if (mColorCurveRenderer)
+        delete mColorCurveRenderer;
 
-    if (mTicks)
-        delete mTicks;
+    if (mDownsampler)
+        delete mDownsampler;
 
-    mShader = nullptr;
-    mTicks = nullptr;
+    if (mUpsampler)
+        delete mUpsampler;
+
+    mColorCurveRenderer = nullptr;
+    mDownsampler = nullptr;
+    mUpsampler = nullptr;
 }
 
 bool DiffusionRenderer::init()
 {
-    initializeOpenGLFunctions();
+    mColorCurveRenderer = new ColorCurveRenderer;
+    mDownsampler = new Downsampler;
+    mUpsampler = new Upsampler;
+    mSmoother = new Smoother;
 
-    mShader = new QOpenGLShaderProgram;
+    mInit = mColorCurveRenderer->init();
+    mInit &= mDownsampler->init();
+    mInit &= mUpsampler->init();
+    mInit &= mSmoother->init();
 
-    if (!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Diffusion/Curve/VertexShader.vert")
-        || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Diffusion/Curve/FragmentShader.frag")
-        || !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Diffusion/Curve/GeometryShader.geom") || !mShader->link()
-        || !mShader->bind()) {
-        qCritical() << mShader->log();
-        return false;
-    }
-
-    // Uniform Variables
-    mProjectionMatrixLocation = mShader->uniformLocation("projectionMatrix");
-    mTicksDeltaLocation = mShader->uniformLocation("ticksDelta");
-    mThicknessLocation = mShader->uniformLocation("thickness");
-
-    mControlPointsLocation = mShader->uniformLocation("controlPoints");
-    mControlPointsCountLocation = mShader->uniformLocation("controlPointsCount");
-
-    mLeftColorsLocation = mShader->uniformLocation("leftColors");
-    mLeftColorPositionsLocation = mShader->uniformLocation("leftColorPositions");
-    mLeftColorsCountLocation = mShader->uniformLocation("leftColorsCount");
-
-    mRightColorsLocation = mShader->uniformLocation("rightColors");
-    mRightColorPositionsLocation = mShader->uniformLocation("rightColorPositions");
-    mRightColorsCountLocation = mShader->uniformLocation("rightColorsCount");
-
-    // Attribute Locations
-    mShader->bindAttributeLocation("vs_Tick", 0);
-
-    mTicks = new Ticks(0, 1, 2000);
-    mTicks->create();
-
-    mShader->release();
-
-    return true;
+    return mInit;
 }
 
-void DiffusionRenderer::render(const QVector<Curve *> &curves, const QMatrix4x4 &projectionMatrix)
+void DiffusionRenderer::renderColorCurves(const QVector<Curve *> &curves, const QMatrix4x4 &projectionMatrix)
 {
-    mShader->bind();
-    mTicks->bind();
+    if (!mInit)
+        return;
 
-    mShader->setUniformValue(mProjectionMatrixLocation, projectionMatrix);
-    mShader->setUniformValue(mTicksDeltaLocation, mTicks->ticksDelta());
+    mColorCurveRenderer->render(curves, projectionMatrix);
+}
 
-    for (int i = 0; i < curves.size(); ++i) {
-        Bezier *curve = dynamic_cast<Bezier *>(curves[i]);
+void DiffusionRenderer::downsample(GLuint sourceTexture, float targetWidth, float targetHeight)
+{
+    if (!mInit)
+        return;
 
-        if (curve == nullptr)
-            continue;
+    mDownsampler->downsample(sourceTexture, targetWidth, targetHeight);
+}
 
-        mShader->setUniformValue(mThicknessLocation, curve->thickness());
+void DiffusionRenderer::upsample(GLuint sourceTexture, GLuint targetTexture, float targetWidth, float targetHeight)
+{
+    if (!mInit)
+        return;
 
-        // Control points
-        QVector<QVector2D> controlPoints = curve->getControlPointPositions();
-        mShader->setUniformValueArray(mControlPointsLocation, controlPoints.constData(), controlPoints.size());
-        mShader->setUniformValue(mControlPointsCountLocation, (GLint) controlPoints.size());
+    mUpsampler->upsample(sourceTexture, targetTexture, targetWidth, targetHeight);
+}
 
-        // Left colors
-        QVector<QVector4D> leftColors = curve->getColors(Curve::Left);
-        QVector<GLfloat> leftColorPositions = curve->getColorPositions(Curve::Left);
-        mShader->setUniformValueArray(mLeftColorsLocation, leftColors.constData(), leftColors.size());
-        mShader->setUniformValueArray(mLeftColorPositionsLocation, leftColorPositions.constData(), leftColorPositions.size(), 1);
-        mShader->setUniformValue(mLeftColorsCountLocation, (GLint) leftColors.size());
+void DiffusionRenderer::smooth(GLuint constrainedTexture, GLuint targetTexture, float targetWidth, float targetHeight)
+{
+    if (!mInit)
+        return;
 
-        // Right colors
-        QVector<QVector4D> rightColors = curve->getColors(Curve::Right);
-        QVector<GLfloat> rightColorPositions = curve->getColorPositions(Curve::Right);
-        mShader->setUniformValueArray(mRightColorsLocation, rightColors.constData(), rightColors.size());
-        mShader->setUniformValueArray(mRightColorPositionsLocation, rightColorPositions.constData(), rightColorPositions.size(), 1);
-        mShader->setUniformValue(mRightColorsCountLocation, (GLint) rightColors.size());
-
-        glDrawArrays(GL_POINTS, 0, mTicks->size());
-    }
-
-    mTicks->release();
-    mShader->release();
+    for (int i = 0; i < 20; ++i)
+        mSmoother->smooth(constrainedTexture, targetTexture, targetWidth, targetHeight);
 }

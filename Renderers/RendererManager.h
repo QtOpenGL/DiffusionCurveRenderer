@@ -7,6 +7,7 @@
 
 #include <CurveContainer.h>
 #include <Renderers/Contour/ContourRenderer.h>
+#include <Renderers/Diffusion/DiffusionRenderer.h>
 #include <Widgets/OpenGLWidget.h>
 
 class RendererManager : protected QOpenGLFunctions
@@ -19,22 +20,27 @@ public:
     void render();
     void update();
 
+    void diffuse();
+
     void setCurveContainer(const CurveContainer *newCurveContainer);
     void setProjectionParameters(const OpenGLWidget::ProjectionParameters *newProjectionParameters);
 
 private:
     ContourRenderer *mContourRenderer;
     ScreenRenderer *mScreenRenderer;
-    const CurveContainer *mCurveContainer;
+    DiffusionRenderer *mDiffusionRenderer;
 
-    QOpenGLFramebufferObject *mMultisampleFramebuffer;
-    QOpenGLFramebufferObject *mDownsampledFramebuffer;
+    const CurveContainer *mCurveContainer;
 
     QOpenGLFramebufferObjectFormat mMultisampleFrambufferFormat;
     QOpenGLFramebufferObjectFormat mDownsampledFrambufferFormat;
+    QOpenGLFramebufferObjectFormat mUpsampledFramebufferFormat;
 
-    const float mBufferWidth;
-    const float mBufferHeight;
+    QOpenGLFramebufferObject *mMultisampleFramebuffer;
+    QOpenGLFramebufferObject *mBlittedFrameBuffer;
+
+    QVector<QOpenGLFramebufferObject *> mDownsampledFramebuffers;
+    QVector<QOpenGLFramebufferObject *> mUpsampledFramebuffers;
 
     const OpenGLWidget::ProjectionParameters *mProjectionParameters;
 

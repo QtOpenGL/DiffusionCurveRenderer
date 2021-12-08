@@ -24,9 +24,8 @@ bool ScreenRenderer::init()
     mShader = new QOpenGLShaderProgram;
     mQuads = new Quads;
 
-    if (!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Diffusion/Screen/VertexShader.vert")
-        || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Diffusion/Screen/FragmentShader.frag") || !mShader->link()
-        || !mShader->bind()) {
+    if (!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Screen/VertexShader.vert")
+        || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Screen/FragmentShader.frag") || !mShader->link() || !mShader->bind()) {
         qCritical() << mShader->log();
         return false;
     }

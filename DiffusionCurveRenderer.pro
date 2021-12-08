@@ -27,7 +27,11 @@ HEADERS += \
     Renderers/Base/Quads.h \
     Renderers/Base/Ticks.h \
     Renderers/Contour/ContourRenderer.h \
+    Renderers/Diffusion/ColorCurveRenderer.h \
     Renderers/Diffusion/DiffusionRenderer.h \
+    Renderers/Diffusion/Downsampler.h \
+    Renderers/Diffusion/Smoother.h \
+    Renderers/Diffusion/Upsampler.h \
     Renderers/GUI/Base/LineRenderer.h \
     Renderers/GUI/Base/PointRenderer.h \
     Renderers/GUI/Base/RectangleRenderer.h \
@@ -42,6 +46,7 @@ HEADERS += \
     Widgets/Enums.h \
     Widgets/ModeWidget.h \
     Widgets/OpenGLWidget.h \
+    Widgets/TestWidget.h \
     Widgets/ZoomWidget.h \
     Window.h
 
@@ -56,7 +61,11 @@ SOURCES += \
     Renderers/Base/Quads.cpp \
     Renderers/Base/Ticks.cpp \
     Renderers/Contour/ContourRenderer.cpp \
+    Renderers/Diffusion/ColorCurveRenderer.cpp \
     Renderers/Diffusion/DiffusionRenderer.cpp \
+    Renderers/Diffusion/Downsampler.cpp \
+    Renderers/Diffusion/Smoother.cpp \
+    Renderers/Diffusion/Upsampler.cpp \
     Renderers/GUI/Base/LineRenderer.cpp \
     Renderers/GUI/Base/PointRenderer.cpp \
     Renderers/GUI/Base/RectangleRenderer.cpp \
@@ -70,6 +79,7 @@ SOURCES += \
     Widgets/CurveWidget.cpp \
     Widgets/ModeWidget.cpp \
     Widgets/OpenGLWidget.cpp \
+    Widgets/TestWidget.cpp \
     Widgets/ZoomWidget.cpp \
     Window.cpp
 
@@ -77,11 +87,15 @@ DISTFILES += \
     Shaders/Contour/FragmentShader.frag \
     Shaders/Contour/GeometryShader.geom \
     Shaders/Contour/VertexShader.vert \
-    Shaders/Diffusion/Curve/FragmentShader.frag \
-    Shaders/Diffusion/Curve/GeometryShader.geom \
-    Shaders/Diffusion/Curve/VertexShader.vert \
-    Shaders/Diffusion/Screen/FragmentShader.frag \
-    Shaders/Diffusion/Screen/VertexShader.vert \
+    Shaders/Diffusion/ColorCurve/FragmentShader.frag \
+    Shaders/Diffusion/ColorCurve/GeometryShader.geom \
+    Shaders/Diffusion/ColorCurve/VertexShader.vert \
+    Shaders/Diffusion/Downsampler/FragmentShader.frag \
+    Shaders/Diffusion/Downsampler/VertexShader.vert \
+    Shaders/Diffusion/Smoother/FragmentShader.frag \
+    Shaders/Diffusion/Smoother/VertexShader.vert \
+    Shaders/Diffusion/Upsampler/FragmentShader.frag \
+    Shaders/Diffusion/Upsampler/VertexShader.vert \
     Shaders/Line/FragmentShader.frag \
     Shaders/Line/GeometryShader.geom \
     Shaders/Line/VertexShader.vert \
@@ -90,4 +104,6 @@ DISTFILES += \
     Shaders/Point/VertexShader.vert \
     Shaders/Rectangle/FragmentShader.frag \
     Shaders/Rectangle/GeometryShader.geom \
-    Shaders/Rectangle/VertexShader.vert
+    Shaders/Rectangle/VertexShader.vert \
+    Shaders/Screen/FragmentShader.frag \
+    Shaders/Screen/VertexShader.vert

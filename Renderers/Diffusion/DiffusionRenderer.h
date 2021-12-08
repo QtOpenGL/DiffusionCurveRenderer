@@ -1,36 +1,30 @@
 #ifndef DIFFUSIONRENDERER_H
 #define DIFFUSIONRENDERER_H
 
-#include <QOpenGLFunctions>
-#include <QOpenGLShaderProgram>
+#include "ColorCurveRenderer.h"
+#include "Downsampler.h"
+#include "Smoother.h"
+#include "Upsampler.h"
 
-#include <Curves/Curve.h>
-#include <Renderers/Base/Ticks.h>
-
-class DiffusionRenderer : protected QOpenGLFunctions
+class DiffusionRenderer
 {
 public:
     DiffusionRenderer();
     ~DiffusionRenderer();
 
     bool init();
-    void render(const QVector<Curve *> &curves, const QMatrix4x4 &projectionMatrix);
+    void renderColorCurves(const QVector<Curve *> &curves, const QMatrix4x4 &projectionMatrix);
+    void downsample(GLuint sourceTexture, float targetWidth, float targetHeight);
+    void upsample(GLuint sourceTexture, GLuint targetTexture, float targetWidth, float targetHeight);
+    void smooth(GLuint constrainedTexture, GLuint targetTexture, float targetWidth, float targetHeight);
 
 private:
-    QOpenGLShaderProgram *mShader;
-    Ticks *mTicks;
+    ColorCurveRenderer *mColorCurveRenderer;
+    Downsampler *mDownsampler;
+    Upsampler *mUpsampler;
+    Smoother *mSmoother;
 
-    int mProjectionMatrixLocation;
-    int mTicksDeltaLocation;
-    int mThicknessLocation;
-    int mControlPointsLocation;
-    int mControlPointsCountLocation;
-    int mLeftColorsLocation;
-    int mLeftColorPositionsLocation;
-    int mLeftColorsCountLocation;
-    int mRightColorsLocation;
-    int mRightColorPositionsLocation;
-    int mRightColorsCountLocation;
+    bool mInit;
 };
 
 #endif // DIFFUSIONRENDERER_H
