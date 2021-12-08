@@ -26,12 +26,8 @@ HEADERS += \
     Curves/Curve.h \
     Renderers/Base/Quads.h \
     Renderers/Base/Ticks.h \
-    Renderers/Contour/ContourRenderer.h \
-    Renderers/Diffusion/ColorCurveRenderer.h \
-    Renderers/Diffusion/DiffusionRenderer.h \
-    Renderers/Diffusion/Downsampler.h \
-    Renderers/Diffusion/Smoother.h \
-    Renderers/Diffusion/Upsampler.h \
+    Renderers/ContourRenderer.h \
+    Renderers/DiffusionRenderer.h \
     Renderers/GUI/Base/LineRenderer.h \
     Renderers/GUI/Base/PointRenderer.h \
     Renderers/GUI/Base/RectangleRenderer.h \
@@ -60,12 +56,8 @@ SOURCES += \
     Main.cpp \
     Renderers/Base/Quads.cpp \
     Renderers/Base/Ticks.cpp \
-    Renderers/Contour/ContourRenderer.cpp \
-    Renderers/Diffusion/ColorCurveRenderer.cpp \
-    Renderers/Diffusion/DiffusionRenderer.cpp \
-    Renderers/Diffusion/Downsampler.cpp \
-    Renderers/Diffusion/Smoother.cpp \
-    Renderers/Diffusion/Upsampler.cpp \
+    Renderers/ContourRenderer.cpp \
+    Renderers/DiffusionRenderer.cpp \
     Renderers/GUI/Base/LineRenderer.cpp \
     Renderers/GUI/Base/PointRenderer.cpp \
     Renderers/GUI/Base/RectangleRenderer.cpp \

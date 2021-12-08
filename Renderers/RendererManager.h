@@ -1,13 +1,13 @@
 #ifndef RENDERERMANAGER_H
 #define RENDERERMANAGER_H
 
+#include "ContourRenderer.h"
+#include "DiffusionRenderer.h"
 #include "ScreenRenderer.h"
 
 #include <QOpenGLFramebufferObject>
 
 #include <CurveContainer.h>
-#include <Renderers/Contour/ContourRenderer.h>
-#include <Renderers/Diffusion/DiffusionRenderer.h>
 #include <Widgets/OpenGLWidget.h>
 
 class RendererManager : protected QOpenGLFunctions
@@ -32,13 +32,8 @@ private:
 
     const CurveContainer *mCurveContainer;
 
-    QOpenGLFramebufferObjectFormat mMultisampleFrambufferFormat;
-    QOpenGLFramebufferObjectFormat mDownsampledFrambufferFormat;
-    QOpenGLFramebufferObjectFormat mUpsampledFramebufferFormat;
-
-    QOpenGLFramebufferObject *mMultisampleFramebuffer;
-    QOpenGLFramebufferObject *mBlittedFrameBuffer;
-
+    QOpenGLFramebufferObjectFormat mFrambufferFormat;
+    QOpenGLFramebufferObject *mInitialFrameBuffer;
     QVector<QOpenGLFramebufferObject *> mDownsampledFramebuffers;
     QVector<QOpenGLFramebufferObject *> mUpsampledFramebuffers;
 

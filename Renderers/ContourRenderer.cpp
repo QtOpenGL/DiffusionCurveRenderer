@@ -51,6 +51,8 @@ bool ContourRenderer::init()
     mTicks = new Ticks(0, 1, 200);
     mTicks->create();
 
+    mShader->release();
+
     return true;
 }
 

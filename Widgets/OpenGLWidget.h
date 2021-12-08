@@ -10,8 +10,6 @@
 #include <QPen>
 #include <QWheelEvent>
 
-#include <Renderers/Contour/ContourRenderer.h>
-
 #include <Renderers/GUI/BoundingBoxRenderer.h>
 #include <Renderers/GUI/ControlPointRenderer.h>
 

@@ -17,28 +17,19 @@ bool RendererManager::init()
     glEnable(GL_MULTISAMPLE);
 
     // Define multisample format
-    mMultisampleFrambufferFormat.setAttachment(QOpenGLFramebufferObject::NoAttachment);
-    //mMultisampleFrambufferFormat.setMipmap(true);
-    mMultisampleFrambufferFormat.setSamples(0);
-    mMultisampleFrambufferFormat.setTextureTarget(GL_TEXTURE_2D);
-    mMultisampleFrambufferFormat.setInternalTextureFormat(GL_RGBA8);
-
-    // Define downsample format
-    mDownsampledFrambufferFormat.setAttachment(QOpenGLFramebufferObject::NoAttachment);
-    //mDownsampledFrambufferFormat.setMipmap(true);
-    mDownsampledFrambufferFormat.setSamples(0);
-    mDownsampledFrambufferFormat.setTextureTarget(GL_TEXTURE_2D);
-    mDownsampledFrambufferFormat.setInternalTextureFormat(GL_RGBA8);
+    mFrambufferFormat.setAttachment(QOpenGLFramebufferObject::NoAttachment);
+    mFrambufferFormat.setSamples(0);
+    mFrambufferFormat.setTextureTarget(GL_TEXTURE_2D);
+    mFrambufferFormat.setInternalTextureFormat(GL_RGBA8);
 
     // Create multisample framebuffer and blitted framebuffer objects
-    mMultisampleFramebuffer = new QOpenGLFramebufferObject(BUFFER_SIZE, BUFFER_SIZE, mMultisampleFrambufferFormat);
-    mBlittedFrameBuffer = new QOpenGLFramebufferObject(BUFFER_SIZE, BUFFER_SIZE, mDownsampledFrambufferFormat);
+    mInitialFrameBuffer = new QOpenGLFramebufferObject(BUFFER_SIZE, BUFFER_SIZE, mFrambufferFormat);
 
     // Create downsampled and upsampled buffers
     int bufferSize = 0.5 * BUFFER_SIZE;
     while (bufferSize > 0) {
-        mDownsampledFramebuffers << new QOpenGLFramebufferObject(bufferSize, bufferSize, mDownsampledFrambufferFormat);
-        mUpsampledFramebuffers << new QOpenGLFramebufferObject(bufferSize, bufferSize, mDownsampledFrambufferFormat);
+        mDownsampledFramebuffers << new QOpenGLFramebufferObject(bufferSize, bufferSize, mFrambufferFormat);
+        mUpsampledFramebuffers << new QOpenGLFramebufferObject(bufferSize, bufferSize, mFrambufferFormat);
         bufferSize = 0.5 * bufferSize;
     }
 
@@ -81,8 +72,8 @@ void RendererManager::diffuse()
     // Diffuse
     {
         // Bind my framebuffer
-        mMultisampleFramebuffer->bind();
-        glViewport(0, 0, mMultisampleFramebuffer->width(), mMultisampleFramebuffer->height());
+        mInitialFrameBuffer->bind();
+        glViewport(0, 0, mInitialFrameBuffer->width(), mInitialFrameBuffer->height());
 
         // Clear framebuffer
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -91,19 +82,17 @@ void RendererManager::diffuse()
         // Set projection matrix
         QMatrix4x4 projectionMatrix;
         projectionMatrix.setToIdentity();
-        projectionMatrix.ortho(-mMultisampleFramebuffer->width() / 2,
-                               mMultisampleFramebuffer->width() / 2,
-                               -mMultisampleFramebuffer->height() / 2,
-                               mMultisampleFramebuffer->height() / 2,
+        projectionMatrix.ortho(-mInitialFrameBuffer->width() / 2,
+                               mInitialFrameBuffer->width() / 2,
+                               -mInitialFrameBuffer->height() / 2,
+                               mInitialFrameBuffer->height() / 2,
                                -1,
                                1);
 
         // Diffuse curves
         mDiffusionRenderer->renderColorCurves(mCurveContainer->getCurves(), projectionMatrix);
 
-        // Blit
-        QOpenGLFramebufferObject::blitFramebuffer(mBlittedFrameBuffer, mMultisampleFramebuffer);
-        mMultisampleFramebuffer->release();
+        mInitialFrameBuffer->release();
     }
 
     // Downsample
@@ -112,11 +101,7 @@ void RendererManager::diffuse()
             mDownsampledFramebuffers[i]->bind();
             glViewport(0, 0, mDownsampledFramebuffers[i]->width(), mDownsampledFramebuffers[i]->height());
 
-            // Clear framebuffer
-            //glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            GLuint sourceTexture = i == 0 ? mBlittedFrameBuffer->texture() : mDownsampledFramebuffers[i - 1]->texture();
+            GLuint sourceTexture = i == 0 ? mInitialFrameBuffer->texture() : mDownsampledFramebuffers[i - 1]->texture();
             mDiffusionRenderer->downsample(sourceTexture, 2 * mDownsampledFramebuffers[i]->width(), 2 * mDownsampledFramebuffers[i]->height());
 
             mDownsampledFramebuffers[i]->release();
@@ -136,7 +121,7 @@ void RendererManager::diffuse()
             sourceTexture = mUpsampledFramebuffers[i]->texture();
             GLuint constrainedTexture = mDownsampledFramebuffers[i]->texture();
             //mUpsampledFramebuffers[i]->toImage().save(QString("Upsampled %1.png").arg(i));
-            mDiffusionRenderer->smooth(constrainedTexture, sourceTexture, mUpsampledFramebuffers[i]->width(), mUpsampledFramebuffers[i]->height());
+            mDiffusionRenderer->smooth(constrainedTexture, sourceTexture, mUpsampledFramebuffers[i]->width(), mUpsampledFramebuffers[i]->height(), 10);
 
             mUpsampledFramebuffers[i]->release();
         }
@@ -151,7 +136,7 @@ void RendererManager::diffuse()
         parameters.widthRatio = 1;
         parameters.heightRatio = 1;
         parameters.texture = mUpsampledFramebuffers[0]->texture();
-        // parameters.texture = mDownsampledFramebuffers.last()->texture();
+        //parameters.texture = mDownsampledFramebuffers.last()->texture();
         mScreenRenderer->render(parameters);
     }
 }
