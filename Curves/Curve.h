@@ -104,6 +104,7 @@ private:
     static void findLineOfBestFit(const QVector<QVector2D> &points, QVector2D &startingPoint, QVector2D &direction, int segments = 1000);
     static float averageDistanceToLine(const QVector<QVector2D> &points, const QVector2D &startingPoint, const QVector2D &direction);
     static float perpendicularAt(const QVector2D &startingPoint, const QVector2D &direction, const QVector2D &subject);
+    static float distanceToLineSegment(const QVector2D &startingPoint, const QVector2D &endPoint, const QVector2D &subject, int intervals = 100);
 };
 
 #endif // CURVE_H

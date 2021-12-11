@@ -10,7 +10,8 @@ ModeWidget::ModeWidget(QGroupBox *parent)
 
     QVector<QString> labels;
     labels << "Select"
-           << "Add Control Point"
+           << "Append Control Point"
+           << "Insert Control Point"
            << "Add Color Point"
            << "Move Curve"
            << "Pan";

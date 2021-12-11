@@ -125,14 +125,15 @@ void Controller::onAction(Action action, CustomVariant value)
         mCurveContainer->setSelectedCurve(selectedCurve);
         break;
     }
-    case Action::Add: {
+    case Action::AppendControlPoint:
+    case Action::InsertControlPoint: {
         if (mCurveContainer->selectedCurve()) {
             if (mCurveContainer->selectedCurve()->getSize() >= Constants::MAX_CONTROL_POINT_COUNT)
                 return;
 
             ControlPoint *controlPoint = new ControlPoint(value.toVector2D());
             controlPoint->selected = true;
-            mCurveContainer->selectedCurve()->addControlPoint(controlPoint);
+            mCurveContainer->selectedCurve()->addControlPoint(controlPoint, action == Action::AppendControlPoint);
             mCurveContainer->setSelectedControlPoint(controlPoint);
         } else {
             ControlPoint *controlPoint = new ControlPoint(value.toVector2D());
@@ -278,10 +279,17 @@ void Controller::onMousePressed(QMouseEvent *event)
         }
         break;
     }
-    case Mode::AddControlPoint: {
+    case Mode::AppendControlPoint: {
         if (mMouseLeftButtonPressed) {
             QVector2D position = mTransformer->mapFromGuiToOpenGL(mMousePosition);
-            onAction(Action::Add, position);
+            onAction(Action::AppendControlPoint, position);
+        }
+        break;
+    }
+    case Mode::InsertControlPoint: {
+        if (mMouseLeftButtonPressed) {
+            QVector2D position = mTransformer->mapFromGuiToOpenGL(mMousePosition);
+            onAction(Action::InsertControlPoint, position);
         }
         break;
     }
@@ -321,7 +329,7 @@ void Controller::onMouseMoved(QMouseEvent *event)
         }
         break;
     }
-    case Mode::AddControlPoint: {
+    case Mode::AppendControlPoint: {
         break;
     }
     case Mode::MoveCurve: {

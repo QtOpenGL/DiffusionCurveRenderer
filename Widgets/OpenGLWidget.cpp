@@ -65,11 +65,11 @@ void OpenGLWidget::paintGL()
     painter.setRenderHint(QPainter::Antialiasing, true);
 
     switch (mMode) {
-    case Mode::AddColorPoint:
-        break;
     case Mode::Pan:
         break;
-    case Mode::AddControlPoint:
+    case Mode::AddColorPoint:
+    case Mode::AppendControlPoint:
+    case Mode::InsertControlPoint:
     case Mode::Select: {
         if (mSelectedCurve) {
             QVector<const ControlPoint *> controlPoints = mSelectedCurve->getControlPoints();
@@ -191,16 +191,20 @@ void OpenGLWidget::refresh()
     }
 
     switch (mMode) {
+    case Mode::AppendControlPoint:
+        setCursor(Qt::CrossCursor);
+        break;
+    case Mode::InsertControlPoint:
+        setCursor(Qt::CrossCursor);
+        break;
     case Mode::AddColorPoint:
+        setCursor(Qt::CrossCursor);
         break;
     case Mode::Pan:
         setCursor(mMouseLeftButtonPressed ? Qt::ClosedHandCursor : Qt::OpenHandCursor);
         break;
     case Mode::Select:
         setCursor(Qt::ArrowCursor);
-        break;
-    case Mode::AddControlPoint:
-        setCursor(Qt::CrossCursor);
         break;
     case Mode::MoveCurve: {
         if (mSelectedCurve)

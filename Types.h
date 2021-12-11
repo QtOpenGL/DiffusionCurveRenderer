@@ -8,7 +8,9 @@ const int MAX_COLOR_POINT_COUNT = 32;
 
 enum class Action {
     Select,
-    Add,
+    AppendControlPoint,
+    InsertControlPoint,
+    AddColorPoint,
     Move,
     Pan,
     ZoomIn,
@@ -25,7 +27,8 @@ enum class Action {
 
 enum class Mode {
     Select,
-    AddControlPoint,
+    AppendControlPoint,
+    InsertControlPoint,
     AddColorPoint,
     MoveCurve,
     Pan,

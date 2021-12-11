@@ -58,7 +58,7 @@ QVector<QVector2D> Curve::getControlPointPositions() const
 
     return positions;
 }
-#include <QDebug>
+
 void Curve::addControlPoint(ControlPoint *controlPoint, bool append)
 {
     if (mControlPoints.size() >= Constants::MAX_CONTROL_POINT_COUNT)
@@ -70,28 +70,20 @@ void Curve::addControlPoint(ControlPoint *controlPoint, bool append)
         if (mControlPoints.size() == 0 || mControlPoints.size() == 1) {
             mControlPoints << controlPoint;
         } else {
-            QVector<QVector2D> positions = getControlPointPositions();
-            QVector<float> parameters;
-            parameters.reserve(positions.size());
+            float minimumDistance = std::numeric_limits<float>::infinity();
 
-            QVector2D startingPoint;
-            QVector2D direction;
-            findLineOfBestFit(positions, startingPoint, direction);
+            int insertionIndex = mControlPoints.size();
 
-            for (int i = 0; i < positions.size(); i++) {
-                parameters << perpendicularAt(startingPoint, direction, positions[i]);
-            }
+            for (int i = 1; i < mControlPoints.size(); ++i) {
+                float distance = distanceToLineSegment(mControlPoints[i - 1]->position, mControlPoints[i]->position, controlPoint->position);
 
-            float t = perpendicularAt(startingPoint, direction, controlPoint->position);
-            bool instertionIndex = parameters.size() - 1;
-            for (int i = 0; i < parameters.size() - 1; i++) {
-                if (parameters[i] <= t && t <= parameters[i + 1]) {
-                    instertionIndex = i + 1;
-                    break;
+                if (distance < minimumDistance) {
+                    minimumDistance = distance;
+                    insertionIndex = i;
                 }
             }
 
-            mControlPoints.insert(instertionIndex, controlPoint);
+            mControlPoints.insert(insertionIndex, controlPoint);
         }
     }
 
@@ -542,7 +534,7 @@ QVector<QVector2D> Curve::translate(const QVector<QVector2D> &points, const QVec
     result.reserve(points.size());
 
     for (int i = 0; i < points.size(); ++i) {
-        result << (points[i] + translation);
+        result << points[i] + translation;
     }
 
     return result;
@@ -559,7 +551,7 @@ void Curve::findLineOfBestFit(const QVector<QVector2D> &points, QVector2D &start
     // Set variables
     QVector2D origin(0, 0);
     float theta = 0;
-    float dt = M_PI / segments;
+    float dt = 2 * M_PI / segments;
     float minimumAverageDistance = averageDistanceToLine(translatedPoints, origin, QVector2D(1, 0));
     float beta = 0;
 
@@ -599,6 +591,24 @@ float Curve::perpendicularAt(const QVector2D &startingPoint, const QVector2D &di
     const float &cy = subject.y();
 
     return (cy * dy + cx * dx - sx * dx - sy * dy) / (dx * dx + dy * dy);
+}
+
+float Curve::distanceToLineSegment(const QVector2D &startingPoint, const QVector2D &endPoint, const QVector2D &subject, int intervals)
+{
+    float t = 0;
+    float dt = 1.0f / intervals;
+
+    QVector2D direction = endPoint - startingPoint;
+
+    float minimumDistance = std::numeric_limits<float>::infinity();
+    for (int i = 0; i <= intervals; ++i) {
+        float distance = subject.distanceToPoint(startingPoint + t * direction);
+        if (distance < minimumDistance)
+            minimumDistance = distance;
+        t += dt;
+    }
+
+    return minimumDistance;
 }
 
 float Curve::parameterAt(const QVector2D &point, int intervals) const
