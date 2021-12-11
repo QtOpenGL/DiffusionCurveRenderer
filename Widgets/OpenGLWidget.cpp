@@ -1,6 +1,7 @@
 #include "OpenGLWidget.h"
 
 #include <Controller.h>
+#include <Util.h>
 #include <QOpenGLPaintDevice>
 #include <QPainter>
 #include <QVector4D>
@@ -77,20 +78,19 @@ void OpenGLWidget::paintGL()
             // Control polygon
             painter.setPen(mDashedPen);
             painter.setBrush(QBrush());
-
             for (int i = 0; i < controlPoints.size() - 1; ++i) {
-                QPointF p0 = mTransformer->mapFromOpenGLToGui(controlPoints[i]->position);
-                QPointF p1 = mTransformer->mapFromOpenGLToGui(controlPoints[i + 1]->position);
+                QPointF p0 = mTransformer->mapFromOpenGLToGui(controlPoints[i]->position());
+                QPointF p1 = mTransformer->mapFromOpenGLToGui(controlPoints[i + 1]->position());
                 painter.drawLine(p0, p1);
             }
 
+            // Control Points
             for (int j = 0; j < controlPoints.size(); ++j) {
-                QPointF center = mTransformer->mapFromOpenGLToGui(controlPoints[j]->position);
-
+                QPointF center = mTransformer->mapFromOpenGLToGui(controlPoints[j]->position());
                 painter.setPen(QColor(0, 0, 0, 0));
 
                 // Outer disk
-                int outerRadius = controlPoints[j]->selected ? 12 : 10;
+                int outerRadius = controlPoints[j]->selected() ? 12 : 10;
                 outerRadius /= mProjectionParameters->zoomRatio;
                 painter.setBrush(QColor(122, 120, 120, 128));
                 painter.drawEllipse(center, outerRadius, outerRadius);
@@ -99,6 +99,27 @@ void OpenGLWidget::paintGL()
                 int innerRadius = 6;
                 innerRadius /= mProjectionParameters->zoomRatio;
                 painter.setBrush(QColor(240, 240, 240));
+                painter.drawEllipse(center, innerRadius, innerRadius);
+            }
+
+            // color points
+            QVector<const ColorPoint *> colorPoints = mSelectedCurve->getRightColorPoints();
+            colorPoints << mSelectedCurve->getLeftColorPoints();
+
+            for (int i = 0; i < colorPoints.size(); ++i) {
+                QPointF center = mTransformer->mapFromOpenGLToGui(colorPoints[i]->getPosition2D());
+                painter.setPen(QColor(0, 0, 0, 0));
+
+                // Outer disk
+                int outerRadius = colorPoints[i]->selected() ? 12 : 10;
+                outerRadius /= mProjectionParameters->zoomRatio;
+                painter.setBrush(QColor(122, 120, 120, 40));
+                painter.drawEllipse(center, outerRadius, outerRadius);
+
+                // Inner disk
+                int innerRadius = 6;
+                innerRadius /= mProjectionParameters->zoomRatio;
+                painter.setBrush(Util::convertVector4DtoColor(colorPoints[i]->color()));
                 painter.drawEllipse(center, innerRadius, innerRadius);
             }
         }
@@ -237,6 +258,12 @@ void OpenGLWidget::onSelectedControlPointChanged(const ControlPoint *selectedCon
 void OpenGLWidget::onSelectedCurveChanged(const Curve *selectedCurve)
 {
     mSelectedCurve = selectedCurve;
+    refresh();
+}
+
+void OpenGLWidget::onSelectedColorPointChanged(const ColorPoint *selectedColorPoint)
+{
+    mSelectedColorPoint = selectedColorPoint;
     refresh();
 }
 

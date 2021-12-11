@@ -8,7 +8,7 @@
 #include <QVector4D>
 #include <QVector>
 
-class Curve
+class Curve : public QObject
 {
 public:
     Curve();
@@ -17,7 +17,7 @@ public:
     virtual QVector<const ControlPoint *> getControlPoints() const;
     virtual const ControlPoint *getControlPoint(int index) const;
     virtual QVector<QVector2D> getControlPointPositions() const;
-    virtual void addControlPoint(ControlPoint *controlPoint, bool append = true);
+    virtual bool addControlPoint(ControlPoint *controlPoint, bool append = true);
 
     virtual void removeControlPoint(int index);
     virtual void removeControlPoint(ControlPoint *controlPoint);
@@ -29,7 +29,7 @@ public:
     virtual QVector<const ColorPoint *> getLeftColorPoints() const;
     virtual QVector<const ColorPoint *> getRightColorPoints() const;
 
-    virtual void addColorPoint(ColorPoint *colorPoint);
+    virtual bool addColorPoint(ColorPoint *colorPoint);
 
     virtual const ColorPoint *getLeftColorPoint(int index) const;
     virtual const ColorPoint *getRightColorPoint(int index) const;
@@ -50,7 +50,9 @@ public:
     virtual QVector<float> getLeftColorPositions() const;
     virtual QVector<float> getRightColorPositions() const;
 
-    virtual const ControlPoint *getClosestControlPoint(QVector2D point) const;
+    virtual const ColorPoint *getClosestColorPoint(const QVector2D &nearbyPoint) const;
+    virtual const ControlPoint *getClosestControlPoint(const QVector2D &nearbyPoint) const;
+
     virtual void deselectAllControlPoints();
     virtual float distanceToPoint(const QVector2D &point, int intervals = 1000) const;
 
@@ -58,12 +60,13 @@ public:
     virtual void translate(QPointF translation);
 
     virtual float length(int intervals = 100) const;
-    virtual float parameterAt(const QVector2D &point, int intervals = 100) const;
+
     virtual QRectF getBoundingBox(int intervals = 100) const;
 
     virtual QVector2D valueAt(float t) const = 0;
     virtual QVector2D tangentAt(float t) const = 0;
     virtual QVector2D normalAt(float t) const = 0;
+    virtual float parameterAt(const QVector2D &point, int intervals = 1000) const;
 
     const bool &selected() const;
     void setSelected(bool newSelected);

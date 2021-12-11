@@ -17,12 +17,15 @@ enum class Action {
     ZoomOut,
     RemoveCurve,
     RemoveControlPoint,
+    RemoveColorPoint,
     UpdateControlPointPosition,
     UpdateCurveZIndex,
     UpdateContourThickness,
     UpdateDiffusionWidth,
     UpdateContourColor,
-    EnableContourColor
+    EnableContourColor,
+    UpdateColorPointColor,
+    UpdateColorPointPosition
 };
 
 enum class Mode {

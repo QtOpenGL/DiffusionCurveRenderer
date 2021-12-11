@@ -29,7 +29,7 @@ ControlPointWidget::ControlPointWidget(QGroupBox *parent)
         connect(mControlPointX, &QLineEdit::textEdited, this, [=](QString text) {
             if (mSelectedControlPoint) {
                 float x = text.toFloat();
-                float y = mSelectedControlPoint->position.y();
+                float y = mSelectedControlPoint->position().y();
                 emit action(Action::UpdateControlPointPosition, QPointF(x, y));
             }
         });
@@ -47,7 +47,7 @@ ControlPointWidget::ControlPointWidget(QGroupBox *parent)
 
         connect(mControlPointY, &QLineEdit::textEdited, this, [this](QString text) {
             if (mSelectedControlPoint) {
-                float x = mSelectedControlPoint->position.x();
+                float x = mSelectedControlPoint->position().x();
                 float y = text.toFloat();
                 emit action(Action::UpdateControlPointPosition, QPointF(x, y));
             }
@@ -83,9 +83,9 @@ void ControlPointWidget::onSelectedControlPointChanged(ControlPoint *selectedCon
 
     if (mSelectedControlPoint) {
         setEnabled(true);
-        mControlPointLabel->setText(QString::number(mSelectedControlPoint->index));
-        mControlPointX->setText(QString::number(mSelectedControlPoint->position.x(), 'f', 0));
-        mControlPointY->setText(QString::number(mSelectedControlPoint->position.y(), 'f', 0));
+        mControlPointLabel->setText(QString::number(mSelectedControlPoint->index()));
+        mControlPointX->setText(QString::number(mSelectedControlPoint->position().x(), 'f', 0));
+        mControlPointY->setText(QString::number(mSelectedControlPoint->position().y(), 'f', 0));
     } else {
         mControlPointLabel->clear();
         mControlPointX->clear();
@@ -110,9 +110,9 @@ void ControlPointWidget::onSelectedCurveChanged(Curve *selectedCurve)
 void ControlPointWidget::refresh()
 {
     if (mSelectedControlPoint) {
+        mControlPointLabel->setText(QString::number(mSelectedControlPoint->index()));
+        mControlPointX->setText(QString::number(mSelectedControlPoint->position().x(), 'f', 0));
+        mControlPointY->setText(QString::number(mSelectedControlPoint->position().y(), 'f', 0));
         setEnabled(true);
-        mControlPointLabel->setText(QString::number(mSelectedControlPoint->index));
-        mControlPointX->setText(QString::number(mSelectedControlPoint->position.x(), 'f', 0));
-        mControlPointY->setText(QString::number(mSelectedControlPoint->position.y(), 'f', 0));
     }
 }

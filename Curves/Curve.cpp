@@ -16,8 +16,7 @@ Curve::~Curve()
 {
     for (int i = 0; i < mControlPoints.size(); ++i)
         if (mControlPoints[i]) {
-            delete mControlPoints[i];
-            mControlPoints[i] = nullptr;
+            mControlPoints[i]->deleteLater();
         }
 }
 
@@ -54,15 +53,15 @@ QVector<QVector2D> Curve::getControlPointPositions() const
     QVector<QVector2D> positions;
 
     for (auto &point : mControlPoints)
-        positions << point->position;
+        positions << point->position();
 
     return positions;
 }
 
-void Curve::addControlPoint(ControlPoint *controlPoint, bool append)
+bool Curve::addControlPoint(ControlPoint *controlPoint, bool append)
 {
     if (mControlPoints.size() >= Constants::MAX_CONTROL_POINT_COUNT)
-        return;
+        return false;
 
     if (append) {
         mControlPoints << controlPoint;
@@ -75,7 +74,7 @@ void Curve::addControlPoint(ControlPoint *controlPoint, bool append)
             int insertionIndex = mControlPoints.size();
 
             for (int i = 1; i < mControlPoints.size(); ++i) {
-                float distance = distanceToLineSegment(mControlPoints[i - 1]->position, mControlPoints[i]->position, controlPoint->position);
+                float distance = distanceToLineSegment(mControlPoints[i - 1]->position(), mControlPoints[i]->position(), controlPoint->position());
 
                 if (distance < minimumDistance) {
                     minimumDistance = distance;
@@ -88,12 +87,14 @@ void Curve::addControlPoint(ControlPoint *controlPoint, bool append)
     }
 
     updateControlPointIndices();
+
+    return true;
 }
 
 void Curve::removeControlPoint(int index)
 {
     if (0 <= index && index < mControlPoints.size()) {
-        delete mControlPoints[index];
+        mControlPoints[index]->deleteLater();
         mControlPoints.removeAt(index);
         updateControlPointIndices();
     }
@@ -143,24 +144,34 @@ QVector<const ColorPoint *> Curve::getRightColorPoints() const
     return points;
 }
 
-void Curve::addColorPoint(ColorPoint *colorPoint)
+bool Curve::addColorPoint(ColorPoint *colorPoint)
 {
-    switch (colorPoint->type) {
+    switch (colorPoint->type()) {
     case ColorPoint::Left: {
+        if (mLeftColorPoints.size() >= Constants::MAX_COLOR_POINT_COUNT)
+            return false;
+
         if (colorPoint) {
             mLeftColorPoints << colorPoint;
             orderLeftColorPoints();
+            return true;
         }
         break;
     }
     case ColorPoint::Right: {
+        if (mRightColorPoints.size() >= Constants::MAX_COLOR_POINT_COUNT)
+            return false;
+
         if (colorPoint) {
             mRightColorPoints << colorPoint;
             orderRightColorPoints();
+            return true;
         }
         break;
     }
     }
+
+    return false;
 }
 
 const ColorPoint *Curve::getLeftColorPoint(int index) const
@@ -182,7 +193,7 @@ const ColorPoint *Curve::getRightColorPoint(int index) const
 void Curve::removeLeftColorPoint(int index)
 {
     if (0 <= index && index < mLeftColorPoints.size()) {
-        delete mLeftColorPoints[index];
+        mLeftColorPoints[index]->deleteLater();
         mLeftColorPoints.removeAt(index);
         orderLeftColorPoints();
     }
@@ -190,21 +201,19 @@ void Curve::removeLeftColorPoint(int index)
 
 void Curve::removeRightColorPoint(int index)
 {
-    if (0 <= index && index < mLeftColorPoints.size()) {
-        delete mLeftColorPoints[index];
-        mLeftColorPoints.removeAt(index);
-        orderLeftColorPoints();
+    if (0 <= index && index < mRightColorPoints.size()) {
+        mRightColorPoints[index]->deleteLater();
+        mRightColorPoints.removeAt(index);
+        orderRightColorPoints();
     }
 }
 
 void Curve::removeColorPoint(ColorPoint *colorPoint)
 {
-    switch (colorPoint->type) {
+    switch (colorPoint->type()) {
     case ColorPoint::Left: {
         for (int i = 0; i < mLeftColorPoints.size(); ++i) {
-            ColorPoint *point = mLeftColorPoints[i];
-
-            if (point == mLeftColorPoints[i]) {
+            if (colorPoint == mLeftColorPoints[i]) {
                 removeLeftColorPoint(i);
                 return;
             }
@@ -213,9 +222,7 @@ void Curve::removeColorPoint(ColorPoint *colorPoint)
     }
     case ColorPoint::Right: {
         for (int i = 0; i < mRightColorPoints.size(); ++i) {
-            ColorPoint *point = mRightColorPoints[i];
-
-            if (point == mRightColorPoints[i]) {
+            if (colorPoint == mRightColorPoints[i]) {
                 removeRightColorPoint(i);
                 return;
             }
@@ -234,9 +241,9 @@ QVector4D Curve::leftColorAt(float t) const
         ColorPoint *previousColorPoint = mLeftColorPoints[i - 1];
         ColorPoint *nextColorPoint = mLeftColorPoints[i];
 
-        if (previousColorPoint->position <= t && t <= nextColorPoint->position) {
-            float s = (t - previousColorPoint->position) / (nextColorPoint->position - previousColorPoint->position);
-            return previousColorPoint->color + s * (nextColorPoint->color - previousColorPoint->color);
+        if (previousColorPoint->position() <= t && t <= nextColorPoint->position()) {
+            float s = (t - previousColorPoint->position()) / (nextColorPoint->position() - previousColorPoint->position());
+            return previousColorPoint->color() + s * (nextColorPoint->color() - previousColorPoint->color());
         }
     }
 
@@ -252,9 +259,9 @@ QVector4D Curve::rightColorAt(float t) const
         ColorPoint *previousColorPoint = mRightColorPoints[i - 1];
         ColorPoint *nextColorPoint = mRightColorPoints[i];
 
-        if (previousColorPoint->position <= t && t <= nextColorPoint->position) {
-            float s = (t - previousColorPoint->position) / (nextColorPoint->position - previousColorPoint->position);
-            return previousColorPoint->color + s * (nextColorPoint->color - previousColorPoint->color);
+        if (previousColorPoint->position() <= t && t <= nextColorPoint->position()) {
+            float s = (t - previousColorPoint->position()) / (nextColorPoint->position() - previousColorPoint->position());
+            return previousColorPoint->color() + s * (nextColorPoint->color() - previousColorPoint->color());
         }
     }
 
@@ -273,11 +280,11 @@ void Curve::orderLeftColorPoints()
     for (int i = 1; i < mLeftColorPoints.size(); ++i) {
         ColorPoint *currentColorPoint = mLeftColorPoints[i];
 
-        if (orderedColorPoints.last()->position <= currentColorPoint->position)
+        if (orderedColorPoints.last()->position() <= currentColorPoint->position())
             orderedColorPoints << currentColorPoint;
         else
             for (int j = 0; j < orderedColorPoints.size(); j++)
-                if (currentColorPoint->position < orderedColorPoints[j]->position) {
+                if (currentColorPoint->position() < orderedColorPoints[j]->position()) {
                     orderedColorPoints.insert(j, currentColorPoint);
                     break;
                 }
@@ -298,11 +305,11 @@ void Curve::orderRightColorPoints()
     for (int i = 1; i < mRightColorPoints.size(); ++i) {
         ColorPoint *currentColorPoint = mRightColorPoints[i];
 
-        if (orderedColorPoints.last()->position <= currentColorPoint->position)
+        if (orderedColorPoints.last()->position() <= currentColorPoint->position())
             orderedColorPoints << currentColorPoint;
         else
             for (int j = 0; j < orderedColorPoints.size(); j++)
-                if (currentColorPoint->position < orderedColorPoints[j]->position) {
+                if (currentColorPoint->position() < orderedColorPoints[j]->position()) {
                     orderedColorPoints.insert(j, currentColorPoint);
                     break;
                 }
@@ -315,7 +322,7 @@ QVector<QVector4D> Curve::getLeftColors() const
 {
     QVector<QVector4D> leftColors;
     for (int i = 0; i < mLeftColorPoints.size(); i++) {
-        leftColors << mLeftColorPoints[i]->color;
+        leftColors << mLeftColorPoints[i]->color();
     }
 
     return leftColors;
@@ -325,7 +332,7 @@ QVector<QVector4D> Curve::getRightColors() const
 {
     QVector<QVector4D> rightColors;
     for (int i = 0; i < mRightColorPoints.size(); i++) {
-        rightColors << mRightColorPoints[i]->color;
+        rightColors << mRightColorPoints[i]->color();
     }
 
     return rightColors;
@@ -336,7 +343,7 @@ QVector<float> Curve::getLeftColorPositions() const
     QVector<float> colorPointPositions;
 
     for (int i = 0; i < mLeftColorPoints.size(); i++) {
-        colorPointPositions << mLeftColorPoints[i]->position;
+        colorPointPositions << mLeftColorPoints[i]->position();
     }
 
     return colorPointPositions;
@@ -347,10 +354,33 @@ QVector<float> Curve::getRightColorPositions() const
     QVector<float> colorPointPositions;
 
     for (int i = 0; i < mRightColorPoints.size(); i++) {
-        colorPointPositions << mRightColorPoints[i]->position;
+        colorPointPositions << mRightColorPoints[i]->position();
     }
 
     return colorPointPositions;
+}
+
+const ColorPoint *Curve::getClosestColorPoint(const QVector2D &point) const
+{
+    QVector<ColorPoint *> allColorPoints;
+    allColorPoints << mLeftColorPoints << mRightColorPoints;
+
+    if (allColorPoints.size() == 0)
+        return nullptr;
+
+    float minimumDistance = std::numeric_limits<float>::infinity();
+    int index = 0;
+
+    for (int i = 0; i < allColorPoints.size(); ++i) {
+        float distance = allColorPoints[i]->getPosition2D().distanceToPoint(point);
+
+        if (distance < minimumDistance) {
+            minimumDistance = distance;
+            index = i;
+        }
+    }
+
+    return allColorPoints[index];
 }
 
 int Curve::getSize() const
@@ -358,7 +388,7 @@ int Curve::getSize() const
     return mControlPoints.size();
 }
 
-const ControlPoint *Curve::getClosestControlPoint(QVector2D point) const
+const ControlPoint *Curve::getClosestControlPoint(const QVector2D &nearbyPoint) const
 {
     if (mControlPoints.size() == 0)
         return nullptr;
@@ -367,7 +397,7 @@ const ControlPoint *Curve::getClosestControlPoint(QVector2D point) const
     int index = 0;
 
     for (int i = 0; i < mControlPoints.size(); ++i) {
-        float distance = mControlPoints[i]->position.distanceToPoint(point);
+        float distance = mControlPoints[i]->position().distanceToPoint(nearbyPoint);
 
         if (distance < minimumDistance) {
             minimumDistance = distance;
@@ -381,7 +411,7 @@ const ControlPoint *Curve::getClosestControlPoint(QVector2D point) const
 void Curve::deselectAllControlPoints()
 {
     for (int i = 0; i < mControlPoints.size(); ++i) {
-        mControlPoints[i]->selected = false;
+        mControlPoints[i]->setSelected(false);
     }
 }
 
@@ -406,7 +436,7 @@ void Curve::translate(QVector2D translation)
 {
     for (int i = 0; i < mControlPoints.size(); ++i) {
         ControlPoint *controlPoint = mControlPoints[i];
-        controlPoint->position = controlPoint->position + translation;
+        controlPoint->setPosition(controlPoint->position() + translation);
     }
 }
 
@@ -438,10 +468,10 @@ QRectF Curve::getBoundingBox(int intervals) const
     float yMin = std::numeric_limits<float>::infinity();
     float yMax = -std::numeric_limits<float>::infinity();
 
-    const float dt = 1.0f / static_cast<float>(intervals);
     float t = 0.0f;
+    float dt = 1.0f / static_cast<float>(intervals);
 
-    for (int i = 0; i < intervals; i++) {
+    for (int i = 0; i <= intervals; i++) {
         QVector2D value = valueAt(t);
 
         if (value.x() > xMax)
@@ -512,7 +542,7 @@ void Curve::setDiffusionWidth(float newDiffusionWidth)
 void Curve::updateControlPointIndices()
 {
     for (int i = 0; i < mControlPoints.size(); ++i) {
-        mControlPoints[i]->index = i;
+        mControlPoints[i]->setIndex(i);
     }
 }
 
@@ -614,18 +644,18 @@ float Curve::distanceToLineSegment(const QVector2D &startingPoint, const QVector
 float Curve::parameterAt(const QVector2D &point, int intervals) const
 {
     float t = 0;
-    float s = 0;
     float dt = 1.0f / intervals;
-    float minimumDistance = point.distanceToPoint(valueAt(0));
+    float minimumDistance = std::numeric_limits<float>::infinity();
+    float parameter = 0;
 
-    for (int i = 0; i < intervals; i++) {
-        t += dt;
-        float distance = point.distanceToPoint(valueAt(t));
+    for (int i = 0; i <= intervals; i++) {
+        float distance = valueAt(t).distanceToPoint(point);
         if (distance < minimumDistance) {
             minimumDistance = distance;
-            s = t;
+            parameter = t;
         }
+        t += dt;
     }
 
-    return s;
+    return parameter;
 }

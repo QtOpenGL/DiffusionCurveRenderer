@@ -4,17 +4,25 @@
 #include <QObject>
 #include <QVector2D>
 
-struct ControlPoint
+class ControlPoint : public QObject
 {
 public:
-    ControlPoint();
     ControlPoint(float x, float y);
-    ControlPoint(QPointF point);
-    ControlPoint(QVector2D point);
+    ControlPoint(QVector2D);
 
-    QVector2D position;
-    bool selected;
-    int index;
+    const QVector2D &position() const;
+    void setPosition(const QVector2D &newPosition);
+
+    bool selected() const;
+    void setSelected(bool newSelected);
+
+    int index() const;
+    void setIndex(int newIndex);
+
+private:
+    QVector2D mPosition;
+    bool mSelected;
+    int mIndex;
 };
 
 #endif // CONTROLPOINT_H

@@ -4,13 +4,14 @@ CurveContainer::CurveContainer(QObject *parent)
     : QObject(parent)
     , mSelectedCurve(nullptr)
     , mSelectedControlPoint(nullptr)
+    , mSelectedColorPoint(nullptr)
 {}
 
 CurveContainer::~CurveContainer()
 {
     for (auto &curve : mCurves) {
         if (curve)
-            delete curve;
+            curve->deleteLater();
 
         curve = nullptr;
     }
@@ -33,24 +34,34 @@ QVector<Curve *> &CurveContainer::getCurves() const
     return mCurves;
 }
 
-ControlPoint *CurveContainer::getClosestControlPointOnSelectedCurve(const QVector2D &position, float radius) const
+ControlPoint *CurveContainer::getClosestControlPointOnSelectedCurve(const QVector2D &nearbyPoint, float radius) const
 {
     if (!mSelectedCurve)
         return nullptr;
 
-    ControlPoint *controlPoint = const_cast<ControlPoint *>(mSelectedCurve->getClosestControlPoint(position));
+    ControlPoint *controlPoint = const_cast<ControlPoint *>(mSelectedCurve->getClosestControlPoint(nearbyPoint));
 
     if (controlPoint) {
-        if (controlPoint->position.distanceToPoint(position) > radius)
+        if (controlPoint->position().distanceToPoint(nearbyPoint) > radius)
             controlPoint = nullptr;
     }
 
     return controlPoint;
 }
 
-ControlPoint *CurveContainer::getClosestControlPointOnSelectedCurve(const QPointF &position, float radius) const
+ColorPoint *CurveContainer::getClosestColorPointOnSelectedCurve(const QVector2D &nearbyPoint, float radius) const
 {
-    return getClosestControlPointOnSelectedCurve(QVector2D(position.x(), position.y()), radius);
+    if (!mSelectedCurve)
+        return nullptr;
+
+    ColorPoint *colorPoint = const_cast<ColorPoint *>(mSelectedCurve->getClosestColorPoint(nearbyPoint));
+
+    if (colorPoint) {
+        if (colorPoint->getPosition2D().distanceToPoint(nearbyPoint) > radius)
+            colorPoint = nullptr;
+    }
+
+    return colorPoint;
 }
 
 Curve *CurveContainer::selectedCurve()
@@ -68,7 +79,7 @@ void CurveContainer::removeCurve(int index)
     if (0 <= index && index < mCurves.size()) {
         Curve *curve = mCurves[index];
         mCurves.removeAt(index);
-        delete curve;
+        curve->deleteLater();
         sortCurves();
     }
 }
@@ -138,10 +149,10 @@ void CurveContainer::setSelectedControlPoint(ControlPoint *selectedControlPoint)
         return;
 
     if (mSelectedControlPoint)
-        mSelectedControlPoint->selected = false;
+        mSelectedControlPoint->setSelected(false);
 
     if (selectedControlPoint)
-        selectedControlPoint->selected = true;
+        selectedControlPoint->setSelected(true);
 
     mSelectedControlPoint = selectedControlPoint;
     emit selectedControlPointChanged(selectedControlPoint);
@@ -169,4 +180,24 @@ void CurveContainer::sortCurves()
     }
 
     mCurves = sortedCurves;
+}
+
+ColorPoint *CurveContainer::selectedColorPoint() const
+{
+    return mSelectedColorPoint;
+}
+
+void CurveContainer::setSelectedColorPoint(ColorPoint *newSelectedColorPoint)
+{
+    if (mSelectedColorPoint == newSelectedColorPoint)
+        return;
+
+    if (mSelectedColorPoint)
+        mSelectedColorPoint->setSelected(false);
+
+    if (newSelectedColorPoint)
+        newSelectedColorPoint->setSelected(true);
+
+    mSelectedColorPoint = newSelectedColorPoint;
+    emit selectedColorPointChanged(newSelectedColorPoint);
 }

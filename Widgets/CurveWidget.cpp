@@ -1,5 +1,6 @@
 #include "CurveWidget.h"
 
+#include <Util.h>
 #include <QColorDialog>
 #include <QSizePolicy>
 #include <QVBoxLayout>
@@ -28,15 +29,16 @@ CurveWidget::CurveWidget(QGroupBox *parent)
     {
         mContourColorStateCheckBox = new QCheckBox;
         mContourColorStateCheckBox->setCheckable(true);
-
         connect(mContourColorStateCheckBox, &QCheckBox::stateChanged, this, [=](int state) { emit action(Action::EnableContourColor, state == 2); });
 
         mColorButton = new CustomFlatButton;
         connect(mColorButton, &QPushButton::clicked, this, [=]() {
-            if (mSelectedCurve) {
-                QColor color = QColorDialog::getColor(CustomFlatButton::getQColor(mSelectedCurve->contourColor()), this);
-                if (color.isValid()) {
-                    emit action(Action::UpdateContourColor, CustomFlatButton::getVector4DColor(color));
+            if (mSelectedCurve && mSelectedCurve->contourColorEnabled()) {
+                QColor initialColor = Util::convertVector4DtoColor(mSelectedCurve->contourColor());
+                QColor selectedColor = QColorDialog::getColor(initialColor, this);
+                if (selectedColor.isValid()) {
+                    QVector4D newColor = Util::convertColorToVector4D(selectedColor);
+                    emit action(Action::UpdateContourColor, newColor);
                 }
             }
         });
@@ -49,14 +51,12 @@ CurveWidget::CurveWidget(QGroupBox *parent)
     // Contour Thickness
     {
         mContourThicknessSlider = new QSlider(Qt::Horizontal);
-        mContourThicknessSlider->setMinimum(100);
-        mContourThicknessSlider->setMaximum(3000);
+        mContourThicknessSlider->setMinimum(10);
+        mContourThicknessSlider->setMaximum(300);
         mContourThicknessSlider->setTickPosition(QSlider::TicksBelow);
-        mContourThicknessSlider->setTickInterval(580);
+        mContourThicknessSlider->setTickInterval(58);
 
-        connect(mContourThicknessSlider, &QSlider::valueChanged, this, [=](int value) {
-            emit action(Action::UpdateContourThickness, value / 100.0f);
-        });
+        connect(mContourThicknessSlider, &QSlider::valueChanged, this, [=](int value) { emit action(Action::UpdateContourThickness, value / 10.0f); });
 
         mainLayout->addWidget(new QLabel("Contour Thickness"), 2, 0);
         mainLayout->addWidget(mContourThicknessSlider, 2, 2);
@@ -65,12 +65,12 @@ CurveWidget::CurveWidget(QGroupBox *parent)
     // Diffusion Width
     {
         mDiffusionWidthSlider = new QSlider(Qt::Horizontal);
-        mDiffusionWidthSlider->setMinimum(100);
-        mDiffusionWidthSlider->setMaximum(3000);
+        mDiffusionWidthSlider->setMinimum(10);
+        mDiffusionWidthSlider->setMaximum(300);
         mDiffusionWidthSlider->setTickPosition(QSlider::TicksBelow);
-        mDiffusionWidthSlider->setTickInterval(580);
+        mDiffusionWidthSlider->setTickInterval(58);
 
-        connect(mDiffusionWidthSlider, &QSlider::valueChanged, this, [=](int value) { emit action(Action::UpdateDiffusionWidth, value / 100.0f); });
+        connect(mDiffusionWidthSlider, &QSlider::valueChanged, this, [=](int value) { emit action(Action::UpdateDiffusionWidth, value / 10.0f); });
 
         mainLayout->addWidget(new QLabel("Diffusion Width"), 3, 0);
         mainLayout->addWidget(mDiffusionWidthSlider, 3, 2);
@@ -101,7 +101,7 @@ void CurveWidget::reset()
 {
     mZLineEdit->clear();
     mContourColorStateCheckBox->setChecked(false);
-    mColorButton->setColor(QVector4D(0, 0, 0, 0));
+    mColorButton->setColor(QColor(0, 0, 0, 0));
     setEnabled(false);
 }
 
@@ -111,9 +111,13 @@ void CurveWidget::refresh()
         setEnabled(true);
         mZLineEdit->setText(QString::number(mSelectedCurve->z()));
         mContourColorStateCheckBox->setChecked(mSelectedCurve->contourColorEnabled());
-        mContourThicknessSlider->setSliderPosition(100 * mSelectedCurve->contourThickness());
-        mDiffusionWidthSlider->setSliderPosition(100 * mSelectedCurve->diffusionWidth());
-        mColorButton->setColor(mSelectedCurve->contourColor());
+        mContourThicknessSlider->setSliderPosition(10 * mSelectedCurve->contourThickness());
+        mDiffusionWidthSlider->setSliderPosition(10 * mSelectedCurve->diffusionWidth());
+        if (mSelectedCurve->contourColorEnabled()) {
+            mColorButton->setColor(Util::convertVector4DtoColor(mSelectedCurve->contourColor()));
+        } else {
+            mColorButton->setColor(QColor(0, 0, 0, 0));
+        }
     } else {
         reset();
     }

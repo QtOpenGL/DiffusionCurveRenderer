@@ -28,9 +28,6 @@ signals:
     void action(Action action, CustomVariant value = CustomVariant());
 
 private:
-    void toQColor(const QVector4D &color);
-
-private:
     QLineEdit *mZLineEdit;
     QSlider *mContourThicknessSlider;
     QSlider *mDiffusionWidthSlider;

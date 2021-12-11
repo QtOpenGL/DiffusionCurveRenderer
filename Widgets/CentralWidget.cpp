@@ -26,7 +26,7 @@ void CentralWidget::init()
 
     QHBoxLayout *layout = new QHBoxLayout;
     mOpenGLWidgetContainer = new QGroupBox;
-    mOpenGLWidgetContainer->setTitle(" ");
+    mOpenGLWidgetContainer->setTitle("Canvas");
     mOpenGLWidgetContainer->setLayout(layout);
     layout->addWidget(mOpenGLWidget);
     gridLayout->addWidget(mOpenGLWidgetContainer, 0, 1, 0, -1);

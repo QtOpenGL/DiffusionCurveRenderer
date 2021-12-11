@@ -29,8 +29,11 @@ public:
     Curve *selectCurve(const QVector2D &position, float radius = 20.0f);
     Curve *selectCurve(const QPointF &position, float radius = 20.0f);
 
-    ControlPoint *getClosestControlPointOnSelectedCurve(const QVector2D &position, float radius = 20.0f) const;
-    ControlPoint *getClosestControlPointOnSelectedCurve(const QPointF &position, float radius = 20.0f) const;
+    ControlPoint *getClosestControlPointOnSelectedCurve(const QVector2D &nearbyPoint, float radius = 20.0f) const;
+    ColorPoint *getClosestColorPointOnSelectedCurve(const QVector2D &nearbyPoint, float radius = 20.0f) const;
+
+    ColorPoint *selectedColorPoint() const;
+    void setSelectedColorPoint(ColorPoint *newSelectedColorPoint);
 
 public slots:
     void sortCurves();
@@ -38,11 +41,13 @@ public slots:
 signals:
     void selectedCurveChanged(Curve *selectedCurve);
     void selectedControlPointChanged(ControlPoint *selectedControlPoint);
+    void selectedColorPointChanged(ColorPoint *selectedColorPoint);
 
 private:
     mutable QVector<Curve *> mCurves;
     Curve *mSelectedCurve;
     ControlPoint *mSelectedControlPoint;
+    ColorPoint *mSelectedColorPoint;
 };
 
 #endif // CURVECONTAINER_H

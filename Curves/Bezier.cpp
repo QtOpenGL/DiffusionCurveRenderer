@@ -10,7 +10,7 @@ QVector2D Bezier::valueAt(float t) const
     int n = getDegree();
 
     for (int i = 0; i <= n; i++)
-        value += choose(n, i) * pow(t, i) * pow(1 - t, n - i) * mControlPoints[i]->position;
+        value += choose(n, i) * pow(t, i) * pow(1 - t, n - i) * mControlPoints[i]->position();
 
     return value;
 }
@@ -22,7 +22,7 @@ QVector2D Bezier::tangentAt(float t) const
 
     for (int i = 0; i <= order - 1; i++) {
         float coefficient = choose(order - 1, i) * pow(t, i) * pow(1 - t, order - 1 - i);
-        tangent += coefficient * (mControlPoints.at(i)->position - mControlPoints.at(i + 1)->position);
+        tangent += coefficient * (mControlPoints.at(i)->position() - mControlPoints.at(i + 1)->position());
     }
 
     tangent.normalize();

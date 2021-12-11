@@ -50,3 +50,13 @@ QVector<Curve *> Util::readCurveDataFromXML(QString filename)
 
     return curves;
 }
+
+QColor Util::convertVector4DtoColor(const QVector4D &color)
+{
+    return QColor(255 * color.x(), 255 * color.y(), 255 * color.z(), 255 * color.w());
+}
+
+QVector4D Util::convertColorToVector4D(const QColor &color)
+{
+    return QVector4D(color.red() / 255.0f, color.green() / 255.0f, color.blue() / 255.0f, color.alpha() / 255.0f);
+}

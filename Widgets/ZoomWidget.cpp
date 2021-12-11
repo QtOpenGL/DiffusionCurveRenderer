@@ -10,6 +10,7 @@ ZoomWidget::ZoomWidget(QGroupBox *parent)
     mSlider->setMinimum(8);
     mSlider->setMaximum(256);
     mSlider->setValue(16);
+    mSlider->setTickInterval(31);
     mSlider->setInvertedAppearance(false);
     mSlider->setTickPosition(QSlider::TicksBelow);
 

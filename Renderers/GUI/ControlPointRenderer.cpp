@@ -31,9 +31,9 @@ void ControlPointRenderer::render(Curve *curve, const QMatrix4x4 &projectionMatr
     QVector<const ControlPoint *> controlPoints = curve->getControlPoints();
 
     for (int j = 0; j < controlPoints.size(); ++j) {
-        mPointRendererParameters.point = controlPoints[j]->position;
-        mPointRendererParameters.innerRadius = mZoomRatio * (controlPoints[j]->selected ? 6 : 6);
-        mPointRendererParameters.outerRadius = mZoomRatio * (controlPoints[j]->selected ? 12 : 10);
+        mPointRendererParameters.point = controlPoints[j]->position();
+        mPointRendererParameters.innerRadius = mZoomRatio * (controlPoints[j]->selected() ? 6 : 6);
+        mPointRendererParameters.outerRadius = mZoomRatio * (controlPoints[j]->selected() ? 12 : 10);
         mPointRenderer->render(mPointRendererParameters, projectionMatrix);
     }
 }

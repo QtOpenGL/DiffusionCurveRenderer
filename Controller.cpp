@@ -53,9 +53,14 @@ Controller::Controller(QObject *parent)
     connect(mCurveContainer, &CurveContainer::selectedCurveChanged, mCurveWidget, &CurveWidget::onSelectedCurveChanged);
     connect(mCurveContainer, &CurveContainer::selectedCurveChanged, mControlPointWidget, &ControlPointWidget::onSelectedCurveChanged);
     connect(mCurveContainer, &CurveContainer::selectedCurveChanged, mOpenGLWidget, &OpenGLWidget::onSelectedCurveChanged);
+    connect(mCurveContainer, &CurveContainer::selectedCurveChanged, mColorPointWidget, &ColorPointWidget::onSelectedCurveChanged);
+    connect(mCurveContainer, &CurveContainer::selectedCurveChanged, mModeWidget, &ModeWidget::onSelectedCurveChanged);
 
     connect(mCurveContainer, &CurveContainer::selectedControlPointChanged, mOpenGLWidget, &OpenGLWidget::onSelectedControlPointChanged);
     connect(mCurveContainer, &CurveContainer::selectedControlPointChanged, mControlPointWidget, &ControlPointWidget::onSelectedControlPointChanged);
+
+    connect(mCurveContainer, &CurveContainer::selectedColorPointChanged, mColorPointWidget, &ColorPointWidget::onSelectedColorPointChanged);
+    connect(mCurveContainer, &CurveContainer::selectedColorPointChanged, mOpenGLWidget, &OpenGLWidget::onSelectedColorPointChanged);
 
     connect(mModeWidget, &ModeWidget::modeChanged, mOpenGLWidget, &OpenGLWidget::onModeChanged);
     connect(mModeWidget, &ModeWidget::modeChanged, this, &Controller::onModeChanged);
@@ -67,6 +72,7 @@ Controller::Controller(QObject *parent)
 
     connect(mCurveWidget, &CurveWidget::action, this, &Controller::onAction);
     connect(mControlPointWidget, &ControlPointWidget::action, this, &Controller::onAction);
+    connect(mColorPointWidget, &ColorPointWidget::action, this, &Controller::onAction);
 
     connect(this, &Controller::zoomRatioChanged, mZoomWidget, &ZoomWidget::onZoomRatioChanged);
     connect(mZoomWidget, &ZoomWidget::zoomRatioChanged, this, &Controller::onZoomRatioChanged);
@@ -108,13 +114,84 @@ void Controller::render()
 void Controller::onAction(Action action, CustomVariant value)
 {
     switch (action) {
+    case Action::AddColorPoint: {
+        if (mCurveContainer->selectedCurve() && mCurveContainer->selectedCurve()->getSize() >= 2) {
+            QVector2D nearbyPosition = value.toVector2D();
+            float parameter = mCurveContainer->selectedCurve()->parameterAt(nearbyPosition);
+            QVector3D positionOnCurve = mCurveContainer->selectedCurve()->valueAt(parameter).toVector3D();
+            QVector3D tangent = mCurveContainer->selectedCurve()->tangentAt(parameter).toVector3D();
+            QVector3D direction = (nearbyPosition.toVector3D() - positionOnCurve).normalized();
+            QVector3D cross = QVector3D::crossProduct(tangent, direction);
+
+            ColorPoint::Type type = cross.z() > 0 ? ColorPoint::Left : ColorPoint::Right;
+
+            ColorPoint *colorPoint = new ColorPoint(mCurveContainer->selectedCurve());
+            colorPoint->setPosition(parameter);
+            colorPoint->setType(type);
+            colorPoint->setColor(QVector4D(1, 1, 1, 1));
+
+            if (mCurveContainer->selectedCurve()->addColorPoint(colorPoint)) {
+                mCurveContainer->setSelectedColorPoint(colorPoint);
+                mCurveContainer->setSelectedControlPoint(nullptr);
+            } else {
+                colorPoint->deleteLater();
+            }
+        }
+        break;
+    }
+    case Action::RemoveColorPoint: {
+        ColorPoint *selectedColorPoint = mCurveContainer->selectedColorPoint();
+
+        Curve *selectedCurve = mCurveContainer->selectedCurve();
+        if (selectedCurve && selectedColorPoint) {
+            selectedCurve->removeColorPoint(selectedColorPoint);
+            mCurveContainer->setSelectedColorPoint(nullptr);
+        }
+        break;
+    }
+    case Action::UpdateColorPointColor: {
+        ColorPoint *selectedColorPoint = mCurveContainer->selectedColorPoint();
+        if (selectedColorPoint) {
+            selectedColorPoint->setColor(value.toVector4D());
+        }
+        break;
+    }
+    case Action::UpdateColorPointPosition: {
+        ColorPoint *selectedColorPoint = mCurveContainer->selectedColorPoint();
+        if (selectedColorPoint) {
+            selectedColorPoint->setPosition(value.toFloat());
+        }
+        break;
+    }
     case Action::Select: {
         if (mCurveContainer->selectedCurve()) {
-            ControlPoint *controlPoint = mCurveContainer->getClosestControlPointOnSelectedCurve(value.toVector2D(),
-                                                                                                10 * mProjectionParameters->zoomRatio);
-            mCurveContainer->setSelectedControlPoint(controlPoint);
+            QVector2D nearbyPoint = value.toVector2D();
+            ControlPoint *controlPoint = mCurveContainer->getClosestControlPointOnSelectedCurve(nearbyPoint, 10);
+            ColorPoint *colorPoint = mCurveContainer->getClosestColorPointOnSelectedCurve(nearbyPoint, 20);
+            bool flag = false;
 
-            if (controlPoint) {
+            if (controlPoint && colorPoint) {
+                float distanceToControlPoint = nearbyPoint.distanceToPoint(controlPoint->position());
+                float distanceToColorPoint = nearbyPoint.distanceToPoint(colorPoint->getPosition2D());
+
+                mCurveContainer->setSelectedControlPoint(distanceToColorPoint > distanceToControlPoint ? controlPoint : nullptr);
+                mCurveContainer->setSelectedColorPoint(distanceToColorPoint < distanceToControlPoint ? colorPoint : nullptr);
+                flag = true;
+
+            } else if (controlPoint) {
+                mCurveContainer->setSelectedControlPoint(controlPoint);
+                mCurveContainer->setSelectedColorPoint(nullptr);
+                flag = true;
+            } else if (colorPoint) {
+                mCurveContainer->setSelectedControlPoint(nullptr);
+                mCurveContainer->setSelectedColorPoint(colorPoint);
+                flag = true;
+            } else {
+                mCurveContainer->setSelectedControlPoint(nullptr);
+                mCurveContainer->setSelectedColorPoint(nullptr);
+            }
+
+            if (flag) {
                 refresh();
                 return;
             }
@@ -132,18 +209,20 @@ void Controller::onAction(Action action, CustomVariant value)
                 return;
 
             ControlPoint *controlPoint = new ControlPoint(value.toVector2D());
-            controlPoint->selected = true;
+            controlPoint->setSelected(true);
             mCurveContainer->selectedCurve()->addControlPoint(controlPoint, action == Action::AppendControlPoint);
             mCurveContainer->setSelectedControlPoint(controlPoint);
+            mCurveContainer->setSelectedColorPoint(nullptr);
         } else {
             ControlPoint *controlPoint = new ControlPoint(value.toVector2D());
-            controlPoint->selected = true;
+            controlPoint->setSelected(true);
 
             Bezier *curve = new Bezier();
             curve->addControlPoint(controlPoint);
             mCurveContainer->addCurve(curve);
             mCurveContainer->setSelectedCurve(curve);
             mCurveContainer->setSelectedControlPoint(controlPoint);
+            mCurveContainer->setSelectedColorPoint(nullptr);
         }
         break;
     }
@@ -163,8 +242,8 @@ void Controller::onAction(Action action, CustomVariant value)
     case Action::RemoveCurve: {
         if (mCurveContainer->selectedCurve()) {
             mCurveContainer->removeCurve(mCurveContainer->selectedCurve());
-            mCurveContainer->setSelectedCurve(nullptr);
             mCurveContainer->setSelectedControlPoint(nullptr);
+            mCurveContainer->setSelectedCurve(nullptr);
         }
         break;
     }
@@ -185,7 +264,7 @@ void Controller::onAction(Action action, CustomVariant value)
     }
     case Action::UpdateControlPointPosition: {
         if (mCurveContainer->selectedControlPoint()) {
-            mCurveContainer->selectedControlPoint()->position = value.toVector2D();
+            mCurveContainer->selectedControlPoint()->setPosition(value.toVector2D());
         }
         break;
     }
@@ -237,6 +316,7 @@ void Controller::onModeChanged(Mode mode)
     mMode = mode;
 
     if (mMode == Mode::Pan) {
+        mCurveContainer->setSelectedColorPoint(nullptr);
         mCurveContainer->setSelectedControlPoint(nullptr);
         mCurveContainer->setSelectedCurve(nullptr);
         refresh();
@@ -266,30 +346,12 @@ void Controller::onMousePressed(QMouseEvent *event)
     mMousePosition = event->pos();
 
     switch (mMode) {
-    case Mode::AddColorPoint:
-        break;
-    case Mode::MoveCurve:
-        break;
-    case Mode::Pan:
-        break;
-    case Mode::Select: {
+    case Mode::Select:
+    case Mode::AppendControlPoint:
+    case Mode::InsertControlPoint:
+    case Mode::AddColorPoint: {
         if (mMouseLeftButtonPressed) {
-            QVector2D position = mTransformer->mapFromGuiToOpenGL(mMousePosition);
-            onAction(Action::Select, position);
-        }
-        break;
-    }
-    case Mode::AppendControlPoint: {
-        if (mMouseLeftButtonPressed) {
-            QVector2D position = mTransformer->mapFromGuiToOpenGL(mMousePosition);
-            onAction(Action::AppendControlPoint, position);
-        }
-        break;
-    }
-    case Mode::InsertControlPoint: {
-        if (mMouseLeftButtonPressed) {
-            QVector2D position = mTransformer->mapFromGuiToOpenGL(mMousePosition);
-            onAction(Action::InsertControlPoint, position);
+            onAction((Action) mMode, mTransformer->mapFromGuiToOpenGL(mMousePosition));
         }
         break;
     }
@@ -329,9 +391,6 @@ void Controller::onMouseMoved(QMouseEvent *event)
         }
         break;
     }
-    case Mode::AppendControlPoint: {
-        break;
-    }
     case Mode::MoveCurve: {
         if (mMouseLeftButtonPressed) {
             if (mCurveContainer->selectedCurve()) {
@@ -344,6 +403,8 @@ void Controller::onMouseMoved(QMouseEvent *event)
             }
         }
     }
+    default:
+        break;
     }
 
     mMousePosition = event->pos();
@@ -364,6 +425,7 @@ void Controller::refresh()
     mOpenGLWidget->refresh();
     mControlPointWidget->refresh();
     mCurveWidget->refresh();
+    mModeWidget->refresh();
 }
 
 void Controller::zoom(float newZoomRatio, CustomVariant cursorPositionVariant)

@@ -40,6 +40,7 @@ signals:
 public slots:
     void onSelectedControlPointChanged(const ControlPoint *selectedControlPoint);
     void onSelectedCurveChanged(const Curve *selectedCurve);
+    void onSelectedColorPointChanged(const ColorPoint *selectedColorPoint);
     void onModeChanged(Mode mode);
     void refresh();
 
@@ -57,6 +58,7 @@ private:
 
     const Curve *mSelectedCurve;
     const ControlPoint *mSelectedControlPoint;
+    const ColorPoint *mSelectedColorPoint;
     const ProjectionParameters *mProjectionParameters;
 
     Mode mMode;
