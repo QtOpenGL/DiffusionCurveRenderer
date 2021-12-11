@@ -11,7 +11,8 @@ OpenGLWidget::OpenGLWidget(QWidget *parent)
     , mSelectedControlPoint(nullptr)
     , mMode(Mode::Select)
     , mInit(false)
-    , mMousePressed(false)
+    , mMouseRightButtonPressed(false)
+    , mMouseLeftButtonPressed(false)
     , mMousePosition(0, 0)
 {
     for (int i = 0; i < 4; ++i)
@@ -129,7 +130,9 @@ void OpenGLWidget::wheelEvent(QWheelEvent *event)
 
 void OpenGLWidget::mousePressEvent(QMouseEvent *event)
 {
-    mMousePressed = true;
+    mMouseRightButtonPressed = event->button() == Qt::RightButton;
+    mMouseLeftButtonPressed = event->button() == Qt::LeftButton;
+
     emit mousePressed(event);
 
     refresh();
@@ -137,7 +140,9 @@ void OpenGLWidget::mousePressEvent(QMouseEvent *event)
 
 void OpenGLWidget::mouseReleaseEvent(QMouseEvent *event)
 {
-    mMousePressed = false;
+    mMouseRightButtonPressed = false;
+    mMouseLeftButtonPressed = false;
+
     emit mouseReleased(event);
 
     refresh();
@@ -160,9 +165,15 @@ void OpenGLWidget::refresh()
         mHandles[3].moveCenter(boundingBox.bottomRight());
     }
 
+    if (mMouseRightButtonPressed) {
+        setCursor(Qt::ClosedHandCursor);
+        update();
+        return;
+    }
+
     switch (mMode) {
     case Mode::Pan:
-        setCursor(mMousePressed ? Qt::ClosedHandCursor : Qt::OpenHandCursor);
+        setCursor(mMouseLeftButtonPressed ? Qt::ClosedHandCursor : Qt::OpenHandCursor);
         break;
     case Mode::Select:
         setCursor(Qt::ArrowCursor);
@@ -209,7 +220,6 @@ void OpenGLWidget::onModeChanged(Mode mode)
     if (mMode == mode)
         return;
 
-    mMousePressed = false;
     mMode = mode;
 
     refresh();

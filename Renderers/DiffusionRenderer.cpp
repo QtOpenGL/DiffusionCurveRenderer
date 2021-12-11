@@ -130,7 +130,7 @@ void DiffusionRenderer::renderColorCurves(const QVector<Curve *> &curves, const 
         if (curve == nullptr)
             continue;
 
-        mColorCurveShader->setUniformValue("thickness", curve->thickness());
+        mColorCurveShader->setUniformValue("diffusionWidth", curve->diffusionWidth());
 
         // Control points
         QVector<QVector2D> controlPoints = curve->getControlPointPositions();
@@ -138,8 +138,8 @@ void DiffusionRenderer::renderColorCurves(const QVector<Curve *> &curves, const 
         mColorCurveShader->setUniformValue(mColorCurveLocations.value("controlPointsCount"), (GLint) controlPoints.size());
 
         // Left colors
-        QVector<QVector4D> leftColors = curve->getColors(Curve::Left);
-        QVector<GLfloat> leftColorPositions = curve->getColorPositions(Curve::Left);
+        QVector<QVector4D> leftColors = curve->getLeftColors();
+        QVector<float> leftColorPositions = curve->getLeftColorPositions();
 
         mColorCurveShader->setUniformValueArray(mColorCurveLocations.value("leftColors"), leftColors.constData(), leftColors.size());
         mColorCurveShader->setUniformValueArray(mColorCurveLocations.value("leftColorPositions"),
@@ -149,8 +149,8 @@ void DiffusionRenderer::renderColorCurves(const QVector<Curve *> &curves, const 
         mColorCurveShader->setUniformValue(mColorCurveLocations.value("leftColorsCount"), (GLint) leftColors.size());
 
         // Right colors
-        QVector<QVector4D> rightColors = curve->getColors(Curve::Right);
-        QVector<GLfloat> rightColorPositions = curve->getColorPositions(Curve::Right);
+        QVector<QVector4D> rightColors = curve->getRightColors();
+        QVector<float> rightColorPositions = curve->getRightColorPositions();
         mColorCurveShader->setUniformValueArray(mColorCurveLocations.value("rightColors"), rightColors.constData(), rightColors.size());
         mColorCurveShader->setUniformValueArray(mColorCurveLocations.value("rightColorPositions"),
                                                 rightColorPositions.constData(),

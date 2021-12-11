@@ -17,6 +17,7 @@ private:
     QLabel *mTypeLabel;
     QSlider *mPositionSlider;
     QPushButton *mColorButton;
+    QPushButton *mRemoveButton;
 };
 
 #endif // COLORPOINTWIDGET_H

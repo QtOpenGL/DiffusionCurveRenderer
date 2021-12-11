@@ -5,6 +5,7 @@
 #include "Transformer.h"
 #include "Types.h"
 
+#include <CustomVariant.h>
 #include <QObject>
 
 #include <Curves/Curve.h>
@@ -32,7 +33,7 @@ public:
     void render();
 
 public slots:
-    void onAction(Action action, QVariant value = QVariant());
+    void onAction(Action action, CustomVariant value = CustomVariant());
     void onModeChanged(Mode mode);
     void onZoomRatioChanged(float newZoomRatio);
 
@@ -44,7 +45,7 @@ private slots:
 
     bool cursorInsideBoundingBox(QPointF position, QMarginsF margins = QMarginsF(-20, -20, 20, 20));
     void refresh();
-    void zoom(float newZoomRatio, QVariant cursorPositionVariant = QVariant());
+    void zoom(float newZoomRatio, CustomVariant cursorPositionVariant = CustomVariant());
 
 signals:
     void zoomRatioChanged(float newZoomRatio);
@@ -67,7 +68,8 @@ private:
 
     Mode mMode;
 
-    bool mMousePressed;
+    bool mMouseRightButtonPressed;
+    bool mMouseLeftButtonPressed;
     bool mMousePressedOnCurve;
     QPointF mMousePosition;
 

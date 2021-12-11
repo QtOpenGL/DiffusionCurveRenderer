@@ -11,7 +11,8 @@
 Controller::Controller(QObject *parent)
     : QObject(parent)
     , mMode(Mode::Select)
-    , mMousePressed(false)
+    , mMouseRightButtonPressed(false)
+    , mMouseLeftButtonPressed(false)
     , mMousePressedOnCurve(false)
     , mZoomStep(2.0f)
 {
@@ -103,20 +104,24 @@ void Controller::render()
     mRendererManager->render();
 }
 
-void Controller::onAction(Action action, QVariant value)
+void Controller::onAction(Action action, CustomVariant value)
 {
     switch (action) {
     case Action::Select: {
-        ControlPoint *controlPoint = mCurveContainer->getClosestControlPointOnSelectedCurve(value.toPointF(), 20);
-        mCurveContainer->setSelectedControlPoint(controlPoint);
+        if (mCurveContainer->selectedCurve()) {
+            ControlPoint *controlPoint = mCurveContainer->getClosestControlPointOnSelectedCurve(value.toVector2D(),
+                                                                                                20 * mProjectionParameters->zoomRatio);
+            mCurveContainer->setSelectedControlPoint(controlPoint);
 
-        if (controlPoint)
-            return;
+            if (controlPoint) {
+                refresh();
+                return;
+            }
+        }
 
-        Curve *selectedCurve = mCurveContainer->selectCurve(value.toPointF(), 20);
+        Curve *selectedCurve = mCurveContainer->selectCurve(value.toVector2D(), 40 * mProjectionParameters->zoomRatio);
         mMousePressedOnCurve = selectedCurve ? true : false;
         mCurveContainer->setSelectedCurve(selectedCurve);
-        refresh();
         break;
     }
     case Action::Add: {
@@ -124,12 +129,12 @@ void Controller::onAction(Action action, QVariant value)
             if (mCurveContainer->selectedCurve()->getSize() >= Constants::MAX_CONTROL_POINT_COUNT)
                 return;
 
-            ControlPoint *controlPoint = new ControlPoint(value.toPointF());
+            ControlPoint *controlPoint = new ControlPoint(value.toVector2D());
             controlPoint->selected = true;
             mCurveContainer->selectedCurve()->addControlPoint(controlPoint);
             mCurveContainer->setSelectedControlPoint(controlPoint);
         } else {
-            ControlPoint *controlPoint = new ControlPoint(value.toPointF());
+            ControlPoint *controlPoint = new ControlPoint(value.toVector2D());
             controlPoint->selected = true;
 
             Bezier *curve = new Bezier();
@@ -138,22 +143,19 @@ void Controller::onAction(Action action, QVariant value)
             mCurveContainer->setSelectedCurve(curve);
             mCurveContainer->setSelectedControlPoint(controlPoint);
         }
-        refresh();
         break;
     }
     case Action::Move: {
         if (mCurveContainer->selectedCurve())
-            mCurveContainer->selectedCurve()->translate(value.toPointF());
-        refresh();
+            mCurveContainer->selectedCurve()->translate(value.toVector2D());
         break;
     }
     case Action::Pan: {
-        QPointF translation = value.toPointF();
+        QVector2D translation = value.toVector2D();
         mProjectionParameters->left += translation.x();
         mProjectionParameters->right += translation.x();
         mProjectionParameters->top += translation.y();
         mProjectionParameters->bottom += translation.y();
-        refresh();
         break;
     }
     case Action::RemoveCurve: {
@@ -161,7 +163,6 @@ void Controller::onAction(Action action, QVariant value)
             mCurveContainer->removeCurve(mCurveContainer->selectedCurve());
             mCurveContainer->setSelectedCurve(nullptr);
             mCurveContainer->setSelectedControlPoint(nullptr);
-            refresh();
         }
         break;
     }
@@ -176,49 +177,68 @@ void Controller::onAction(Action action, QVariant value)
                 mCurveContainer->setSelectedCurve(nullptr);
                 mCurveContainer->removeCurve(selectedCurve);
             }
-
-            refresh();
         }
 
         break;
     }
     case Action::UpdateControlPointPosition: {
         if (mCurveContainer->selectedControlPoint()) {
-            mCurveContainer->selectedControlPoint()->position = QVector2D(value.toPointF().x(), value.toPointF().y());
-            refresh();
+            mCurveContainer->selectedControlPoint()->position = value.toVector2D();
         }
         break;
     }
     case Action::UpdateCurveZIndex: {
         if (mCurveContainer->selectedCurve()) {
             mCurveContainer->selectedCurve()->setZ(value.toInt());
-            refresh();
+            mCurveContainer->sortCurves();
         }
         break;
     }
-    case Action::UpdateCurveThickness: {
+    case Action::UpdateContourThickness: {
         if (mCurveContainer->selectedCurve()) {
-            mCurveContainer->selectedCurve()->setThickness(value.toFloat());
-            refresh();
+            mCurveContainer->selectedCurve()->setContourThickness(value.toFloat());
+        }
+        break;
+    }
+    case Action::UpdateDiffusionWidth: {
+        if (mCurveContainer->selectedCurve()) {
+            mCurveContainer->selectedCurve()->setDiffusionWidth(value.toFloat());
         }
         break;
     }
     case Action::ZoomIn: {
         zoom(mProjectionParameters->zoomRatio / mZoomStep, value);
-        refresh();
         break;
     }
     case Action::ZoomOut: {
         zoom(mProjectionParameters->zoomRatio * mZoomStep, value);
-        refresh();
+
+        break;
+    }
+    case Action::EnableContourColor: {
+        if (mCurveContainer->selectedCurve())
+            mCurveContainer->selectedCurve()->setContourColorEnabled(value.toBool());
+        break;
+    }
+    case Action::UpdateContourColor: {
+        if (mCurveContainer->selectedCurve())
+            mCurveContainer->selectedCurve()->setContourColor(value.toVector4D());
         break;
     }
     }
+
+    refresh();
 }
 
 void Controller::onModeChanged(Mode mode)
 {
     mMode = mode;
+
+    if (mMode == Mode::Pan) {
+        mCurveContainer->setSelectedControlPoint(nullptr);
+        mCurveContainer->setSelectedCurve(nullptr);
+        refresh();
+    }
 }
 
 void Controller::onZoomRatioChanged(float newZoomRatio)
@@ -239,18 +259,23 @@ void Controller::onWheelMoved(QWheelEvent *event)
 
 void Controller::onMousePressed(QMouseEvent *event)
 {
+    mMouseRightButtonPressed = event->button() == Qt::RightButton;
+    mMouseLeftButtonPressed = event->button() == Qt::LeftButton;
     mMousePosition = event->pos();
-    mMousePressed = true;
 
     switch (mMode) {
     case Mode::Select: {
-        QPointF position = mTransformer->mapFromGuiToOpenGL(mMousePosition);
-        onAction(Action::Select, position);
+        if (mMouseLeftButtonPressed) {
+            QVector2D position = mTransformer->mapFromGuiToOpenGL(mMousePosition);
+            onAction(Action::Select, position);
+        }
         break;
     }
     case Mode::AddControlPoint: {
-        QPointF position = mTransformer->mapFromGuiToOpenGL(mMousePosition);
-        onAction(Action::Add, position);
+        if (mMouseLeftButtonPressed) {
+            QVector2D position = mTransformer->mapFromGuiToOpenGL(mMousePosition);
+            onAction(Action::Add, position);
+        }
         break;
     }
     default: {
@@ -261,22 +286,28 @@ void Controller::onMousePressed(QMouseEvent *event)
 
 void Controller::onMouseReleased(QMouseEvent *event)
 {
-    mMousePressed = false;
+    mMouseRightButtonPressed = false;
+    mMouseLeftButtonPressed = false;
 }
 
 void Controller::onMouseMoved(QMouseEvent *event)
 {
+    if (mMouseRightButtonPressed) {
+        QVector2D translation = QVector2D(mMousePosition - event->pos()) * mProjectionParameters->zoomRatio;
+        onAction(Action::Pan, translation);
+    }
+
     switch (mMode) {
     case Mode::Pan: {
-        if (mMousePressed) {
-            QPointF translation = (mMousePosition - event->pos()) * mProjectionParameters->zoomRatio;
+        if (mMouseLeftButtonPressed) {
+            QVector2D translation = QVector2D(mMousePosition - event->pos()) * mProjectionParameters->zoomRatio;
             onAction(Action::Pan, translation);
         }
         break;
     }
     case Mode::Select: {
-        if (mMousePressed) {
-            QPointF newPosition = mTransformer->mapFromGuiToOpenGL(event->pos());
+        if (mMouseLeftButtonPressed) {
+            QVector2D newPosition = mTransformer->mapFromGuiToOpenGL(event->pos());
             onAction(Action::UpdateControlPointPosition, newPosition);
         }
         break;
@@ -285,13 +316,13 @@ void Controller::onMouseMoved(QMouseEvent *event)
         break;
     }
     case Mode::MoveCurve: {
-        if (mMousePressed) {
+        if (mMouseLeftButtonPressed) {
             if (mCurveContainer->selectedCurve()) {
-                QPointF translation = (event->pos() - mMousePosition) * mProjectionParameters->zoomRatio;
+                QVector2D translation = QVector2D(event->pos() - mMousePosition) * mProjectionParameters->zoomRatio;
                 onAction(Action::Move, translation);
 
             } else {
-                QPointF position = mTransformer->mapFromGuiToOpenGL(mMousePosition);
+                QVector2D position = mTransformer->mapFromGuiToOpenGL(mMousePosition);
                 onAction(Action::Select, position);
             }
         }
@@ -306,7 +337,7 @@ bool Controller::cursorInsideBoundingBox(QPointF position, QMarginsF margins)
     if (mCurveContainer->selectedCurve()) {
         QRectF boundingBox = mCurveContainer->selectedCurve()->getBoundingBox();
         boundingBox = boundingBox.marginsAdded(margins);
-        return boundingBox.contains(mTransformer->mapFromGuiToOpenGL(position));
+        return boundingBox.contains(mTransformer->mapFromGuiToOpenGL(position).toPointF());
     } else
         return false;
 }
@@ -315,9 +346,10 @@ void Controller::refresh()
 {
     mOpenGLWidget->refresh();
     mControlPointWidget->refresh();
+    mCurveWidget->refresh();
 }
 
-void Controller::zoom(float newZoomRatio, QVariant cursorPositionVariant)
+void Controller::zoom(float newZoomRatio, CustomVariant cursorPositionVariant)
 {
     if (qFuzzyCompare(newZoomRatio, mProjectionParameters->zoomRatio))
         return;
@@ -332,7 +364,7 @@ void Controller::zoom(float newZoomRatio, QVariant cursorPositionVariant)
         cursorPosition = QPoint(width / 2, height / 2);
     }
 
-    QPointF positionBeforeZoom = mTransformer->mapFromGuiToOpenGL(cursorPosition);
+    QVector2D positionBeforeZoom = mTransformer->mapFromGuiToOpenGL(cursorPosition);
 
     if (newZoomRatio >= 2)
         newZoomRatio = 2;
@@ -345,7 +377,7 @@ void Controller::zoom(float newZoomRatio, QVariant cursorPositionVariant)
     mProjectionParameters->right = mProjectionParameters->left + width * mProjectionParameters->zoomRatio;
     mProjectionParameters->bottom = mProjectionParameters->top + height * mProjectionParameters->zoomRatio;
 
-    QPointF positionAfterZoom = mTransformer->mapFromGuiToOpenGL(cursorPosition);
+    QVector2D positionAfterZoom = mTransformer->mapFromGuiToOpenGL(cursorPosition);
 
     float dx = positionBeforeZoom.x() - positionAfterZoom.x();
     float dy = positionBeforeZoom.y() - positionAfterZoom.y();

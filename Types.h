@@ -17,7 +17,10 @@ enum class Action {
     RemoveControlPoint,
     UpdateControlPointPosition,
     UpdateCurveZIndex,
-    UpdateCurveThickness
+    UpdateContourThickness,
+    UpdateDiffusionWidth,
+    UpdateContourColor,
+    EnableContourColor
 };
 
 enum class Mode {

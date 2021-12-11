@@ -8,12 +8,13 @@ struct ColorPoint
 public:
     ColorPoint();
     ColorPoint(float position, QVector4D color);
+    enum Type { Left = 0, Right = 1 };
 
     QVector4D color;
-    bool enabled;
     float position;
     bool selected;
     int index;
+    Type type;
 
     QString toString();
 };

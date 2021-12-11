@@ -64,7 +64,7 @@ void ContourRenderer::render(const QVector<Curve *> &curves, const QMatrix4x4 &p
         if (curve == nullptr)
             continue;
 
-        if (curve->showContour()) {
+        if (curve->contourColorEnabled()) {
             mShader->bind();
 
             // Control Points Buffer
@@ -75,8 +75,8 @@ void ContourRenderer::render(const QVector<Curve *> &curves, const QMatrix4x4 &p
 
             // Uniform Variables
             mShader->setUniformValue(mProjectionMatrixLocation, projectionMatrix);
-            mShader->setUniformValue(mColorLocation, curve->curveColor());
-            mShader->setUniformValue(mThicknessLocation, curve->thickness());
+            mShader->setUniformValue(mColorLocation, curve->contourColor());
+            mShader->setUniformValue(mThicknessLocation, curve->contourThickness());
             mShader->setUniformValue(mTicksDeltaLocation, mTicks->ticksDelta());
             mShader->setUniformValue(mControlPointsCountLocation, (GLint) controlPoints.size());
 

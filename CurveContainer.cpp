@@ -149,7 +149,7 @@ void CurveContainer::setSelectedControlPoint(ControlPoint *selectedControlPoint)
 
 void CurveContainer::sortCurves()
 {
-    if (mCurves.size() == 0)
+    if (mCurves.size() == 0 || mCurves.size() == 1)
         return;
 
     QVector<Curve *> sortedCurves;

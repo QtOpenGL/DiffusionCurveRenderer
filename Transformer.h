@@ -11,10 +11,8 @@ class Transformer
 public:
     Transformer();
 
+    QVector2D mapFromGuiToOpenGL(const QPointF &position) const;
     QPointF mapFromOpenGLToGui(const QVector2D &position) const;
-
-    QPointF mapFromGuiToOpenGL(const QPointF &position) const;
-    QPointF mapFromOpenGLToGui(const QPointF &position) const;
     QRectF mapFromOpenGLToGui(const QRectF &rect) const;
 
     void setProjectionParameters(const ProjectionParameters *newProjectionParameters);

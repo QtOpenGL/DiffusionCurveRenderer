@@ -14,14 +14,6 @@ public:
     Curve();
     virtual ~Curve();
 
-    enum ColorDirection { Left = 0, Right = 1 };
-
-    const float &thickness() const;
-    void setThickness(float newThickness);
-
-    const bool &selected() const;
-    void setSelected(bool newSelected);
-
     virtual QVector<const ControlPoint *> getControlPoints() const;
     virtual const ControlPoint *getControlPoint(int index) const;
     virtual QVector<QVector2D> getControlPointPositions() const;
@@ -34,16 +26,29 @@ public:
     virtual int getOrder() const;
     virtual int getDegree() const;
 
-    virtual QVector<const ColorPoint *> getColorPoints(ColorDirection direction) const;
-    virtual void addColorPoint(ColorDirection direction, ColorPoint *colorPoint);
-    virtual const ColorPoint *getColorPoint(ColorDirection direction, int index) const;
-    virtual void removeColorPoint(ColorDirection direction, int index);
-    virtual void removeColorPoint(ColorDirection direction, ColorPoint *controlPoint);
-    virtual QVector4D colorAt(ColorDirection direction, float t) const;
-    virtual void orderColorPoints(ColorDirection direction);
+    virtual QVector<const ColorPoint *> getLeftColorPoints() const;
+    virtual QVector<const ColorPoint *> getRightColorPoints() const;
 
-    virtual QVector<QVector4D> getColors(ColorDirection direction, bool onlyEnabledColorPoints = true) const;
-    virtual QVector<float> getColorPositions(ColorDirection direction, bool onlyEnabledColorPoints = true) const;
+    virtual void addColorPoint(ColorPoint *colorPoint);
+
+    virtual const ColorPoint *getLeftColorPoint(int index) const;
+    virtual const ColorPoint *getRightColorPoint(int index) const;
+
+    virtual void removeLeftColorPoint(int index);
+    virtual void removeRightColorPoint(int index);
+    virtual void removeColorPoint(ColorPoint *controlPoint);
+
+    virtual QVector4D leftColorAt(float t) const;
+    virtual QVector4D rightColorAt(float t) const;
+
+    virtual void orderLeftColorPoints();
+    virtual void orderRightColorPoints();
+
+    virtual QVector<QVector4D> getLeftColors() const;
+    virtual QVector<QVector4D> getRightColors() const;
+
+    virtual QVector<float> getLeftColorPositions() const;
+    virtual QVector<float> getRightColorPositions() const;
 
     virtual const ControlPoint *getClosestControlPoint(QVector2D point) const;
     virtual void deselectAllControlPoints();
@@ -59,14 +64,23 @@ public:
     virtual QVector2D tangentAt(float t) const = 0;
     virtual QVector2D normalAt(float t) const = 0;
 
+    const bool &selected() const;
+    void setSelected(bool newSelected);
+
     const int &z() const;
     void setZ(int newZ);
 
-    const QVector4D &curveColor() const;
-    void setCurveColor(const QVector4D &newCurveColor);
+    const QVector4D &contourColor() const;
+    void setContourColor(const QVector4D &newContourColor);
 
-    const bool &showContour() const;
-    void setShowContour(bool newShowContour);
+    bool contourColorEnabled() const;
+    void setContourColorEnabled(bool newContourColorEnabled);
+
+    float contourThickness() const;
+    void setContourThickness(float newContourThickness);
+
+    float diffusionWidth() const;
+    void setDiffusionWidth(float newDiffusionWidth);
 
 protected:
     QVector<ControlPoint *> mControlPoints;
@@ -74,10 +88,11 @@ protected:
     QVector<ColorPoint *> mLeftColorPoints;
     QVector<ColorPoint *> mRightColorPoints;
 
-    QVector4D mCurveColor;
-    bool mShowContour;
+    bool mContourColorEnabled;
+    QVector4D mContourColor;
 
-    float mThickness;
+    float mContourThickness;
+    float mDiffusionWidth;
     bool mSelected;
     int mZ;
 

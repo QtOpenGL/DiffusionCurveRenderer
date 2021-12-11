@@ -23,6 +23,7 @@ HEADERS += \
     Curves/ColorPoint.h \
     Curves/ControlPoint.h \
     Curves/Curve.h \
+    CustomVariant.h \
     Renderers/Base/Quads.h \
     Renderers/Base/Ticks.h \
     Renderers/ContourRenderer.h \
@@ -41,6 +42,7 @@ HEADERS += \
     Widgets/ColorPointWidget.h \
     Widgets/ControlPointWidget.h \
     Widgets/CurveWidget.h \
+    Widgets/CustomFlatButton.h \
     Widgets/ModeWidget.h \
     Widgets/OpenGLWidget.h \
     Widgets/RenderSettingsWidget.h \
@@ -55,6 +57,7 @@ SOURCES += \
     Curves/ColorPoint.cpp \
     Curves/ControlPoint.cpp \
     Curves/Curve.cpp \
+    CustomVariant.cpp \
     Main.cpp \
     Renderers/Base/Quads.cpp \
     Renderers/Base/Ticks.cpp \
@@ -73,6 +76,7 @@ SOURCES += \
     Widgets/ColorPointWidget.cpp \
     Widgets/ControlPointWidget.cpp \
     Widgets/CurveWidget.cpp \
+    Widgets/CustomFlatButton.cpp \
     Widgets/ModeWidget.cpp \
     Widgets/OpenGLWidget.cpp \
     Widgets/RenderSettingsWidget.cpp \

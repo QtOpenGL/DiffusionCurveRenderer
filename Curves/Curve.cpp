@@ -3,9 +3,10 @@
 #include <QRectF>
 
 Curve::Curve()
-    : mCurveColor(0, 0, 0, 1)
-    , mShowContour(true)
-    , mThickness(4)
+    : mContourColorEnabled(true)
+    , mContourColor(0, 0, 0, 1)
+    , mContourThickness(4.0f)
+    , mDiffusionWidth(4.0f)
     , mSelected(false)
     , mZ(0)
 {}
@@ -17,16 +18,6 @@ Curve::~Curve()
             delete mControlPoints[i];
             mControlPoints[i] = nullptr;
         }
-}
-
-const float &Curve::thickness() const
-{
-    return mThickness;
-}
-
-void Curve::setThickness(float newThickness)
-{
-    mThickness = newThickness;
 }
 
 const bool &Curve::selected() const
@@ -124,107 +115,118 @@ int Curve::getDegree() const
     return mControlPoints.size() - 1;
 }
 
-QVector<const ColorPoint *> Curve::getColorPoints(ColorDirection direction) const
+QVector<const ColorPoint *> Curve::getLeftColorPoints() const
 {
     QVector<const ColorPoint *> points;
-    if (direction == Left) {
-        for (auto &controlPoint : mLeftColorPoints) {
-            points << controlPoint;
-        }
-    } else {
-        for (auto &controlPoint : mRightColorPoints) {
-            points << controlPoint;
-        }
+
+    for (auto &controlPoint : mLeftColorPoints) {
+        points << controlPoint;
     }
 
     return points;
 }
 
-void Curve::addColorPoint(ColorDirection direction, ColorPoint *colorPoint)
+QVector<const ColorPoint *> Curve::getRightColorPoints() const
 {
-    switch (direction) {
-    case Curve::Left: {
+    QVector<const ColorPoint *> points;
+
+    for (auto &controlPoint : mRightColorPoints) {
+        points << controlPoint;
+    }
+
+    return points;
+}
+
+void Curve::addColorPoint(ColorPoint *colorPoint)
+{
+    switch (colorPoint->type) {
+    case ColorPoint::Left: {
         if (colorPoint) {
             mLeftColorPoints << colorPoint;
-            orderColorPoints(Curve::Left);
+            orderLeftColorPoints();
         }
         break;
     }
-    case Curve::Right: {
+    case ColorPoint::Right: {
         if (colorPoint) {
             mRightColorPoints << colorPoint;
-            orderColorPoints(Curve::Right);
+            orderRightColorPoints();
         }
         break;
     }
     }
 }
 
-const ColorPoint *Curve::getColorPoint(ColorDirection direction, int index) const
+const ColorPoint *Curve::getLeftColorPoint(int index) const
 {
-    const QVector<ColorPoint *> &colorPoints = (direction == Left ? mLeftColorPoints : mRightColorPoints);
-
-    if (0 <= index && index < colorPoints.size())
-        return colorPoints[index];
+    if (0 <= index && index < mLeftColorPoints.size())
+        return mLeftColorPoints[index];
     else
         return nullptr;
 }
 
-void Curve::removeColorPoint(ColorDirection direction, int index)
+const ColorPoint *Curve::getRightColorPoint(int index) const
 {
-    switch (direction) {
-    case Curve::Left:
-        if (0 <= index && index < mLeftColorPoints.size()) {
-            delete mLeftColorPoints[index];
-            mLeftColorPoints.removeAt(index);
-            orderColorPoints(Curve::Left);
-        }
-        break;
-    case Curve::Right:
-        if (0 <= index && index < mRightColorPoints.size()) {
-            delete mRightColorPoints[index];
-            mRightColorPoints.removeAt(index);
-            orderColorPoints(Curve::Right);
-        }
-        break;
+    if (0 <= index && index < mRightColorPoints.size())
+        return mRightColorPoints[index];
+    else
+        return nullptr;
+}
+
+void Curve::removeLeftColorPoint(int index)
+{
+    if (0 <= index && index < mLeftColorPoints.size()) {
+        delete mLeftColorPoints[index];
+        mLeftColorPoints.removeAt(index);
+        orderLeftColorPoints();
     }
 }
 
-void Curve::removeColorPoint(ColorDirection direction, ColorPoint *controlPoint)
+void Curve::removeRightColorPoint(int index)
 {
-    QVector<ColorPoint *> &colorPoints = (direction == Left ? mLeftColorPoints : mRightColorPoints);
-
-    for (int i = 0; i < colorPoints.size(); ++i) {
-        ColorPoint *point = colorPoints[i];
-
-        if (point == controlPoint) {
-            removeColorPoint(direction, i);
-            return;
-        }
+    if (0 <= index && index < mLeftColorPoints.size()) {
+        delete mLeftColorPoints[index];
+        mLeftColorPoints.removeAt(index);
+        orderLeftColorPoints();
     }
 }
 
-QVector4D Curve::colorAt(ColorDirection direction, float t) const
+void Curve::removeColorPoint(ColorPoint *colorPoint)
 {
-    const QVector<ColorPoint *> &colorPoints = (direction == Left ? mLeftColorPoints : mRightColorPoints);
+    switch (colorPoint->type) {
+    case ColorPoint::Left: {
+        for (int i = 0; i < mLeftColorPoints.size(); ++i) {
+            ColorPoint *point = mLeftColorPoints[i];
 
-    if (colorPoints.size() == 0 || colorPoints.size() == 1)
+            if (point == mLeftColorPoints[i]) {
+                removeLeftColorPoint(i);
+                return;
+            }
+        }
+        break;
+    }
+    case ColorPoint::Right: {
+        for (int i = 0; i < mRightColorPoints.size(); ++i) {
+            ColorPoint *point = mRightColorPoints[i];
+
+            if (point == mRightColorPoints[i]) {
+                removeRightColorPoint(i);
+                return;
+            }
+        }
+        break;
+    }
+    }
+}
+
+QVector4D Curve::leftColorAt(float t) const
+{
+    if (mLeftColorPoints.size() == 0 || mLeftColorPoints.size() == 1)
         return QVector4D(0, 0, 0, 0);
 
-    QVector<ColorPoint *> enabledColorPoints;
-
-    for (int i = 0; i < colorPoints.size(); ++i)
-        if (colorPoints[i]->enabled)
-            enabledColorPoints << colorPoints[i];
-
-    if (enabledColorPoints.size() == 0)
-        return QVector4D(0, 0, 0, 0);
-    else if (enabledColorPoints.size() == 1)
-        return enabledColorPoints[0]->color;
-
-    for (int i = 1; i < enabledColorPoints.size(); ++i) {
-        ColorPoint *previousColorPoint = enabledColorPoints[i - 1];
-        ColorPoint *nextColorPoint = enabledColorPoints[i];
+    for (int i = 1; i < mLeftColorPoints.size(); ++i) {
+        ColorPoint *previousColorPoint = mLeftColorPoints[i - 1];
+        ColorPoint *nextColorPoint = mLeftColorPoints[i];
 
         if (previousColorPoint->position <= t && t <= nextColorPoint->position) {
             float s = (t - previousColorPoint->position) / (nextColorPoint->position - previousColorPoint->position);
@@ -235,19 +237,35 @@ QVector4D Curve::colorAt(ColorDirection direction, float t) const
     return QVector4D(0, 0, 0, 0);
 }
 
-void Curve::orderColorPoints(ColorDirection direction)
+QVector4D Curve::rightColorAt(float t) const
 {
-    QVector<ColorPoint *> &colorPoints = (direction == Left ? mLeftColorPoints : mRightColorPoints);
+    if (mRightColorPoints.size() == 0 || mRightColorPoints.size() == 1)
+        return QVector4D(0, 0, 0, 0);
 
-    if (colorPoints.size() == 0 || colorPoints.size() == 1)
+    for (int i = 1; i < mRightColorPoints.size(); ++i) {
+        ColorPoint *previousColorPoint = mRightColorPoints[i - 1];
+        ColorPoint *nextColorPoint = mRightColorPoints[i];
+
+        if (previousColorPoint->position <= t && t <= nextColorPoint->position) {
+            float s = (t - previousColorPoint->position) / (nextColorPoint->position - previousColorPoint->position);
+            return previousColorPoint->color + s * (nextColorPoint->color - previousColorPoint->color);
+        }
+    }
+
+    return QVector4D(0, 0, 0, 0);
+}
+
+void Curve::orderLeftColorPoints()
+{
+    if (mLeftColorPoints.size() == 0 || mLeftColorPoints.size() == 1)
         return;
 
     QVector<ColorPoint *> orderedColorPoints;
 
-    orderedColorPoints << colorPoints[0];
+    orderedColorPoints << mLeftColorPoints[0];
 
-    for (int i = 1; i < colorPoints.size(); ++i) {
-        ColorPoint *currentColorPoint = colorPoints[i];
+    for (int i = 1; i < mLeftColorPoints.size(); ++i) {
+        ColorPoint *currentColorPoint = mLeftColorPoints[i];
 
         if (orderedColorPoints.last()->position <= currentColorPoint->position)
             orderedColorPoints << currentColorPoint;
@@ -259,36 +277,71 @@ void Curve::orderColorPoints(ColorDirection direction)
                 }
     }
 
-    colorPoints = orderedColorPoints;
+    mLeftColorPoints = orderedColorPoints;
 }
 
-QVector<QVector4D> Curve::getColors(ColorDirection direction, bool onlyEnabledColorPoints) const
+void Curve::orderRightColorPoints()
 {
-    const QVector<ColorPoint *> &colorPoints = (direction == Left ? mLeftColorPoints : mRightColorPoints);
-    QVector<QVector4D> colors;
-    for (int i = 0; i < colorPoints.size(); i++) {
-        if (onlyEnabledColorPoints) {
-            if (colorPoints[i]->enabled)
-                colors << colorPoints[i]->color;
-        } else {
-            colors << colorPoints[i]->color;
-        }
+    if (mRightColorPoints.size() == 0 || mRightColorPoints.size() == 1)
+        return;
+
+    QVector<ColorPoint *> orderedColorPoints;
+
+    orderedColorPoints << mRightColorPoints[0];
+
+    for (int i = 1; i < mRightColorPoints.size(); ++i) {
+        ColorPoint *currentColorPoint = mRightColorPoints[i];
+
+        if (orderedColorPoints.last()->position <= currentColorPoint->position)
+            orderedColorPoints << currentColorPoint;
+        else
+            for (int j = 0; j < orderedColorPoints.size(); j++)
+                if (currentColorPoint->position < orderedColorPoints[j]->position) {
+                    orderedColorPoints.insert(j, currentColorPoint);
+                    break;
+                }
     }
 
-    return colors;
+    mRightColorPoints = orderedColorPoints;
 }
 
-QVector<float> Curve::getColorPositions(ColorDirection direction, bool onlyEnabledColorPoints) const
+QVector<QVector4D> Curve::getLeftColors() const
 {
-    const QVector<ColorPoint *> &colorPoints = (direction == Left ? mLeftColorPoints : mRightColorPoints);
+    QVector<QVector4D> leftColors;
+    for (int i = 0; i < mLeftColorPoints.size(); i++) {
+        leftColors << mLeftColorPoints[i]->color;
+    }
+
+    return leftColors;
+}
+
+QVector<QVector4D> Curve::getRightColors() const
+{
+    QVector<QVector4D> rightColors;
+    for (int i = 0; i < mRightColorPoints.size(); i++) {
+        rightColors << mRightColorPoints[i]->color;
+    }
+
+    return rightColors;
+}
+
+QVector<float> Curve::getLeftColorPositions() const
+{
     QVector<float> colorPointPositions;
-    for (int i = 0; i < colorPoints.size(); i++) {
-        if (onlyEnabledColorPoints) {
-            if (colorPoints[i]->enabled)
-                colorPointPositions << colorPoints[i]->position;
-        } else {
-            colorPointPositions << colorPoints[i]->position;
-        }
+
+    for (int i = 0; i < mLeftColorPoints.size(); i++) {
+        colorPointPositions << mLeftColorPoints[i]->position;
+    }
+
+    return colorPointPositions;
+}
+
+QVector<float> Curve::getRightColorPositions() const
+{
+    QVector<float> colorPointPositions;
+
+    for (int i = 0; i < mRightColorPoints.size(); i++) {
+        colorPointPositions << mRightColorPoints[i]->position;
     }
 
     return colorPointPositions;
@@ -408,24 +461,44 @@ void Curve::setZ(int newZ)
     mZ = newZ;
 }
 
-const QVector4D &Curve::curveColor() const
+const QVector4D &Curve::contourColor() const
 {
-    return mCurveColor;
+    return mContourColor;
 }
 
-void Curve::setCurveColor(const QVector4D &newCurveColor)
+void Curve::setContourColor(const QVector4D &newContourColor)
 {
-    mCurveColor = newCurveColor;
+    mContourColor = newContourColor;
 }
 
-const bool &Curve::showContour() const
+bool Curve::contourColorEnabled() const
 {
-    return mShowContour;
+    return mContourColorEnabled;
 }
 
-void Curve::setShowContour(bool newShowContour)
+void Curve::setContourColorEnabled(bool newContourColorEnabled)
 {
-    mShowContour = newShowContour;
+    mContourColorEnabled = newContourColorEnabled;
+}
+
+float Curve::contourThickness() const
+{
+    return mContourThickness;
+}
+
+void Curve::setContourThickness(float newContourThickness)
+{
+    mContourThickness = newContourThickness;
+}
+
+float Curve::diffusionWidth() const
+{
+    return mDiffusionWidth;
+}
+
+void Curve::setDiffusionWidth(float newDiffusionWidth)
+{
+    mDiffusionWidth = newDiffusionWidth;
 }
 
 void Curve::updateControlPointIndices()

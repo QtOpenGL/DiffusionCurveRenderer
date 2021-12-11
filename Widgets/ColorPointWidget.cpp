@@ -31,7 +31,7 @@ ColorPointWidget::ColorPointWidget(QWidget *parent)
         mainLayout->addWidget(mPositionSlider, 1, 1);
     }
 
-    // Remove Button
+    // Color Button
     {
         mColorButton = new QPushButton;
         mColorButton->setFlat(false);
@@ -39,6 +39,15 @@ ColorPointWidget::ColorPointWidget(QWidget *parent)
 
         mainLayout->addWidget(new QLabel("Color"), 2, 0);
         mainLayout->addWidget(mColorButton, 2, 1);
+    }
+
+    // Remove Button
+    {
+        mRemoveButton = new QPushButton("Remove Color Point");
+        mRemoveButton->setFlat(false);
+        mRemoveButton->setAutoFillBackground(false);
+
+        mainLayout->addWidget(mRemoveButton, 3, 1);
     }
 
     setTitle("Color Point");

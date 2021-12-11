@@ -58,7 +58,8 @@ private:
 
     Mode mMode;
     bool mInit;
-    bool mMousePressed;
+    bool mMouseRightButtonPressed;
+    bool mMouseLeftButtonPressed;
     QPointF mMousePosition;
     QRectF mHandles[4];
 };

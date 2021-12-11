@@ -2,12 +2,7 @@
 
 Transformer::Transformer() {}
 
-QPointF Transformer::mapFromOpenGLToGui(const QVector2D &position) const
-{
-    return mapFromOpenGLToGui(QPointF(position.x(), position.y()));
-}
-
-QPointF Transformer::mapFromGuiToOpenGL(const QPointF &position) const
+QVector2D Transformer::mapFromGuiToOpenGL(const QPointF &position) const
 {
     const float &left = mProjectionParameters->left;
     const float &top = mProjectionParameters->top;
@@ -16,10 +11,10 @@ QPointF Transformer::mapFromGuiToOpenGL(const QPointF &position) const
     float x = left + zoomRatio * position.x();
     float y = top + zoomRatio * position.y();
 
-    return QPointF(x, y);
+    return QVector2D(x, y);
 }
 
-QPointF Transformer::mapFromOpenGLToGui(const QPointF &position) const
+QPointF Transformer::mapFromOpenGLToGui(const QVector2D &position) const
 {
     const float &zoomRatio = mProjectionParameters->zoomRatio;
     const float &pixelRatio = mProjectionParameters->pixelRatio;
@@ -38,7 +33,7 @@ QRectF Transformer::mapFromOpenGLToGui(const QRectF &rect) const
     float w = rect.width() / zoomRatio * pixelRatio;
     float h = rect.height() / zoomRatio * pixelRatio;
 
-    QPointF center = mapFromOpenGLToGui(rect.center());
+    QPointF center = mapFromOpenGLToGui(QVector2D(rect.center().x(), rect.center().y()));
 
     return QRectF(center.x() - 0.5 * w, center.y() - 0.5 * h, w, h);
 }
