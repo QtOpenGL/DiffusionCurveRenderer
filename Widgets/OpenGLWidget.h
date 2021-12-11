@@ -28,6 +28,8 @@ public:
     void setTransformer(Transformer *newTransformer);
     void setController(Controller *newController);
 
+    void setProjectionParameters(const ProjectionParameters *newProjectionParameters);
+
 signals:
     void action(Action action, QVariant value = QVariant());
     void wheelMoved(QWheelEvent *event);
@@ -55,6 +57,7 @@ private:
 
     const Curve *mSelectedCurve;
     const ControlPoint *mSelectedControlPoint;
+    const ProjectionParameters *mProjectionParameters;
 
     Mode mMode;
     bool mInit;
@@ -62,6 +65,8 @@ private:
     bool mMouseLeftButtonPressed;
     QPointF mMousePosition;
     QRectF mHandles[4];
+    QPen mDashedPen;
+    QPen mSolidPen;
 };
 
 #endif // OPENGLWIDGET_H

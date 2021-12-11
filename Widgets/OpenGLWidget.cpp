@@ -18,6 +18,15 @@ OpenGLWidget::OpenGLWidget(QWidget *parent)
     for (int i = 0; i < 4; ++i)
         mHandles[i].setSize(QSize(10, 10));
 
+    mDashedPen.setDashPattern({4, 4});
+    mDashedPen.setWidth(1);
+    mDashedPen.setColor(QColor(128, 128, 128));
+    mDashedPen.setJoinStyle(Qt::MiterJoin);
+
+    mSolidPen.setColor(QColor(128, 128, 128));
+    mSolidPen.setWidth(1);
+    mSolidPen.setJoinStyle(Qt::MiterJoin);
+
     setMouseTracking(true);
 }
 
@@ -56,12 +65,24 @@ void OpenGLWidget::paintGL()
     painter.setRenderHint(QPainter::Antialiasing, true);
 
     switch (mMode) {
+    case Mode::AddColorPoint:
+        break;
     case Mode::Pan:
         break;
     case Mode::AddControlPoint:
     case Mode::Select: {
         if (mSelectedCurve) {
             QVector<const ControlPoint *> controlPoints = mSelectedCurve->getControlPoints();
+
+            // Control polygon
+            painter.setPen(mDashedPen);
+            painter.setBrush(QBrush());
+
+            for (int i = 0; i < controlPoints.size() - 1; ++i) {
+                QPointF p0 = mTransformer->mapFromOpenGLToGui(controlPoints[i]->position);
+                QPointF p1 = mTransformer->mapFromOpenGLToGui(controlPoints[i + 1]->position);
+                painter.drawLine(p0, p1);
+            }
 
             for (int j = 0; j < controlPoints.size(); ++j) {
                 QPointF center = mTransformer->mapFromOpenGLToGui(controlPoints[j]->position);
@@ -70,11 +91,13 @@ void OpenGLWidget::paintGL()
 
                 // Outer disk
                 int outerRadius = controlPoints[j]->selected ? 12 : 10;
+                outerRadius /= mProjectionParameters->zoomRatio;
                 painter.setBrush(QColor(122, 120, 120, 128));
                 painter.drawEllipse(center, outerRadius, outerRadius);
 
                 // Inner disk
                 int innerRadius = 6;
+                innerRadius /= mProjectionParameters->zoomRatio;
                 painter.setBrush(QColor(240, 240, 240));
                 painter.drawEllipse(center, innerRadius, innerRadius);
             }
@@ -85,21 +108,12 @@ void OpenGLWidget::paintGL()
         if (mSelectedCurve) {
             // Draw bounding box
             QRectF boundingBox = mTransformer->mapFromOpenGLToGui(mSelectedCurve->getBoundingBox());
-            QPen dashedPen;
-            QVector<qreal> pattern;
-            pattern << 4 << 4;
-            dashedPen.setDashPattern(pattern);
-            dashedPen.setWidth(1);
-            dashedPen.setColor(QColor(128, 128, 128));
-            painter.setPen(dashedPen);
+            painter.setPen(mDashedPen);
             painter.drawRect(boundingBox);
 
             // Draw pivot point
-            QPen pen;
-            pen.setColor(QColor(128, 128, 128));
-            pen.setWidth(1);
-            pen.setJoinStyle(Qt::MiterJoin);
-            painter.setPen(pen);
+            mSolidPen.setColor(QColor(128, 128, 128));
+            painter.setPen(mSolidPen);
             painter.setBrush(QBrush());
 
             QPointF center = boundingBox.center();
@@ -108,8 +122,8 @@ void OpenGLWidget::paintGL()
             painter.drawLine(center.x() + 0.5, center.y() - 10, center.x() + 0.5, center.y() + 10);
 
             // Draw corners
-            pen.setColor(QColor(0, 0, 0));
-            painter.setPen(pen);
+            mSolidPen.setColor(QColor(0, 0, 0));
+            painter.setPen(mSolidPen);
             painter.setBrush(QColor(0, 0, 0, 0));
 
             for (int i = 0; i < 4; ++i) {
@@ -155,6 +169,11 @@ void OpenGLWidget::mouseMoveEvent(QMouseEvent *event)
     refresh();
 }
 
+void OpenGLWidget::setProjectionParameters(const ProjectionParameters *newProjectionParameters)
+{
+    mProjectionParameters = newProjectionParameters;
+}
+
 void OpenGLWidget::refresh()
 {
     if (mSelectedCurve) {
@@ -172,6 +191,8 @@ void OpenGLWidget::refresh()
     }
 
     switch (mMode) {
+    case Mode::AddColorPoint:
+        break;
     case Mode::Pan:
         setCursor(mMouseLeftButtonPressed ? Qt::ClosedHandCursor : Qt::OpenHandCursor);
         break;
