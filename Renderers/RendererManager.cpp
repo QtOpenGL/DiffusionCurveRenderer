@@ -50,7 +50,7 @@ void RendererManager::render()
         return;
 
     // Clear framebuffer
-    glClearColor(0.0f, 0.0f, 1.0f, 1.0f);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Set projection matrix
@@ -130,7 +130,7 @@ void RendererManager::diffuse()
     //To screen
     {
         QOpenGLFramebufferObject::bindDefault();
-        glViewport(0, 0, mProjectionParameters->canvasWidth, mProjectionParameters->canvasHeight);
+        glViewport(0, 0, mProjectionParameters->width, mProjectionParameters->height);
 
         ScreenRenderer::Parameters parameters;
         parameters.widthRatio = 1;
@@ -146,7 +146,7 @@ void RendererManager::setCurveContainer(const CurveContainer *newCurveContainer)
     mCurveContainer = newCurveContainer;
 }
 
-void RendererManager::setProjectionParameters(const OpenGLWidget::ProjectionParameters *newProjectionParameters)
+void RendererManager::setProjectionParameters(const ProjectionParameters *newProjectionParameters)
 {
     mProjectionParameters = newProjectionParameters;
 }

@@ -15,15 +15,15 @@ public:
     Bezier();
     ~Bezier();
 
-    QVector2D valueAt(float t) override;
-    QVector2D tangentAt(float t) override;
-    QVector2D normalAt(float t) override;
+    QVector2D valueAt(float t) const override;
+    QVector2D tangentAt(float t) const override;
+    QVector2D normalAt(float t) const override;
 
 private:
-    QVector<float> getCoefficients();
-    QVector<float> getDerivativeCoefficients();
-    float factorial(int n);
-    float choose(int n, int k);
+    QVector<float> getCoefficients() const;
+    QVector<float> getDerivativeCoefficients() const;
+    float factorial(int n) const;
+    float choose(int n, int k) const;
 };
 
 #endif // BEZIER_H

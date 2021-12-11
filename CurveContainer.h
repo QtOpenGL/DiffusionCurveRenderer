@@ -26,8 +26,11 @@ public:
 
     void deselectAllCurves();
 
-    Curve *selectCurve(QVector2D position, float radius = 20.0f);
-    ControlPoint *getClosestControlPointOnSelectedCurve(QVector2D position, float radius = 20.0f);
+    Curve *selectCurve(const QVector2D &position, float radius = 20.0f);
+    Curve *selectCurve(const QPointF &position, float radius = 20.0f);
+
+    ControlPoint *getClosestControlPointOnSelectedCurve(const QVector2D &position, float radius = 20.0f) const;
+    ControlPoint *getClosestControlPointOnSelectedCurve(const QPointF &position, float radius = 20.0f) const;
 
 public slots:
     void sortCurves();

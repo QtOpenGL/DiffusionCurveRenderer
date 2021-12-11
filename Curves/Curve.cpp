@@ -19,7 +19,7 @@ Curve::~Curve()
         }
 }
 
-float Curve::thickness() const
+const float &Curve::thickness() const
 {
     return mThickness;
 }
@@ -29,7 +29,7 @@ void Curve::setThickness(float newThickness)
     mThickness = newThickness;
 }
 
-bool Curve::selected() const
+const bool &Curve::selected() const
 {
     return mSelected;
 }
@@ -39,12 +39,17 @@ void Curve::setSelected(bool newSelected)
     mSelected = newSelected;
 }
 
-QVector<ControlPoint *> Curve::getControlPoints()
+QVector<const ControlPoint *> Curve::getControlPoints() const
 {
-    return mControlPoints;
+    QVector<const ControlPoint *> points;
+    for (auto &controlPoint : mControlPoints) {
+        points << controlPoint;
+    }
+
+    return points;
 }
 
-ControlPoint *Curve::getControlPoint(int index)
+const ControlPoint *Curve::getControlPoint(int index) const
 {
     if (0 <= index && index < mControlPoints.size())
         return mControlPoints[index];
@@ -52,7 +57,7 @@ ControlPoint *Curve::getControlPoint(int index)
         return nullptr;
 }
 
-QVector<QVector2D> Curve::getControlPointPositions()
+QVector<QVector2D> Curve::getControlPointPositions() const
 {
     QVector<QVector2D> positions;
 
@@ -109,19 +114,30 @@ void Curve::removeControlPoint(ControlPoint *controlPoint)
     }
 }
 
-int Curve::getOrder()
+int Curve::getOrder() const
 {
     return mControlPoints.size();
 }
 
-int Curve::getDegree()
+int Curve::getDegree() const
 {
     return mControlPoints.size() - 1;
 }
 
-QVector<ColorPoint *> Curve::getColorPoints(ColorDirection direction)
+QVector<const ColorPoint *> Curve::getColorPoints(ColorDirection direction) const
 {
-    return (direction == Left ? mLeftColorPoints : mRightColorPoints);
+    QVector<const ColorPoint *> points;
+    if (direction == Left) {
+        for (auto &controlPoint : mLeftColorPoints) {
+            points << controlPoint;
+        }
+    } else {
+        for (auto &controlPoint : mRightColorPoints) {
+            points << controlPoint;
+        }
+    }
+
+    return points;
 }
 
 void Curve::addColorPoint(ColorDirection direction, ColorPoint *colorPoint)
@@ -144,9 +160,9 @@ void Curve::addColorPoint(ColorDirection direction, ColorPoint *colorPoint)
     }
 }
 
-ColorPoint *Curve::getColorPoint(ColorDirection direction, int index)
+const ColorPoint *Curve::getColorPoint(ColorDirection direction, int index) const
 {
-    QVector<ColorPoint *> &colorPoints = (direction == Left ? mLeftColorPoints : mRightColorPoints);
+    const QVector<ColorPoint *> &colorPoints = (direction == Left ? mLeftColorPoints : mRightColorPoints);
 
     if (0 <= index && index < colorPoints.size())
         return colorPoints[index];
@@ -188,9 +204,9 @@ void Curve::removeColorPoint(ColorDirection direction, ColorPoint *controlPoint)
     }
 }
 
-QVector4D Curve::colorAt(ColorDirection direction, float t)
+QVector4D Curve::colorAt(ColorDirection direction, float t) const
 {
-    QVector<ColorPoint *> &colorPoints = (direction == Left ? mLeftColorPoints : mRightColorPoints);
+    const QVector<ColorPoint *> &colorPoints = (direction == Left ? mLeftColorPoints : mRightColorPoints);
 
     if (colorPoints.size() == 0 || colorPoints.size() == 1)
         return QVector4D(0, 0, 0, 0);
@@ -246,9 +262,9 @@ void Curve::orderColorPoints(ColorDirection direction)
     colorPoints = orderedColorPoints;
 }
 
-QVector<QVector4D> Curve::getColors(ColorDirection direction, bool onlyEnabledColorPoints)
+QVector<QVector4D> Curve::getColors(ColorDirection direction, bool onlyEnabledColorPoints) const
 {
-    QVector<ColorPoint *> &colorPoints = (direction == Left ? mLeftColorPoints : mRightColorPoints);
+    const QVector<ColorPoint *> &colorPoints = (direction == Left ? mLeftColorPoints : mRightColorPoints);
     QVector<QVector4D> colors;
     for (int i = 0; i < colorPoints.size(); i++) {
         if (onlyEnabledColorPoints) {
@@ -262,9 +278,9 @@ QVector<QVector4D> Curve::getColors(ColorDirection direction, bool onlyEnabledCo
     return colors;
 }
 
-QVector<float> Curve::getColorPositions(ColorDirection direction, bool onlyEnabledColorPoints)
+QVector<float> Curve::getColorPositions(ColorDirection direction, bool onlyEnabledColorPoints) const
 {
-    QVector<ColorPoint *> &colorPoints = (direction == Left ? mLeftColorPoints : mRightColorPoints);
+    const QVector<ColorPoint *> &colorPoints = (direction == Left ? mLeftColorPoints : mRightColorPoints);
     QVector<float> colorPointPositions;
     for (int i = 0; i < colorPoints.size(); i++) {
         if (onlyEnabledColorPoints) {
@@ -278,12 +294,12 @@ QVector<float> Curve::getColorPositions(ColorDirection direction, bool onlyEnabl
     return colorPointPositions;
 }
 
-int Curve::getSize()
+int Curve::getSize() const
 {
     return mControlPoints.size();
 }
 
-ControlPoint *Curve::getClosestControlPoint(QVector2D point)
+const ControlPoint *Curve::getClosestControlPoint(QVector2D point) const
 {
     if (mControlPoints.size() == 0)
         return nullptr;
@@ -310,7 +326,7 @@ void Curve::deselectAllControlPoints()
     }
 }
 
-float Curve::distanceToPoint(QVector2D point)
+float Curve::distanceToPoint(QVector2D point) const
 {
     float minDistance = std::numeric_limits<float>::infinity();
     float t = 0.0f;
@@ -335,10 +351,10 @@ void Curve::translate(QVector2D translation)
 
 void Curve::translate(QPointF translation)
 {
-    translate(QVector2D(translation));
+    translate(QVector2D(translation.x(), translation.y()));
 }
 
-float Curve::length(int intervals)
+float Curve::length(int intervals) const
 {
     float length = 0.0f;
     float t = 0.0f;
@@ -354,7 +370,7 @@ float Curve::length(int intervals)
     return length;
 }
 
-QRectF Curve::getBoundingBox(int intervals)
+QRectF Curve::getBoundingBox(int intervals) const
 {
     float xMin = std::numeric_limits<float>::infinity();
     float xMax = -std::numeric_limits<float>::infinity();
@@ -382,7 +398,7 @@ QRectF Curve::getBoundingBox(int intervals)
     return QRectF(xMin, yMin, xMax - xMin, yMax - yMin);
 }
 
-int Curve::z() const
+const int &Curve::z() const
 {
     return mZ;
 }
@@ -402,7 +418,7 @@ void Curve::setCurveColor(const QVector4D &newCurveColor)
     mCurveColor = newCurveColor;
 }
 
-bool Curve::showContour() const
+const bool &Curve::showContour() const
 {
     return mShowContour;
 }

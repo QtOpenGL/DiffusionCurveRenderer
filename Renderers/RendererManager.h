@@ -23,7 +23,7 @@ public:
     void diffuse();
 
     void setCurveContainer(const CurveContainer *newCurveContainer);
-    void setProjectionParameters(const OpenGLWidget::ProjectionParameters *newProjectionParameters);
+    void setProjectionParameters(const ProjectionParameters *newProjectionParameters);
 
 private:
     ContourRenderer *mContourRenderer;
@@ -31,13 +31,12 @@ private:
     DiffusionRenderer *mDiffusionRenderer;
 
     const CurveContainer *mCurveContainer;
+    const ProjectionParameters *mProjectionParameters;
 
     QOpenGLFramebufferObjectFormat mFrambufferFormat;
     QOpenGLFramebufferObject *mInitialFrameBuffer;
     QVector<QOpenGLFramebufferObject *> mDownsampledFramebuffers;
     QVector<QOpenGLFramebufferObject *> mUpsampledFramebuffers;
-
-    const OpenGLWidget::ProjectionParameters *mProjectionParameters;
 
     bool mInit;
 };

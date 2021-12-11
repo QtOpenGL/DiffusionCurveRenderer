@@ -3,12 +3,13 @@
 
 #include <QComboBox>
 #include <QGroupBox>
+#include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
 
 #include "Curves/ControlPoint.h"
 #include "Curves/Curve.h"
-#include "Enums.h"
+#include "Types.h"
 
 class ControlPointWidget : public QGroupBox
 {
@@ -17,23 +18,21 @@ public:
     explicit ControlPointWidget(QGroupBox *parent = nullptr);
 
 signals:
-    void dirty();
-    void selectedControlPointChanged(ControlPoint *selectedControlPoint);
-    void action(Action action);
+    void action(Action action, QVariant value = QVariant());
 
 public slots:
     void onSelectedControlPointChanged(ControlPoint *selectedControlPoint);
     void onSelectedCurveChanged(Curve *selectedCurve);
-    void onDirty();
+    void refresh();
 
 private:
-    QComboBox *mControlPointComboBox;
+    QLabel *mControlPointLabel;
     QLineEdit *mControlPointX;
     QLineEdit *mControlPointY;
     QPushButton *mRemoveButton;
 
-    Curve *mSelectedCurve;
-    ControlPoint *mSelectedControlPoint;
+    const Curve *mSelectedCurve;
+    const ControlPoint *mSelectedControlPoint;
 };
 
 #endif // CONTROLPOINTWIDGET_H

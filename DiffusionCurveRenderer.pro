@@ -17,7 +17,6 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    Constants.h \
     Controller.h \
     CurveContainer.h \
     Curves/Bezier.h \
@@ -35,11 +34,12 @@ HEADERS += \
     Renderers/GUI/ControlPointRenderer.h \
     Renderers/RendererManager.h \
     Renderers/ScreenRenderer.h \
+    Transformer.h \
+    Types.h \
     Util.h \
     Widgets/CentralWidget.h \
     Widgets/ControlPointWidget.h \
     Widgets/CurveWidget.h \
-    Widgets/Enums.h \
     Widgets/ModeWidget.h \
     Widgets/OpenGLWidget.h \
     Widgets/TestWidget.h \
@@ -65,6 +65,7 @@ SOURCES += \
     Renderers/GUI/ControlPointRenderer.cpp \
     Renderers/RendererManager.cpp \
     Renderers/ScreenRenderer.cpp \
+    Transformer.cpp \
     Util.cpp \
     Widgets/CentralWidget.cpp \
     Widgets/ControlPointWidget.cpp \

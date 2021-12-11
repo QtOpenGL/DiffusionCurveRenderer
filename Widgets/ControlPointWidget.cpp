@@ -15,19 +15,9 @@ ControlPointWidget::ControlPointWidget(QGroupBox *parent)
         QLabel *label = new QLabel("Index");
         layout->addWidget(label);
 
-        mControlPointComboBox = new QComboBox;
-        mControlPointComboBox->setFocusPolicy(Qt::NoFocus);
-        connect(mControlPointComboBox, QOverload<int>::of(&QComboBox::activated), this, [=](int index) {
-            if (mSelectedCurve) {
-                ControlPoint *controlPoint = mSelectedCurve->getControlPoint(index);
-                onSelectedControlPointChanged(controlPoint);
-                emit selectedControlPointChanged(controlPoint);
-            }
-            emit dirty();
-        });
-
-        layout->addWidget(mControlPointComboBox);
-
+        mControlPointLabel = new QLabel;
+        mControlPointLabel->setFocusPolicy(Qt::NoFocus);
+        layout->addWidget(mControlPointLabel);
         mainLayout->addLayout(layout);
     }
 
@@ -40,12 +30,13 @@ ControlPointWidget::ControlPointWidget(QGroupBox *parent)
         mControlPointX = new QLineEdit;
         mControlPointX->setReadOnly(false);
         mControlPointX->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-        mControlPointX->setValidator(new QIntValidator(-1000, 1000, this));
+        mControlPointX->setValidator(new QIntValidator(-10000, 10000, this));
 
-        connect(mControlPointX, &QLineEdit::textChanged, this, [this](QString text) {
+        connect(mControlPointX, &QLineEdit::textEdited, this, [=](QString text) {
             if (mSelectedControlPoint) {
-                mSelectedControlPoint->position.setX(text.toInt());
-                emit dirty();
+                float x = text.toFloat();
+                float y = mSelectedControlPoint->position.y();
+                emit action(Action::UpdateControlPointPosition, QPointF(x, y));
             }
         });
 
@@ -63,12 +54,13 @@ ControlPointWidget::ControlPointWidget(QGroupBox *parent)
         mControlPointY = new QLineEdit;
         mControlPointY->setReadOnly(false);
         mControlPointY->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-        mControlPointY->setValidator(new QIntValidator(-1000, 1000, this));
+        mControlPointY->setValidator(new QIntValidator(-10000, 10000, this));
 
-        connect(mControlPointY, &QLineEdit::textChanged, this, [this](QString text) {
+        connect(mControlPointY, &QLineEdit::textEdited, this, [this](QString text) {
             if (mSelectedControlPoint) {
-                mSelectedControlPoint->position.setY(text.toInt());
-                emit dirty();
+                float x = mSelectedControlPoint->position.x();
+                float y = text.toFloat();
+                emit action(Action::UpdateControlPointPosition, QPointF(x, y));
             }
         });
 
@@ -84,7 +76,7 @@ ControlPointWidget::ControlPointWidget(QGroupBox *parent)
         mRemoveButton->setAutoFillBackground(false);
         mRemoveButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-        connect(mRemoveButton, &QPushButton::clicked, this, [this]() { emit action(Action::RemoveControlPoint); });
+        connect(mRemoveButton, &QPushButton::clicked, this, [=]() { emit action(Action::RemoveControlPoint); });
 
         QHBoxLayout *layout = new QHBoxLayout;
         //layout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Expanding, QSizePolicy::Minimum));
@@ -97,7 +89,7 @@ ControlPointWidget::ControlPointWidget(QGroupBox *parent)
     setTitle("Control Point");
     setLayout(mainLayout);
 
-    mControlPointComboBox->clear();
+    mControlPointLabel->clear();
     mControlPointX->clear();
     mControlPointY->clear();
     setEnabled(false);
@@ -110,20 +102,13 @@ void ControlPointWidget::onSelectedControlPointChanged(ControlPoint *selectedCon
 
     mSelectedControlPoint = selectedControlPoint;
 
-    if (mSelectedCurve) {
-        mControlPointComboBox->clear();
-        QVector<ControlPoint *> controlPoints = mSelectedCurve->getControlPoints();
-        for (int i = 0; i < controlPoints.size(); ++i)
-            mControlPointComboBox->addItem(QString::number(controlPoints[i]->index));
-    }
-
     if (mSelectedControlPoint) {
         setEnabled(true);
-        mControlPointComboBox->setCurrentIndex(mSelectedControlPoint->index);
+        mControlPointLabel->setText(QString::number(mSelectedControlPoint->index));
         mControlPointX->setText(QString::number(mSelectedControlPoint->position.x(), 'f', 0));
         mControlPointY->setText(QString::number(mSelectedControlPoint->position.y(), 'f', 0));
     } else {
-        mControlPointComboBox->clear();
+        mControlPointLabel->clear();
         mControlPointX->clear();
         mControlPointY->clear();
         setEnabled(false);
@@ -137,23 +122,17 @@ void ControlPointWidget::onSelectedCurveChanged(Curve *selectedCurve)
 
     mSelectedCurve = selectedCurve;
 
-    mControlPointComboBox->clear();
+    mControlPointLabel->clear();
     mControlPointX->clear();
     mControlPointY->clear();
     setEnabled(false);
-
-    if (mSelectedCurve) {
-        QVector<ControlPoint *> controlPoints = mSelectedCurve->getControlPoints();
-        for (int i = 0; i < controlPoints.size(); ++i)
-            mControlPointComboBox->addItem(QString::number(controlPoints[i]->index));
-    }
 }
 
-void ControlPointWidget::onDirty()
+void ControlPointWidget::refresh()
 {
     if (mSelectedControlPoint) {
         setEnabled(true);
-        mControlPointComboBox->setCurrentIndex(mSelectedControlPoint->index);
+        mControlPointLabel->setText(QString::number(mSelectedControlPoint->index));
         mControlPointX->setText(QString::number(mSelectedControlPoint->position.x(), 'f', 0));
         mControlPointY->setText(QString::number(mSelectedControlPoint->position.y(), 'f', 0));
     }

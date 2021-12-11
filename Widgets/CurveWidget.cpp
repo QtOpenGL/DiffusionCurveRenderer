@@ -20,12 +20,9 @@ CurveWidget::CurveWidget(QGroupBox *parent)
         mZLineEdit->setReadOnly(false);
         mZLineEdit->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
         mZLineEdit->setValidator(new QIntValidator(-1000, 1000, this));
-        connect(mZLineEdit, &QLineEdit::textChanged, this, [this](QString text) {
+        connect(mZLineEdit, &QLineEdit::textChanged, this, [=](QString text) {
             if (mSelectedCurve)
-                mSelectedCurve->setZ(text.toInt());
-
-            emit action(Action::ZIndexChanged);
-            emit dirty();
+                emit action(Action::UpdateCurveZIndex, text.toInt());
         });
 
         layout->addWidget(mZLineEdit);
@@ -43,11 +40,9 @@ CurveWidget::CurveWidget(QGroupBox *parent)
         mThicknessLineEdit->setValidator(new QIntValidator(1, 10, this));
         mThicknessLineEdit->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 
-        connect(mThicknessLineEdit, &QLineEdit::textChanged, this, [this](QString text) {
+        connect(mThicknessLineEdit, &QLineEdit::textChanged, this, [=](QString text) {
             if (mSelectedCurve)
-                mSelectedCurve->setThickness(text.toInt());
-
-            emit dirty();
+                emit action(Action::UpdateCurveThickness, text.toInt());
         });
 
         layout->addWidget(mThicknessLineEdit);
@@ -62,12 +57,10 @@ CurveWidget::CurveWidget(QGroupBox *parent)
         mRemoveButton->setAutoFillBackground(false);
         mRemoveButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
-        connect(mRemoveButton, &QPushButton::clicked, this, [this]() { emit action(Action::RemoveCurve); });
+        connect(mRemoveButton, &QPushButton::clicked, this, [=]() { emit action(Action::RemoveCurve); });
 
         QHBoxLayout *layout = new QHBoxLayout;
-        //layout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Expanding, QSizePolicy::Minimum));
         layout->addWidget(mRemoveButton);
-        //layout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Expanding, QSizePolicy::Minimum));
 
         mainLayout->addLayout(layout);
     }

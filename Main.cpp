@@ -45,15 +45,15 @@ int main(int argc, char *argv[])
     format.setProfile(QSurfaceFormat::CoreProfile);
     QSurfaceFormat::setDefaultFormat(format);
 
-    //    Controller *controller = new Controller;
-    //    Window *window = new Window;
-    //    window->setCentralWidget(controller->centralWidget());
-    //    window->initialize();
-    //    window->setWindowTitle("Diffusion Curve Renderer");
-    //    window->show();
+    Controller *controller = new Controller;
+    Window *window = new Window;
+    window->setCentralWidget(controller->centralWidget());
+    window->initialize();
+    window->setWindowTitle("Diffusion Curve Renderer");
+    window->show();
 
-    TestWidget *widget = new TestWidget;
-    widget->show();
+    //    TestWidget *widget = new TestWidget;
+    //    widget->show();
 
     return app.exec();
 }

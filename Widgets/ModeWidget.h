@@ -3,6 +3,7 @@
 
 #include <QGroupBox>
 
+#include "Types.h"
 #include <QPushButton>
 
 class ModeWidget : public QGroupBox
@@ -11,10 +12,8 @@ class ModeWidget : public QGroupBox
 public:
     explicit ModeWidget(QGroupBox *parent = nullptr);
 
-    enum Mode { Select = 0, Add = 1, Move = 2, Pan = 3 };
-
 signals:
-    void modeChanged(ModeWidget::Mode mode);
+    void modeChanged(Mode mode);
 
 private slots:
     void refresh();

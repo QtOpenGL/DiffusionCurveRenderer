@@ -4,7 +4,7 @@ Bezier::Bezier() {}
 
 Bezier::~Bezier() {}
 
-QVector2D Bezier::valueAt(float t)
+QVector2D Bezier::valueAt(float t) const
 {
     QVector2D value = QVector2D(0, 0);
     int n = getDegree();
@@ -15,7 +15,7 @@ QVector2D Bezier::valueAt(float t)
     return value;
 }
 
-QVector2D Bezier::tangentAt(float t)
+QVector2D Bezier::tangentAt(float t) const
 {
     QVector2D tangent = QVector2D(0, 0);
     int order = getDegree();
@@ -30,14 +30,14 @@ QVector2D Bezier::tangentAt(float t)
     return tangent;
 }
 
-QVector2D Bezier::normalAt(float t)
+QVector2D Bezier::normalAt(float t) const
 {
     QVector2D tangent = tangentAt(t);
 
     return QVector2D(-tangent.y(), tangent.x());
 }
 
-QVector<float> Bezier::getCoefficients()
+QVector<float> Bezier::getCoefficients() const
 {
     QVector<float> coefficients;
     int n = getDegree();
@@ -48,7 +48,7 @@ QVector<float> Bezier::getCoefficients()
     return coefficients;
 }
 
-QVector<float> Bezier::getDerivativeCoefficients()
+QVector<float> Bezier::getDerivativeCoefficients() const
 {
     QVector<float> coefficients;
     int n = getDegree();
@@ -59,7 +59,7 @@ QVector<float> Bezier::getDerivativeCoefficients()
     return coefficients;
 }
 
-float Bezier::factorial(int n)
+float Bezier::factorial(int n) const
 {
     double result = 1.0;
 
@@ -69,7 +69,7 @@ float Bezier::factorial(int n)
     return result;
 }
 
-float Bezier::choose(int n, int k)
+float Bezier::choose(int n, int k) const
 {
     return factorial(n) / (factorial(k) * factorial(n - k));
 }

@@ -4,7 +4,7 @@
 
 ModeWidget::ModeWidget(QGroupBox *parent)
     : QGroupBox(parent)
-    , mMode(Select)
+    , mMode(Mode::Select)
 {
     QHBoxLayout *layout = new QHBoxLayout;
 
@@ -36,6 +36,6 @@ ModeWidget::ModeWidget(QGroupBox *parent)
 void ModeWidget::refresh()
 {
     for (int i = 0; i < mButtons.size(); ++i) {
-        mButtons[i]->setChecked(mMode == i);
+        mButtons[i]->setChecked((int) mMode == i);
     }
 }

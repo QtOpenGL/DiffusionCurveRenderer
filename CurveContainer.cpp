@@ -33,12 +33,12 @@ QVector<Curve *> &CurveContainer::getCurves() const
     return mCurves;
 }
 
-ControlPoint *CurveContainer::getClosestControlPointOnSelectedCurve(QVector2D position, float radius)
+ControlPoint *CurveContainer::getClosestControlPointOnSelectedCurve(const QVector2D &position, float radius) const
 {
     if (!mSelectedCurve)
         return nullptr;
 
-    ControlPoint *controlPoint = mSelectedCurve->getClosestControlPoint(position);
+    ControlPoint *controlPoint = const_cast<ControlPoint *>(mSelectedCurve->getClosestControlPoint(position));
 
     if (controlPoint) {
         if (controlPoint->position.distanceToPoint(position) > radius)
@@ -46,6 +46,11 @@ ControlPoint *CurveContainer::getClosestControlPointOnSelectedCurve(QVector2D po
     }
 
     return controlPoint;
+}
+
+ControlPoint *CurveContainer::getClosestControlPointOnSelectedCurve(const QPointF &position, float radius) const
+{
+    return getClosestControlPointOnSelectedCurve(QVector2D(position.x(), position.y()), radius);
 }
 
 Curve *CurveContainer::selectedCurve()
@@ -79,7 +84,7 @@ void CurveContainer::removeCurve(Curve *curve)
     }
 }
 
-Curve *CurveContainer::selectCurve(QVector2D position, float radius)
+Curve *CurveContainer::selectCurve(const QVector2D &position, float radius)
 {
     float minDistance = std::numeric_limits<float>::infinity();
 
@@ -97,6 +102,11 @@ Curve *CurveContainer::selectCurve(QVector2D position, float radius)
         return selectedCurve;
 
     return nullptr;
+}
+
+Curve *CurveContainer::selectCurve(const QPointF &position, float radius)
+{
+    return selectCurve(QVector2D(position.x(), position.y()), radius);
 }
 
 void CurveContainer::deselectAllCurves()

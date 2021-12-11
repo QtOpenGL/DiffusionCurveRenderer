@@ -17,7 +17,7 @@ class CentralWidget : public QWidget
 public:
     explicit CentralWidget(QWidget *parent = nullptr);
 
-    void initialize();
+    void init();
 
     void setOpenGLWidget(OpenGLWidget *newOpenGLWidget);
     void setModeWidget(ModeWidget *newModeWidget);
@@ -32,10 +32,6 @@ private:
     CurveWidget *mCurveWidget;
     ControlPointWidget *mControlPointWidget;
     ZoomWidget *mZoomWidget;
-    QCheckBox *mShowContoursCheckBox;
-
-signals:
-    void showContoursStateChanged(bool state);
 };
 
 #endif // CENTRALWIDGET_H

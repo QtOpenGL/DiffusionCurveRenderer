@@ -9,7 +9,7 @@
 #include <QPushButton>
 
 #include "Curves/Curve.h"
-#include "Enums.h"
+#include "Types.h"
 
 class CurveWidget : public QGroupBox
 {
@@ -22,15 +22,14 @@ public slots:
     void reset();
 
 signals:
-    void dirty();
-    void action(Action action);
+    void action(Action action, QVariant value = QVariant());
 
 private:
     QLineEdit *mZLineEdit;
     QLineEdit *mThicknessLineEdit;
     QPushButton *mRemoveButton;
 
-    Curve *mSelectedCurve;
+    const Curve *mSelectedCurve;
 };
 
 #endif // CURVEWIDGET_H

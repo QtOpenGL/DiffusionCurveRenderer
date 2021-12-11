@@ -28,7 +28,7 @@ void ControlPointRenderer::render(Curve *curve, const QMatrix4x4 &projectionMatr
     if (curve == nullptr)
         return;
 
-    QVector<ControlPoint *> controlPoints = curve->getControlPoints();
+    QVector<const ControlPoint *> controlPoints = curve->getControlPoints();
 
     for (int j = 0; j < controlPoints.size(); ++j) {
         mPointRendererParameters.point = controlPoints[j]->position;

@@ -216,11 +216,13 @@ void DiffusionRenderer::smooth(GLuint constrainedTexture, GLuint targetTexture, 
 {
     if (!mInit)
         return;
+
     mSmootherShader->bind();
     mQuads->bind();
+
     for (int i = 0; i < iterations; ++i) {
-        mUpsamplerShader->setUniformValue(mSmootherLocations.value("constrainedTexture"), 3);
-        mUpsamplerShader->setUniformValue(mSmootherLocations.value("targetTexture"), 4);
+        mSmootherShader->setUniformValue(mSmootherLocations.value("constrainedTexture"), 3);
+        mSmootherShader->setUniformValue(mSmootherLocations.value("targetTexture"), 4);
 
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, constrainedTexture);
