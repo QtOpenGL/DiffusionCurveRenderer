@@ -111,7 +111,7 @@ void Controller::onAction(Action action, CustomVariant value)
     case Action::Select: {
         if (mCurveContainer->selectedCurve()) {
             ControlPoint *controlPoint = mCurveContainer->getClosestControlPointOnSelectedCurve(value.toVector2D(),
-                                                                                                20 * mProjectionParameters->zoomRatio);
+                                                                                                10 * mProjectionParameters->zoomRatio);
             mCurveContainer->setSelectedControlPoint(controlPoint);
 
             if (controlPoint) {
@@ -120,7 +120,7 @@ void Controller::onAction(Action action, CustomVariant value)
             }
         }
 
-        Curve *selectedCurve = mCurveContainer->selectCurve(value.toVector2D(), 40 * mProjectionParameters->zoomRatio);
+        Curve *selectedCurve = mCurveContainer->selectCurve(value.toVector2D(), 15 * mProjectionParameters->zoomRatio);
         mMousePressedOnCurve = selectedCurve ? true : false;
         mCurveContainer->setSelectedCurve(selectedCurve);
         break;

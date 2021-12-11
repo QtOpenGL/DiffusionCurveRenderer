@@ -17,8 +17,8 @@ public:
     virtual QVector<const ControlPoint *> getControlPoints() const;
     virtual const ControlPoint *getControlPoint(int index) const;
     virtual QVector<QVector2D> getControlPointPositions() const;
-    virtual void addControlPoint(ControlPoint *controlPoint);
-    virtual void setControlPoint(int index, ControlPoint *controlPoint);
+    virtual void addControlPoint(ControlPoint *controlPoint, bool append = true);
+
     virtual void removeControlPoint(int index);
     virtual void removeControlPoint(ControlPoint *controlPoint);
 
@@ -52,12 +52,13 @@ public:
 
     virtual const ControlPoint *getClosestControlPoint(QVector2D point) const;
     virtual void deselectAllControlPoints();
-    virtual float distanceToPoint(QVector2D point) const;
+    virtual float distanceToPoint(const QVector2D &point, int intervals = 1000) const;
 
     virtual void translate(QVector2D translation);
     virtual void translate(QPointF translation);
 
     virtual float length(int intervals = 100) const;
+    virtual float parameterAt(const QVector2D &point, int intervals = 100) const;
     virtual QRectF getBoundingBox(int intervals = 100) const;
 
     virtual QVector2D valueAt(float t) const = 0;
@@ -98,6 +99,11 @@ protected:
 
 private:
     void updateControlPointIndices();
+    static QVector2D findMeanCenter(const QVector<QVector2D> &points);
+    static QVector<QVector2D> translate(const QVector<QVector2D> &points, const QVector2D &translation);
+    static void findLineOfBestFit(const QVector<QVector2D> &points, QVector2D &startingPoint, QVector2D &direction, int segments = 1000);
+    static float averageDistanceToLine(const QVector<QVector2D> &points, const QVector2D &startingPoint, const QVector2D &direction);
+    static float perpendicularAt(const QVector2D &startingPoint, const QVector2D &direction, const QVector2D &subject);
 };
 
 #endif // CURVE_H
