@@ -57,7 +57,7 @@ void OpenGLWidget::paintGL()
     switch (mMode) {
     case Mode::Pan:
         break;
-    case Mode::Add:
+    case Mode::AddControlPoint:
     case Mode::Select: {
         if (mSelectedCurve) {
             QVector<const ControlPoint *> controlPoints = mSelectedCurve->getControlPoints();
@@ -80,7 +80,7 @@ void OpenGLWidget::paintGL()
         }
         break;
     }
-    case Mode::Move: {
+    case Mode::MoveCurve: {
         if (mSelectedCurve) {
             // Draw bounding box
             QRectF boundingBox = mTransformer->mapFromOpenGLToGui(mSelectedCurve->getBoundingBox());
@@ -167,10 +167,10 @@ void OpenGLWidget::refresh()
     case Mode::Select:
         setCursor(Qt::ArrowCursor);
         break;
-    case Mode::Add:
+    case Mode::AddControlPoint:
         setCursor(Qt::CrossCursor);
         break;
-    case Mode::Move: {
+    case Mode::MoveCurve: {
         if (mSelectedCurve)
             setCursor(Qt::SizeAllCursor);
         else

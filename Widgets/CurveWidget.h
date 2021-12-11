@@ -26,7 +26,10 @@ signals:
 
 private:
     QLineEdit *mZLineEdit;
-    QLineEdit *mThicknessLineEdit;
+    QSlider *mContourThicknessSlider;
+    QSlider *mDiffusionWidthSlider;
+    QCheckBox *mContourColorStateCheckBox;
+    QPushButton *mColorButton;
     QPushButton *mRemoveButton;
 
     const Curve *mSelectedCurve;

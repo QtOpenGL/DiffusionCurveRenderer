@@ -22,8 +22,9 @@ enum class Action {
 
 enum class Mode {
     Select,
-    Add,
-    Move,
+    AddControlPoint,
+    AddColorPoint,
+    MoveCurve,
     Pan,
 };
 

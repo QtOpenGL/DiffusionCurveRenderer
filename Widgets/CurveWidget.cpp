@@ -8,14 +8,12 @@ CurveWidget::CurveWidget(QGroupBox *parent)
     : QGroupBox(parent)
     , mSelectedCurve(nullptr)
 {
-    QVBoxLayout *mainLayout = new QVBoxLayout;
+    // 0, 1, 2
+    QGridLayout *mainLayout = new QGridLayout;
+    mainLayout->setVerticalSpacing(8);
 
     // z-index
     {
-        QHBoxLayout *layout = new QHBoxLayout;
-        QLabel *label = new QLabel("Z Index");
-        layout->addWidget(label);
-
         mZLineEdit = new QLineEdit;
         mZLineEdit->setReadOnly(false);
         mZLineEdit->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -25,29 +23,43 @@ CurveWidget::CurveWidget(QGroupBox *parent)
                 emit action(Action::UpdateCurveZIndex, text.toInt());
         });
 
-        layout->addWidget(mZLineEdit);
-        mainLayout->addLayout(layout);
+        mainLayout->addWidget(new QLabel("Z-index"), 0, 0);
+        mainLayout->addWidget(mZLineEdit, 0, 2);
     }
 
-    // Thickness
     {
-        QHBoxLayout *layout = new QHBoxLayout;
-        QLabel *label = new QLabel("Thickness");
-        layout->addWidget(label);
+        mContourColorStateCheckBox = new QCheckBox;
+        mContourColorStateCheckBox->setCheckable(true);
 
-        mThicknessLineEdit = new QLineEdit;
-        mThicknessLineEdit->setReadOnly(false);
-        mThicknessLineEdit->setValidator(new QIntValidator(1, 10, this));
-        mThicknessLineEdit->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+        mColorButton = new QPushButton;
 
-        connect(mThicknessLineEdit, &QLineEdit::textChanged, this, [=](QString text) {
-            if (mSelectedCurve)
-                emit action(Action::UpdateCurveThickness, text.toInt());
-        });
+        mainLayout->addWidget(new QLabel("Contour Color"), 1, 0);
+        mainLayout->addWidget(mContourColorStateCheckBox, 1, 1);
+        mainLayout->addWidget(mColorButton, 1, 2);
+    }
 
-        layout->addWidget(mThicknessLineEdit);
+    // Contour Thickness
+    {
+        mContourThicknessSlider = new QSlider(Qt::Horizontal);
+        mContourThicknessSlider->setMinimum(1);
+        mContourThicknessSlider->setMaximum(99);
+        mContourThicknessSlider->setValue(4);
+        mContourThicknessSlider->setTickPosition(QSlider::TicksBelow);
 
-        mainLayout->addLayout(layout);
+        mainLayout->addWidget(new QLabel("Contour Thickness"), 2, 0);
+        mainLayout->addWidget(mContourThicknessSlider, 2, 2);
+    }
+
+    // Diffusion Width
+    {
+        mDiffusionWidthSlider = new QSlider(Qt::Horizontal);
+        mDiffusionWidthSlider->setMinimum(1);
+        mDiffusionWidthSlider->setMaximum(99);
+        mDiffusionWidthSlider->setValue(4);
+        mDiffusionWidthSlider->setTickPosition(QSlider::TicksBelow);
+
+        mainLayout->addWidget(new QLabel("Diffusion Width"), 3, 0);
+        mainLayout->addWidget(mDiffusionWidthSlider, 3, 2);
     }
 
     // Remove Button
@@ -55,14 +67,10 @@ CurveWidget::CurveWidget(QGroupBox *parent)
         mRemoveButton = new QPushButton("Remove Curve");
         mRemoveButton->setFlat(false);
         mRemoveButton->setAutoFillBackground(false);
-        mRemoveButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
 
         connect(mRemoveButton, &QPushButton::clicked, this, [=]() { emit action(Action::RemoveCurve); });
 
-        QHBoxLayout *layout = new QHBoxLayout;
-        layout->addWidget(mRemoveButton);
-
-        mainLayout->addLayout(layout);
+        mainLayout->addWidget(mRemoveButton, 4, 2);
     }
 
     setLayout(mainLayout);
@@ -80,7 +88,7 @@ void CurveWidget::onSelectedCurveChanged(Curve *selectedCurve)
     if (mSelectedCurve) {
         setEnabled(true);
         mZLineEdit->setText(QString::number(mSelectedCurve->z()));
-        mThicknessLineEdit->setText(QString::number(mSelectedCurve->thickness(), 'f', 0));
+
     } else {
         reset();
     }
@@ -89,6 +97,6 @@ void CurveWidget::onSelectedCurveChanged(Curve *selectedCurve)
 void CurveWidget::reset()
 {
     mZLineEdit->clear();
-    mThicknessLineEdit->clear();
+
     setEnabled(false);
 }

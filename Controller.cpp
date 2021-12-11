@@ -21,6 +21,9 @@ Controller::Controller(QObject *parent)
     mCurveWidget = new CurveWidget;
     mControlPointWidget = new ControlPointWidget;
     mZoomWidget = new ZoomWidget;
+    mColorPointWidget = new ColorPointWidget;
+    mRenderSettingsWidget = new RenderSettingsWidget;
+
     mCurveContainer = new CurveContainer;
     mRendererManager = new RendererManager;
     mProjectionParameters = new ProjectionParameters;
@@ -31,6 +34,8 @@ Controller::Controller(QObject *parent)
     mCentralWidget->setCurveWidget(mCurveWidget);
     mCentralWidget->setControlPointWidget(mControlPointWidget);
     mCentralWidget->setZoomWidget(mZoomWidget);
+    mCentralWidget->setColorPointWidget(mColorPointWidget);
+    mCentralWidget->setRenderSettingsWidget(mRenderSettingsWidget);
     mCentralWidget->init();
 
     mTransformer->setProjectionParameters(mProjectionParameters);
@@ -243,7 +248,7 @@ void Controller::onMousePressed(QMouseEvent *event)
         onAction(Action::Select, position);
         break;
     }
-    case Mode::Add: {
+    case Mode::AddControlPoint: {
         QPointF position = mTransformer->mapFromGuiToOpenGL(mMousePosition);
         onAction(Action::Add, position);
         break;
@@ -276,10 +281,10 @@ void Controller::onMouseMoved(QMouseEvent *event)
         }
         break;
     }
-    case Mode::Add: {
+    case Mode::AddControlPoint: {
         break;
     }
-    case Mode::Move: {
+    case Mode::MoveCurve: {
         if (mMousePressed) {
             if (mCurveContainer->selectedCurve()) {
                 QPointF translation = (event->pos() - mMousePosition) * mProjectionParameters->zoomRatio;

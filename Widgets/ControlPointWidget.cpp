@@ -7,26 +7,20 @@ ControlPointWidget::ControlPointWidget(QGroupBox *parent)
     : QGroupBox(parent)
     , mSelectedControlPoint(nullptr)
 {
-    QVBoxLayout *mainLayout = new QVBoxLayout;
+    QGridLayout *mainLayout = new QGridLayout;
+    mainLayout->setVerticalSpacing(8);
+    mainLayout->setColumnStretch(0, 8);
+    mainLayout->setColumnStretch(1, 8);
 
-    // Index
+    // Control Point Label
     {
-        QHBoxLayout *layout = new QHBoxLayout;
-        QLabel *label = new QLabel("Index");
-        layout->addWidget(label);
-
         mControlPointLabel = new QLabel;
-        mControlPointLabel->setFocusPolicy(Qt::NoFocus);
-        layout->addWidget(mControlPointLabel);
-        mainLayout->addLayout(layout);
+        mainLayout->addWidget(new QLabel("Index"), 0, 0);
+        mainLayout->addWidget(mControlPointLabel, 0, 1);
     }
 
     // X
     {
-        QHBoxLayout *layout = new QHBoxLayout;
-        QLabel *label = new QLabel("X");
-        layout->addWidget(label);
-
         mControlPointX = new QLineEdit;
         mControlPointX->setReadOnly(false);
         mControlPointX->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -40,17 +34,12 @@ ControlPointWidget::ControlPointWidget(QGroupBox *parent)
             }
         });
 
-        layout->addWidget(mControlPointX);
-
-        mainLayout->addLayout(layout);
+        mainLayout->addWidget(new QLabel("X"), 1, 0);
+        mainLayout->addWidget(mControlPointX, 1, 1);
     }
 
     // Y
     {
-        QHBoxLayout *layout = new QHBoxLayout;
-        QLabel *label = new QLabel("Y");
-        layout->addWidget(label);
-
         mControlPointY = new QLineEdit;
         mControlPointY->setReadOnly(false);
         mControlPointY->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -64,9 +53,8 @@ ControlPointWidget::ControlPointWidget(QGroupBox *parent)
             }
         });
 
-        layout->addWidget(mControlPointY);
-
-        mainLayout->addLayout(layout);
+        mainLayout->addWidget(new QLabel("Y"), 2, 0);
+        mainLayout->addWidget(mControlPointY, 2, 1);
     }
 
     // Remove Button
@@ -74,21 +62,12 @@ ControlPointWidget::ControlPointWidget(QGroupBox *parent)
         mRemoveButton = new QPushButton("Remove Control Point");
         mRemoveButton->setFlat(false);
         mRemoveButton->setAutoFillBackground(false);
-        mRemoveButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-
         connect(mRemoveButton, &QPushButton::clicked, this, [=]() { emit action(Action::RemoveControlPoint); });
-
-        QHBoxLayout *layout = new QHBoxLayout;
-        //layout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Expanding, QSizePolicy::Minimum));
-        layout->addWidget(mRemoveButton);
-        //layout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Expanding, QSizePolicy::Minimum));
-
-        mainLayout->addLayout(layout);
+        mainLayout->addWidget(mRemoveButton, 3, 1);
     }
 
     setTitle("Control Point");
     setLayout(mainLayout);
-
     mControlPointLabel->clear();
     mControlPointX->clear();
     mControlPointY->clear();

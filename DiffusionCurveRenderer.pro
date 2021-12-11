@@ -38,10 +38,12 @@ HEADERS += \
     Types.h \
     Util.h \
     Widgets/CentralWidget.h \
+    Widgets/ColorPointWidget.h \
     Widgets/ControlPointWidget.h \
     Widgets/CurveWidget.h \
     Widgets/ModeWidget.h \
     Widgets/OpenGLWidget.h \
+    Widgets/RenderSettingsWidget.h \
     Widgets/TestWidget.h \
     Widgets/ZoomWidget.h \
     Window.h
@@ -68,10 +70,12 @@ SOURCES += \
     Transformer.cpp \
     Util.cpp \
     Widgets/CentralWidget.cpp \
+    Widgets/ColorPointWidget.cpp \
     Widgets/ControlPointWidget.cpp \
     Widgets/CurveWidget.cpp \
     Widgets/ModeWidget.cpp \
     Widgets/OpenGLWidget.cpp \
+    Widgets/RenderSettingsWidget.cpp \
     Widgets/TestWidget.cpp \
     Widgets/ZoomWidget.cpp \
     Window.cpp

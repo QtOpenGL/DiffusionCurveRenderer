@@ -18,12 +18,15 @@ void CentralWidget::init()
     gridLayout->addWidget(mModeWidget, 0, 0);
     gridLayout->addWidget(mCurveWidget, 1, 0);
     gridLayout->addWidget(mControlPointWidget, 2, 0);
-    gridLayout->addWidget(mZoomWidget, 3, 0);
-    gridLayout->addItem(new QSpacerItem(1, 1, QSizePolicy::Ignored, QSizePolicy::Expanding), 4, 0);
+    gridLayout->addWidget(mColorPointWidget, 3, 0);
+    gridLayout->addWidget(mRenderSettingsWidget, 4, 0);
+    gridLayout->addWidget(mZoomWidget, 5, 0);
+
+    gridLayout->addItem(new QSpacerItem(1, 1, QSizePolicy::Ignored, QSizePolicy::Expanding), 6, 0);
 
     QHBoxLayout *layout = new QHBoxLayout;
     mOpenGLWidgetContainer = new QGroupBox;
-    mOpenGLWidgetContainer->setTitle("Canvas");
+    mOpenGLWidgetContainer->setTitle(" ");
     mOpenGLWidgetContainer->setLayout(layout);
     layout->addWidget(mOpenGLWidget);
     gridLayout->addWidget(mOpenGLWidgetContainer, 0, 1, 0, -1);
@@ -50,6 +53,16 @@ void CentralWidget::setZoomWidget(ZoomWidget *newZoomWidget)
 void CentralWidget::setCurveWidget(CurveWidget *newCurveWidget)
 {
     mCurveWidget = newCurveWidget;
+}
+
+void CentralWidget::setColorPointWidget(ColorPointWidget *newColorPointWidget)
+{
+    mColorPointWidget = newColorPointWidget;
+}
+
+void CentralWidget::setRenderSettingsWidget(RenderSettingsWidget *newRenderSettingsWidget)
+{
+    mRenderSettingsWidget = newRenderSettingsWidget;
 }
 
 void CentralWidget::setControlPointWidget(ControlPointWidget *newControlPointWidget)

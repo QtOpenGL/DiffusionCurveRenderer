@@ -2,9 +2,9 @@
 #define MODEWIDGET_H
 
 #include <QGroupBox>
+#include <QRadioButton>
 
 #include "Types.h"
-#include <QPushButton>
 
 class ModeWidget : public QGroupBox
 {
@@ -19,7 +19,7 @@ private slots:
     void refresh();
 
 private:
-    QVector<QPushButton *> mButtons;
+    QVector<QRadioButton *> mRadioButtons;
     Mode mMode;
 };
 

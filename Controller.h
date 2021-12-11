@@ -9,7 +9,9 @@
 
 #include <Curves/Curve.h>
 #include <Renderers/RendererManager.h>
+#include <Widgets/ColorPointWidget.h>
 #include <Widgets/ModeWidget.h>
+#include <Widgets/RenderSettingsWidget.h>
 #include <QVariant>
 
 class CentralWidget;
@@ -54,6 +56,8 @@ private:
     CurveWidget *mCurveWidget;
     ControlPointWidget *mControlPointWidget;
     ZoomWidget *mZoomWidget;
+    ColorPointWidget *mColorPointWidget;
+    RenderSettingsWidget *mRenderSettingsWidget;
 
     CurveContainer *mCurveContainer;
     Transformer *mTransformer;

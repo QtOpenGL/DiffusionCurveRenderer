@@ -1,6 +1,9 @@
 #ifndef CENTRALWIDGET_H
 #define CENTRALWIDGET_H
 
+#include "ColorPointWidget.h"
+#include "RenderSettingsWidget.h"
+
 #include <QCheckBox>
 #include <QGroupBox>
 #include <QWidget>
@@ -24,6 +27,8 @@ public:
     void setControlPointWidget(ControlPointWidget *newControlPointWidget);
     void setZoomWidget(ZoomWidget *newZoomWidget);
     void setCurveWidget(CurveWidget *newCurveWidget);
+    void setColorPointWidget(ColorPointWidget *newColorPointWidget);
+    void setRenderSettingsWidget(RenderSettingsWidget *newRenderSettingsWidget);
 
 private:
     QGroupBox *mOpenGLWidgetContainer;
@@ -32,6 +37,8 @@ private:
     CurveWidget *mCurveWidget;
     ControlPointWidget *mControlPointWidget;
     ZoomWidget *mZoomWidget;
+    ColorPointWidget *mColorPointWidget;
+    RenderSettingsWidget *mRenderSettingsWidget;
 };
 
 #endif // CENTRALWIDGET_H

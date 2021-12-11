@@ -6,36 +6,37 @@ ModeWidget::ModeWidget(QGroupBox *parent)
     : QGroupBox(parent)
     , mMode(Mode::Select)
 {
-    QHBoxLayout *layout = new QHBoxLayout;
+    QVBoxLayout *layout = new QVBoxLayout;
 
     QVector<QString> labels;
     labels << "Select"
-           << "Add"
-           << "Move"
+           << "Add Control Point"
+           << "Add Color Point"
+           << "Move Curve"
            << "Pan";
 
     for (int i = 0; i < labels.size(); ++i) {
-        QPushButton *button = new QPushButton(labels[i]);
+        QRadioButton *button = new QRadioButton(labels[i]);
         button->setCheckable(true);
 
-        connect(button, &QPushButton::clicked, this, [=]() {
+        connect(button, &QRadioButton::clicked, this, [=]() {
             mMode = static_cast<Mode>(i);
             emit modeChanged(mMode);
             refresh();
         });
 
-        mButtons << button;
+        mRadioButtons << button;
         layout->addWidget(button);
     }
 
     setLayout(layout);
-    setTitle("Modes");
+    setTitle("Action Modes");
     refresh();
 }
 
 void ModeWidget::refresh()
 {
-    for (int i = 0; i < mButtons.size(); ++i) {
-        mButtons[i]->setChecked((int) mMode == i);
+    for (int i = 0; i < mRadioButtons.size(); ++i) {
+        mRadioButtons[i]->setChecked((int) mMode == i);
     }
 }
