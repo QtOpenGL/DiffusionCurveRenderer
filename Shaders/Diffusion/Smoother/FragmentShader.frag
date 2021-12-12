@@ -17,70 +17,78 @@ void main()
 
     if(color.a < 1) // Smooth
     {
-        float uStep = 1.0 / targetWidth;
-        float vStep = 1.0 / targetHeight;
+        float uStep = 2 / targetWidth;
+        float vStep = 2 / targetHeight;
 
         // nw n ne
         // w  c e
         // sw s se
 
-        //vec2 nw = vec2(fs_TextureCoords.s - uStep, fs_TextureCoords.t + vStep);
+        vec2 nw = vec2(fs_TextureCoords.s - uStep, fs_TextureCoords.t + vStep);
         vec2 n = vec2(fs_TextureCoords.s, fs_TextureCoords.t + vStep);
-        //vec2 ne = vec2(fs_TextureCoords.s + uStep, fs_TextureCoords.t + vStep);
+        vec2 ne = vec2(fs_TextureCoords.s + uStep, fs_TextureCoords.t + vStep);
 
         vec2 w = vec2(fs_TextureCoords.s - uStep, fs_TextureCoords.t);
+        vec2 c = vec2(fs_TextureCoords.s, fs_TextureCoords.t);
         vec2 e = vec2(fs_TextureCoords.s + uStep, fs_TextureCoords.t);
 
-        //vec2 sw = vec2(fs_TextureCoords.s - uStep, fs_TextureCoords.t - vStep);
+        vec2 sw = vec2(fs_TextureCoords.s - uStep, fs_TextureCoords.t - vStep);
         vec2 s = vec2(fs_TextureCoords.s, fs_TextureCoords.t - vStep);
-        //vec2 se = vec2(fs_TextureCoords.s + uStep, fs_TextureCoords.t - vStep);
+        vec2 se = vec2(fs_TextureCoords.s + uStep, fs_TextureCoords.t - vStep);
 
-//        vec2 vectors[8];
-//        vectors[0] = nw;
-//        vectors[1] = n;
-//        vectors[2] = ne;
-//        vectors[3] = w;
-//        vectors[4] = e;
-//        vectors[5] = sw;
-//        vectors[6] = s;
-//        vectors[7] = se;
+        vec2 vectors[9];
+        vectors[0] = nw;
+        vectors[1] = n;
+        vectors[2] = ne;
+        vectors[3] = w;
+        vectors[4] = c;
+        vectors[5] = e;
+        vectors[6] = sw;
+        vectors[7] = s;
+        vectors[8] = se;
 
-        vec2 vectors[4];
-        vectors[0] = n;
-        vectors[1] = w;
-        vectors[2] = e;
-        vectors[3] = s;
+        float weights[9];
+        weights[0] = 1;
+        weights[1] = 2; // n
+        weights[2] = 1;
+        weights[3] = 2; // w
+        weights[4] = 4; // c
+        weights[5] = 2; // e
+        weights[6] = 1;
+        weights[7] = 2; // s
+        weights[8] = 1;
 
-        vec4 colors[4];
+        vec4 colors[9];
 
-        for(int i = 0; i < 4; i++)
+        for(int i = 0; i < 9; i++)
         {
-            colors[i] = texture(targetTexture, vectors[i]).rgba;
+            colors[i] = texture(targetTexture, vectors[i]);
         }
 
+        float totalWeight = 0;
         vec4 color = vec4(0,0,0,0);
-        int count = 0;
-        for(int i = 0; i < 4; i++)
+
+        for(int i = 0; i < 9; i++)
         {
             if(colors[i].a > 0)
             {
-                color += colors[i];
-                count++;
+                color += weights[i] * colors[i];
+                totalWeight += weights[i];
             }
-
         }
 
-        if(count > 0)
+        if(totalWeight > 0)
         {
-            out_Color = color / count;
+            out_Color = color / totalWeight;
         }
-        else{
+        else
+        {
             out_Color = vec4(1,1,1,1);
         }
 
     }
-    else{
+    else
+    {
         out_Color = color;
-
     }
 }

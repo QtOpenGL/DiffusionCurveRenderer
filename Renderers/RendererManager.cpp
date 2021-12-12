@@ -161,9 +161,6 @@ void RendererManager::diffuse()
         }
     }
 
-    //glViewport(0, 0, mProjectionParameters->width, mProjectionParameters->height);
-    //QOpenGLFramebufferObject::blitFramebuffer(nullptr, mUpsampledFramebuffer[mUpsampledFramebuffers.size() - 2]);
-
     QOpenGLFramebufferObject::bindDefault();
     glViewport(0, 0, mProjectionParameters->width, mProjectionParameters->height);
     ScreenRenderer::Parameters parameters;

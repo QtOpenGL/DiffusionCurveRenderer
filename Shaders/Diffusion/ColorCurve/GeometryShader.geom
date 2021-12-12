@@ -97,7 +97,7 @@ vec4 leftColorAt(float t)
         float t0 = leftColorPositions[i-1];
         float t1 = leftColorPositions[i];
 
-        if(t0 <= t && t < t1)
+        if(t0 <= t && t <= t1)
             return mix(leftColors[i-1], leftColors[i], (t - t0) / (t1 - t0));
     }
 
@@ -111,7 +111,7 @@ vec4 rightColorAt(float t)
         float t0 = rightColorPositions[i-1];
         float t1 = rightColorPositions[i];
 
-        if(t0 <= t && t < t1)
+        if(t0 <= t && t <= t1)
             return mix(rightColors[i-1], rightColors[i], (t - t0) / (t1 - t0));
     }
 
