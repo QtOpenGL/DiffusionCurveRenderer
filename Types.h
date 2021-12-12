@@ -25,7 +25,9 @@ enum class Action {
     UpdateContourColor,
     EnableContourColor,
     UpdateColorPointColor,
-    UpdateColorPointPosition
+    UpdateColorPointPosition,
+    UpdateSmoothIterations,
+    UpdateQuality
 };
 
 enum class Mode {
@@ -36,6 +38,10 @@ enum class Mode {
     MoveCurve,
     Pan,
 };
+
+enum class RenderMode { None = 0x01, Contours = 0x02, Diffuse = 0x04 };
+
+enum class DirtType { GUI = 0x01, QPainter = 0x02, OpenGL = 0x04 };
 
 struct ProjectionParameters
 {
@@ -48,5 +54,10 @@ struct ProjectionParameters
     float zoomRatio;
     float pixelRatio;
 };
+
+RenderMode operator+(const RenderMode &lhs, const RenderMode &rhs);
+bool operator&(const RenderMode &lhs, const RenderMode &rhs);
+DirtType operator+(const DirtType &lhs, const DirtType &rhs);
+bool operator&(const DirtType &lhs, const DirtType &rhs);
 
 #endif // TYPES_H

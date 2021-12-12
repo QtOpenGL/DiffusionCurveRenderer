@@ -16,7 +16,7 @@ public:
 
 public slots:
     void onSelectedCurveChanged(Curve *selectedCurve);
-    void refresh();
+    void onDirty(DirtType);
 
 signals:
     void modeChanged(Mode mode);

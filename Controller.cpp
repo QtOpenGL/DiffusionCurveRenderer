@@ -1,13 +1,6 @@
 #include "Controller.h"
 #include "Util.h"
 
-#include <Widgets/CentralWidget.h>
-#include <Widgets/ControlPointWidget.h>
-#include <Widgets/CurveWidget.h>
-#include <Widgets/ModeWidget.h>
-#include <Widgets/OpenGLWidget.h>
-#include <Widgets/ZoomWidget.h>
-
 Controller::Controller(QObject *parent)
     : QObject(parent)
     , mMode(Mode::Select)
@@ -43,9 +36,9 @@ Controller::Controller(QObject *parent)
 
     mTransformer->setProjectionParameters(mProjectionParameters);
 
-    mOpenGLWidget->setController(this);
     mOpenGLWidget->setTransformer(mTransformer);
     mOpenGLWidget->setProjectionParameters(mProjectionParameters);
+    mOpenGLWidget->setRendererManager(mRendererManager);
 
     mRendererManager->setCurveContainer(mCurveContainer);
     mRendererManager->setProjectionParameters(mProjectionParameters);
@@ -55,10 +48,8 @@ Controller::Controller(QObject *parent)
     connect(mCurveContainer, &CurveContainer::selectedCurveChanged, mOpenGLWidget, &OpenGLWidget::onSelectedCurveChanged);
     connect(mCurveContainer, &CurveContainer::selectedCurveChanged, mColorPointWidget, &ColorPointWidget::onSelectedCurveChanged);
     connect(mCurveContainer, &CurveContainer::selectedCurveChanged, mModeWidget, &ModeWidget::onSelectedCurveChanged);
-
     connect(mCurveContainer, &CurveContainer::selectedControlPointChanged, mOpenGLWidget, &OpenGLWidget::onSelectedControlPointChanged);
     connect(mCurveContainer, &CurveContainer::selectedControlPointChanged, mControlPointWidget, &ControlPointWidget::onSelectedControlPointChanged);
-
     connect(mCurveContainer, &CurveContainer::selectedColorPointChanged, mColorPointWidget, &ColorPointWidget::onSelectedColorPointChanged);
     connect(mCurveContainer, &CurveContainer::selectedColorPointChanged, mOpenGLWidget, &OpenGLWidget::onSelectedColorPointChanged);
 
@@ -73,9 +64,31 @@ Controller::Controller(QObject *parent)
     connect(mCurveWidget, &CurveWidget::action, this, &Controller::onAction);
     connect(mControlPointWidget, &ControlPointWidget::action, this, &Controller::onAction);
     connect(mColorPointWidget, &ColorPointWidget::action, this, &Controller::onAction);
+    connect(mZoomWidget, &ZoomWidget::zoomRatioChanged, this, &Controller::onZoomRatioChanged);
+    connect(mRenderSettingsWidget, &RenderSettingsWidget::action, this, &Controller::onAction);
+    connect(mRenderSettingsWidget, &RenderSettingsWidget::renderModeChanged, mOpenGLWidget, &OpenGLWidget::onRenderModeChanged);
 
     connect(this, &Controller::zoomRatioChanged, mZoomWidget, &ZoomWidget::onZoomRatioChanged);
-    connect(mZoomWidget, &ZoomWidget::zoomRatioChanged, this, &Controller::onZoomRatioChanged);
+    connect(this, &Controller::dirty, mOpenGLWidget, &OpenGLWidget::onDirty);
+    connect(this, &Controller::dirty, mModeWidget, &ModeWidget::onDirty);
+    connect(this, &Controller::dirty, mCurveWidget, &CurveWidget::onDirty);
+    connect(this, &Controller::dirty, mControlPointWidget, &ControlPointWidget::onDirty);
+    connect(this, &Controller::dirty, mColorPointWidget, &ColorPointWidget::onDirty);
+
+    Bezier *bezier = new Bezier;
+    bezier->addControlPoint(new ControlPoint(100, 512)); // First
+                                                         //    bezier->addControlPoint(new ControlPoint(0, 0));
+                                                         //    bezier->addControlPoint(new ControlPoint(0, 0));
+    bezier->addControlPoint(new ControlPoint(600, 800)); // Last
+    bezier->addColorPoint(new ColorPoint(bezier, 0, QVector4D(1, 0, 0, 1), ColorPoint::Left));
+    bezier->addColorPoint(new ColorPoint(bezier, 0.5, QVector4D(0, 0, 0, 1), ColorPoint::Left));
+    bezier->addColorPoint(new ColorPoint(bezier, 1, QVector4D(0, 0, 1, 1), ColorPoint::Left));
+    bezier->addColorPoint(new ColorPoint(bezier, 0, QVector4D(0, 1, 0, 1), ColorPoint::Right));
+    bezier->addColorPoint(new ColorPoint(bezier, 0.25, QVector4D(1, 1, 1, 1), ColorPoint::Right));
+    bezier->addColorPoint(new ColorPoint(bezier, 0.5, QVector4D(1, 1, 0, 1), ColorPoint::Right));
+    bezier->addColorPoint(new ColorPoint(bezier, 0.75, QVector4D(0, 0, 0, 1), ColorPoint::Right));
+    bezier->addColorPoint(new ColorPoint(bezier, 1, QVector4D(0, 1, 1, 1), ColorPoint::Right));
+    mCurveContainer->addCurve(bezier);
 }
 
 CentralWidget *Controller::centralWidget() const
@@ -83,37 +96,19 @@ CentralWidget *Controller::centralWidget() const
     return mCentralWidget;
 }
 
-void Controller::initializeOpenGL()
-{
-    Bezier *bezier = new Bezier();
-    bezier->addControlPoint(new ControlPoint(50.0f, 250.0f));  // First
-    bezier->addControlPoint(new ControlPoint(300.0f, 250.0f)); // Last
-    mCurveContainer->addCurve(bezier);
-
-    QVector<Curve *> curves = Util::readCurveDataFromXML("Resources/CurveData/zephyr.xml");
-    mCurveContainer->addCurves(curves);
-
-    mProjectionParameters->left = 0;
-    mProjectionParameters->right = mOpenGLWidget->width();
-    mProjectionParameters->bottom = mOpenGLWidget->height(); // Flip y-axis
-    mProjectionParameters->top = 0;
-
-    mRendererManager->init();
-}
-
-void Controller::render()
-{
-    mProjectionParameters->pixelRatio = mOpenGLWidget->devicePixelRatioF();
-    mProjectionParameters->right = mProjectionParameters->left + mOpenGLWidget->width() * mProjectionParameters->zoomRatio;
-    mProjectionParameters->bottom = mProjectionParameters->top + mOpenGLWidget->height() * mProjectionParameters->zoomRatio;
-    mProjectionParameters->width = mOpenGLWidget->width() * mProjectionParameters->pixelRatio;
-    mProjectionParameters->height = mOpenGLWidget->height() * mProjectionParameters->pixelRatio; // Flip y-axis
-    mRendererManager->render();
-}
-
 void Controller::onAction(Action action, CustomVariant value)
 {
     switch (action) {
+    case Action::UpdateSmoothIterations:
+        mRendererManager->setSmoothIterations(value.toInt());
+
+        emit dirty(DirtType::OpenGL + DirtType::GUI);
+        break;
+    case Action::UpdateQuality:
+        mRendererManager->setQuality(value.toInt());
+
+        emit dirty(DirtType::OpenGL + DirtType::GUI);
+        break;
     case Action::AddColorPoint: {
         if (mCurveContainer->selectedCurve() && mCurveContainer->selectedCurve()->getSize() >= 2) {
             QVector2D nearbyPosition = value.toVector2D();
@@ -136,6 +131,8 @@ void Controller::onAction(Action action, CustomVariant value)
             } else {
                 colorPoint->deleteLater();
             }
+
+            emit dirty(DirtType::OpenGL + DirtType::QPainter + DirtType::GUI);
         }
         break;
     }
@@ -146,6 +143,8 @@ void Controller::onAction(Action action, CustomVariant value)
         if (selectedCurve && selectedColorPoint) {
             selectedCurve->removeColorPoint(selectedColorPoint);
             mCurveContainer->setSelectedColorPoint(nullptr);
+
+            emit dirty(DirtType::OpenGL + DirtType::QPainter + DirtType::GUI);
         }
         break;
     }
@@ -153,6 +152,8 @@ void Controller::onAction(Action action, CustomVariant value)
         ColorPoint *selectedColorPoint = mCurveContainer->selectedColorPoint();
         if (selectedColorPoint) {
             selectedColorPoint->setColor(value.toVector4D());
+
+            emit dirty(DirtType::OpenGL + DirtType::QPainter + DirtType::GUI);
         }
         break;
     }
@@ -160,6 +161,8 @@ void Controller::onAction(Action action, CustomVariant value)
         ColorPoint *selectedColorPoint = mCurveContainer->selectedColorPoint();
         if (selectedColorPoint) {
             selectedColorPoint->setPosition(value.toFloat());
+
+            emit dirty(DirtType::OpenGL + DirtType::QPainter + DirtType::GUI);
         }
         break;
     }
@@ -192,7 +195,7 @@ void Controller::onAction(Action action, CustomVariant value)
             }
 
             if (flag) {
-                refresh();
+                emit dirty(DirtType::QPainter + DirtType::GUI);
                 return;
             }
         }
@@ -200,6 +203,8 @@ void Controller::onAction(Action action, CustomVariant value)
         Curve *selectedCurve = mCurveContainer->selectCurve(value.toVector2D(), 15 * mProjectionParameters->zoomRatio);
         mMousePressedOnCurve = selectedCurve ? true : false;
         mCurveContainer->setSelectedCurve(selectedCurve);
+
+        emit dirty(DirtType::QPainter + DirtType::GUI);
         break;
     }
     case Action::AppendControlPoint:
@@ -224,11 +229,16 @@ void Controller::onAction(Action action, CustomVariant value)
             mCurveContainer->setSelectedControlPoint(controlPoint);
             mCurveContainer->setSelectedColorPoint(nullptr);
         }
+
+        emit dirty(DirtType::OpenGL + DirtType::QPainter + DirtType::GUI);
         break;
     }
     case Action::Move: {
-        if (mCurveContainer->selectedCurve())
+        if (mCurveContainer->selectedCurve()) {
             mCurveContainer->selectedCurve()->translate(value.toVector2D());
+
+            emit dirty(DirtType::OpenGL + DirtType::QPainter + DirtType::GUI);
+        }
         break;
     }
     case Action::Pan: {
@@ -237,6 +247,8 @@ void Controller::onAction(Action action, CustomVariant value)
         mProjectionParameters->right += translation.x();
         mProjectionParameters->top += translation.y();
         mProjectionParameters->bottom += translation.y();
+
+        emit dirty(DirtType::OpenGL + DirtType::QPainter + DirtType::GUI);
         break;
     }
     case Action::RemoveCurve: {
@@ -245,6 +257,8 @@ void Controller::onAction(Action action, CustomVariant value)
             mCurveContainer->setSelectedControlPoint(nullptr);
             mCurveContainer->setSelectedCurve(nullptr);
         }
+
+        emit dirty(DirtType::OpenGL + DirtType::QPainter + DirtType::GUI);
         break;
     }
     case Action::RemoveControlPoint: {
@@ -260,11 +274,14 @@ void Controller::onAction(Action action, CustomVariant value)
             }
         }
 
+        emit dirty(DirtType::OpenGL + DirtType::QPainter + DirtType::GUI);
         break;
     }
     case Action::UpdateControlPointPosition: {
         if (mCurveContainer->selectedControlPoint()) {
             mCurveContainer->selectedControlPoint()->setPosition(value.toVector2D());
+
+            emit dirty(DirtType::OpenGL + DirtType::QPainter + DirtType::GUI);
         }
         break;
     }
@@ -272,43 +289,53 @@ void Controller::onAction(Action action, CustomVariant value)
         if (mCurveContainer->selectedCurve()) {
             mCurveContainer->selectedCurve()->setZ(value.toInt());
             mCurveContainer->sortCurves();
+
+            emit dirty(DirtType::OpenGL + DirtType::QPainter + DirtType::GUI);
         }
         break;
     }
     case Action::UpdateContourThickness: {
         if (mCurveContainer->selectedCurve()) {
             mCurveContainer->selectedCurve()->setContourThickness(value.toFloat());
+
+            emit dirty(DirtType::OpenGL + DirtType::QPainter + DirtType::GUI);
         }
         break;
     }
     case Action::UpdateDiffusionWidth: {
         if (mCurveContainer->selectedCurve()) {
             mCurveContainer->selectedCurve()->setDiffusionWidth(value.toFloat());
+
+            emit dirty(DirtType::OpenGL + DirtType::QPainter + DirtType::GUI);
         }
         break;
     }
     case Action::ZoomIn: {
         zoom(mProjectionParameters->zoomRatio / mZoomStep, value);
+
+        emit dirty(DirtType::OpenGL + DirtType::QPainter + DirtType::GUI);
         break;
     }
     case Action::ZoomOut: {
         zoom(mProjectionParameters->zoomRatio * mZoomStep, value);
 
+        emit dirty(DirtType::OpenGL + DirtType::QPainter + DirtType::GUI);
         break;
     }
     case Action::EnableContourColor: {
         if (mCurveContainer->selectedCurve())
             mCurveContainer->selectedCurve()->setContourColorEnabled(value.toBool());
+
+        emit dirty(DirtType::OpenGL + DirtType::QPainter + DirtType::GUI);
         break;
     }
     case Action::UpdateContourColor: {
         if (mCurveContainer->selectedCurve())
             mCurveContainer->selectedCurve()->setContourColor(value.toVector4D());
+        emit dirty(DirtType::OpenGL + DirtType::QPainter + DirtType::GUI);
         break;
     }
     }
-
-    refresh();
 }
 
 void Controller::onModeChanged(Mode mode)
@@ -319,14 +346,14 @@ void Controller::onModeChanged(Mode mode)
         mCurveContainer->setSelectedColorPoint(nullptr);
         mCurveContainer->setSelectedControlPoint(nullptr);
         mCurveContainer->setSelectedCurve(nullptr);
-        refresh();
     }
 }
 
 void Controller::onZoomRatioChanged(float newZoomRatio)
 {
     zoom(newZoomRatio);
-    refresh();
+
+    emit dirty(DirtType::OpenGL + DirtType::QPainter);
 }
 
 void Controller::onWheelMoved(QWheelEvent *event)
@@ -361,7 +388,7 @@ void Controller::onMousePressed(QMouseEvent *event)
     }
 }
 
-void Controller::onMouseReleased(QMouseEvent *event)
+void Controller::onMouseReleased(QMouseEvent *)
 {
     mMouseRightButtonPressed = false;
     mMouseLeftButtonPressed = false;
@@ -420,22 +447,14 @@ bool Controller::cursorInsideBoundingBox(QPointF position, QMarginsF margins)
         return false;
 }
 
-void Controller::refresh()
-{
-    mOpenGLWidget->refresh();
-    mControlPointWidget->refresh();
-    mCurveWidget->refresh();
-    mModeWidget->refresh();
-}
-
 void Controller::zoom(float newZoomRatio, CustomVariant cursorPositionVariant)
 {
     if (qFuzzyCompare(newZoomRatio, mProjectionParameters->zoomRatio))
         return;
 
     QPoint cursorPosition;
-    const float width = mOpenGLWidget->width();
-    const float height = mOpenGLWidget->width();
+    float width = mOpenGLWidget->getWidth();
+    float height = mOpenGLWidget->getHeight();
 
     if (cursorPositionVariant.isValid()) {
         cursorPosition = cursorPositionVariant.toPoint();

@@ -105,20 +105,22 @@ void CurveWidget::reset()
     setEnabled(false);
 }
 
-void CurveWidget::refresh()
+void CurveWidget::onDirty(DirtType type)
 {
-    if (mSelectedCurve) {
-        setEnabled(true);
-        mZLineEdit->setText(QString::number(mSelectedCurve->z()));
-        mContourColorStateCheckBox->setChecked(mSelectedCurve->contourColorEnabled());
-        mContourThicknessSlider->setSliderPosition(10 * mSelectedCurve->contourThickness());
-        mDiffusionWidthSlider->setSliderPosition(10 * mSelectedCurve->diffusionWidth());
-        if (mSelectedCurve->contourColorEnabled()) {
-            mColorButton->setColor(Util::convertVector4DtoColor(mSelectedCurve->contourColor()));
+    if (type & DirtType::GUI) {
+        if (mSelectedCurve) {
+            setEnabled(true);
+            mZLineEdit->setText(QString::number(mSelectedCurve->z()));
+            mContourColorStateCheckBox->setChecked(mSelectedCurve->contourColorEnabled());
+            mContourThicknessSlider->setSliderPosition(10 * mSelectedCurve->contourThickness());
+            mDiffusionWidthSlider->setSliderPosition(10 * mSelectedCurve->diffusionWidth());
+            if (mSelectedCurve->contourColorEnabled()) {
+                mColorButton->setColor(Util::convertVector4DtoColor(mSelectedCurve->contourColor()));
+            } else {
+                mColorButton->setColor(QColor(0, 0, 0, 0));
+            }
         } else {
-            mColorButton->setColor(QColor(0, 0, 0, 0));
+            reset();
         }
-    } else {
-        reset();
     }
 }

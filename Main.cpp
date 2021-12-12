@@ -48,10 +48,7 @@ int main(int argc, char *argv[])
     window->setCentralWidget(controller->centralWidget());
     window->initialize();
     window->setWindowTitle("Diffusion Curve Renderer");
-    window->show();
-
-    //    TestWidget *widget = new TestWidget;
-    //    widget->show();
+    window->showMaximized();
 
     return app.exec();
 }

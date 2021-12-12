@@ -67,6 +67,7 @@ public:
     virtual QVector2D tangentAt(float t) const = 0;
     virtual QVector2D normalAt(float t) const = 0;
     virtual float parameterAt(const QVector2D &point, int intervals = 1000) const;
+    virtual void scale(float factor);
 
     const bool &selected() const;
     void setSelected(bool newSelected);

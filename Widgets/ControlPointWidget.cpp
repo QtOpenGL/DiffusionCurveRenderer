@@ -1,5 +1,5 @@
 #include "ControlPointWidget.h"
-#include <QDebug>
+
 #include <QHBoxLayout>
 #include <QLabel>
 
@@ -107,12 +107,14 @@ void ControlPointWidget::onSelectedCurveChanged(Curve *selectedCurve)
     setEnabled(false);
 }
 
-void ControlPointWidget::refresh()
+void ControlPointWidget::onDirty(DirtType type)
 {
-    if (mSelectedControlPoint) {
-        mControlPointLabel->setText(QString::number(mSelectedControlPoint->index()));
-        mControlPointX->setText(QString::number(mSelectedControlPoint->position().x(), 'f', 0));
-        mControlPointY->setText(QString::number(mSelectedControlPoint->position().y(), 'f', 0));
-        setEnabled(true);
+    if (type & DirtType::GUI) {
+        if (mSelectedControlPoint) {
+            mControlPointLabel->setText(QString::number(mSelectedControlPoint->index()));
+            mControlPointX->setText(QString::number(mSelectedControlPoint->position().x(), 'f', 0));
+            mControlPointY->setText(QString::number(mSelectedControlPoint->position().y(), 'f', 0));
+            setEnabled(true);
+        }
     }
 }

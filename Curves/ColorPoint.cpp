@@ -5,6 +5,13 @@ ColorPoint::ColorPoint(Curve *parentCurve)
     : mParentCurve(parentCurve)
 {}
 
+ColorPoint::ColorPoint(Curve *parentCurve, float position, QVector4D color, Type type)
+    : mParentCurve(parentCurve)
+    , mColor(color)
+    , mPosition(position)
+    , mType(type)
+{}
+
 QVector2D ColorPoint::getPosition2D(float gap) const
 {
     QVector2D positionOnCurve = mParentCurve->valueAt(mPosition);

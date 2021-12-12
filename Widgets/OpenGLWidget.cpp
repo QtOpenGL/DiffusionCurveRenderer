@@ -1,6 +1,6 @@
 #include "OpenGLWidget.h"
 
-#include <Controller.h>
+#include <Renderers/RendererManager.h>
 #include <Util.h>
 #include <QOpenGLPaintDevice>
 #include <QPainter>
@@ -11,10 +11,12 @@ OpenGLWidget::OpenGLWidget(QWidget *parent)
     , mSelectedCurve(nullptr)
     , mSelectedControlPoint(nullptr)
     , mMode(Mode::Select)
+    , mRenderMode(RenderMode::Contours)
     , mInit(false)
     , mMouseRightButtonPressed(false)
     , mMouseLeftButtonPressed(false)
     , mMousePosition(0, 0)
+    , mUpdatePainter(false)
 {
     for (int i = 0; i < 4; ++i)
         mHandles[i].setSize(QSize(10, 10));
@@ -53,17 +55,63 @@ QSize OpenGLWidget::sizeHint() const
 void OpenGLWidget::initializeGL()
 {
     initializeOpenGLFunctions();
-    mController->initializeOpenGL();
+
+    glEnable(GL_MULTISAMPLE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    mRendererManager->init();
 }
 
 void OpenGLWidget::paintGL()
 {
-    mController->render();
+    mProjectionParameters->pixelRatio = devicePixelRatioF();
+    mProjectionParameters->right = mProjectionParameters->left + width() * mProjectionParameters->zoomRatio;
+    mProjectionParameters->bottom = mProjectionParameters->top + height() * mProjectionParameters->zoomRatio;
+    mProjectionParameters->width = width() * mProjectionParameters->pixelRatio;
+    mProjectionParameters->height = height() * mProjectionParameters->pixelRatio; // Flip y-axis
 
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ZERO);
+
+    if (mRenderMode & RenderMode::Diffuse) {
+        mRendererManager->diffuse();
+    }
+
+    if (mRenderMode & RenderMode::Contours) {
+        glViewport(0, 0, mProjectionParameters->width, mProjectionParameters->height);
+        mRendererManager->contours();
+    }
+
+    // None?
+    updatePainter();
+}
+
+void OpenGLWidget::onDirty(DirtType type)
+{
+    if (type & DirtType::OpenGL) {
+        update();
+        updateCursor();
+    }
+}
+
+void OpenGLWidget::updatePainter()
+{
     float pixelRatio = QPaintDevice::devicePixelRatioF();
     QOpenGLPaintDevice device(width() * pixelRatio, height() * pixelRatio);
     QPainter painter(&device);
     painter.setRenderHint(QPainter::Antialiasing, true);
+
+    if (mSelectedCurve) {
+        QRectF boundingBox = mTransformer->mapFromOpenGLToGui(mSelectedCurve->getBoundingBox());
+        mHandles[0].moveCenter(boundingBox.topLeft());
+        mHandles[1].moveCenter(boundingBox.bottomLeft());
+        mHandles[2].moveCenter(boundingBox.topRight());
+        mHandles[3].moveCenter(boundingBox.bottomRight());
+    }
 
     switch (mMode) {
     case Mode::Pan:
@@ -91,13 +139,13 @@ void OpenGLWidget::paintGL()
 
                 // Outer disk
                 int outerRadius = controlPoints[j]->selected() ? 12 : 10;
-                outerRadius /= mProjectionParameters->zoomRatio;
+                //outerRadius /= mProjectionParameters->zoomRatio;
                 painter.setBrush(QColor(122, 120, 120, 128));
                 painter.drawEllipse(center, outerRadius, outerRadius);
 
                 // Inner disk
                 int innerRadius = 6;
-                innerRadius /= mProjectionParameters->zoomRatio;
+                //innerRadius /= mProjectionParameters->zoomRatio;
                 painter.setBrush(QColor(240, 240, 240));
                 painter.drawEllipse(center, innerRadius, innerRadius);
             }
@@ -112,13 +160,13 @@ void OpenGLWidget::paintGL()
 
                 // Outer disk
                 int outerRadius = colorPoints[i]->selected() ? 12 : 10;
-                outerRadius /= mProjectionParameters->zoomRatio;
+                //outerRadius /= mProjectionParameters->zoomRatio;
                 painter.setBrush(QColor(122, 120, 120, 40));
                 painter.drawEllipse(center, outerRadius, outerRadius);
 
                 // Inner disk
                 int innerRadius = 6;
-                innerRadius /= mProjectionParameters->zoomRatio;
+                //innerRadius /= mProjectionParameters->zoomRatio;
                 painter.setBrush(Util::convertVector4DtoColor(colorPoints[i]->color()));
                 painter.drawEllipse(center, innerRadius, innerRadius);
             }
@@ -156,55 +204,8 @@ void OpenGLWidget::paintGL()
     }
 }
 
-void OpenGLWidget::wheelEvent(QWheelEvent *event)
+void OpenGLWidget::updateCursor()
 {
-    emit wheelMoved(event);
-
-    refresh();
-}
-
-void OpenGLWidget::mousePressEvent(QMouseEvent *event)
-{
-    mMouseRightButtonPressed = event->button() == Qt::RightButton;
-    mMouseLeftButtonPressed = event->button() == Qt::LeftButton;
-
-    emit mousePressed(event);
-
-    refresh();
-}
-
-void OpenGLWidget::mouseReleaseEvent(QMouseEvent *event)
-{
-    mMouseRightButtonPressed = false;
-    mMouseLeftButtonPressed = false;
-
-    emit mouseReleased(event);
-
-    refresh();
-}
-
-void OpenGLWidget::mouseMoveEvent(QMouseEvent *event)
-{
-    emit mouseMoved(event);
-    mMousePosition = event->pos();
-    refresh();
-}
-
-void OpenGLWidget::setProjectionParameters(const ProjectionParameters *newProjectionParameters)
-{
-    mProjectionParameters = newProjectionParameters;
-}
-
-void OpenGLWidget::refresh()
-{
-    if (mSelectedCurve) {
-        QRectF boundingBox = mTransformer->mapFromOpenGLToGui(mSelectedCurve->getBoundingBox());
-        mHandles[0].moveCenter(boundingBox.topLeft());
-        mHandles[1].moveCenter(boundingBox.bottomLeft());
-        mHandles[2].moveCenter(boundingBox.topRight());
-        mHandles[3].moveCenter(boundingBox.bottomRight());
-    }
-
     if (mMouseRightButtonPressed) {
         setCursor(Qt::ClosedHandCursor);
         update();
@@ -235,13 +236,56 @@ void OpenGLWidget::refresh()
         break;
     }
     }
-
-    update();
 }
 
-void OpenGLWidget::setController(Controller *newController)
+void OpenGLWidget::wheelEvent(QWheelEvent *event)
 {
-    mController = newController;
+    emit wheelMoved(event);
+}
+
+void OpenGLWidget::mousePressEvent(QMouseEvent *event)
+{
+    mMouseRightButtonPressed = event->button() == Qt::RightButton;
+    mMouseLeftButtonPressed = event->button() == Qt::LeftButton;
+
+    emit mousePressed(event);
+    updateCursor();
+}
+
+void OpenGLWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+    mMouseRightButtonPressed = false;
+    mMouseLeftButtonPressed = false;
+
+    emit mouseReleased(event);
+    updateCursor();
+}
+
+void OpenGLWidget::mouseMoveEvent(QMouseEvent *event)
+{
+    emit mouseMoved(event);
+    mMousePosition = event->pos();
+    updateCursor();
+}
+
+void OpenGLWidget::setRendererManager(RendererManager *newRendererManager)
+{
+    mRendererManager = newRendererManager;
+}
+
+float OpenGLWidget::getWidth()
+{
+    return width();
+}
+
+float OpenGLWidget::getHeight()
+{
+    return height();
+}
+
+void OpenGLWidget::setProjectionParameters(ProjectionParameters *newProjectionParameters)
+{
+    mProjectionParameters = newProjectionParameters;
 }
 
 void OpenGLWidget::setTransformer(Transformer *newTransformer)
@@ -252,27 +296,29 @@ void OpenGLWidget::setTransformer(Transformer *newTransformer)
 void OpenGLWidget::onSelectedControlPointChanged(const ControlPoint *selectedControlPoint)
 {
     mSelectedControlPoint = selectedControlPoint;
-    refresh();
+    update();
 }
 
 void OpenGLWidget::onSelectedCurveChanged(const Curve *selectedCurve)
 {
     mSelectedCurve = selectedCurve;
-    refresh();
+    update();
 }
 
 void OpenGLWidget::onSelectedColorPointChanged(const ColorPoint *selectedColorPoint)
 {
     mSelectedColorPoint = selectedColorPoint;
-    refresh();
+    update();
 }
 
 void OpenGLWidget::onModeChanged(Mode mode)
 {
-    if (mMode == mode)
-        return;
-
     mMode = mode;
+    update();
+}
 
-    refresh();
+void OpenGLWidget::onRenderModeChanged(RenderMode renderMode)
+{
+    mRenderMode = renderMode;
+    update();
 }

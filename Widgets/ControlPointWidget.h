@@ -24,7 +24,7 @@ signals:
 public slots:
     void onSelectedControlPointChanged(ControlPoint *selectedControlPoint);
     void onSelectedCurveChanged(Curve *selectedCurve);
-    void refresh();
+    void onDirty(DirtType);
 
 private:
     QLabel *mControlPointLabel;

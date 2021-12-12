@@ -5,22 +5,21 @@
 #include "Transformer.h"
 #include "Types.h"
 
-#include <CustomVariant.h>
 #include <QObject>
-
-#include <Curves/Curve.h>
-#include <Renderers/RendererManager.h>
-#include <Widgets/ColorPointWidget.h>
-#include <Widgets/ModeWidget.h>
-#include <Widgets/RenderSettingsWidget.h>
 #include <QVariant>
 
-class CentralWidget;
-class OpenGLWidget;
-class ModeWidget;
-class CurveWidget;
-class ControlPointWidget;
-class ZoomWidget;
+#include <Curves/Curve.h>
+#include <CustomVariant.h>
+
+#include <Renderers/RendererManager.h>
+
+#include <Widgets/CentralWidget.h>
+#include <Widgets/ColorPointWidget.h>
+#include <Widgets/ControlPointWidget.h>
+#include <Widgets/CurveWidget.h>
+#include <Widgets/ModeWidget.h>
+#include <Widgets/RenderSettingsWidget.h>
+#include <Widgets/ZoomWidget.h>
 
 class Controller : public QObject
 {
@@ -29,8 +28,6 @@ public:
     explicit Controller(QObject *parent = nullptr);
 
     CentralWidget *centralWidget() const;
-    void initializeOpenGL();
-    void render();
 
 public slots:
     void onAction(Action action, CustomVariant value = CustomVariant());
@@ -44,11 +41,11 @@ private slots:
     void onMouseMoved(QMouseEvent *event);
 
     bool cursorInsideBoundingBox(QPointF position, QMarginsF margins = QMarginsF(-20, -20, 20, 20));
-    void refresh();
     void zoom(float newZoomRatio, CustomVariant cursorPositionVariant = CustomVariant());
 
 signals:
     void zoomRatioChanged(float newZoomRatio);
+    void dirty(DirtType);
 
 private:
     CentralWidget *mCentralWidget;

@@ -1,10 +1,12 @@
-#include "RenderSettingsWidget.h"
+﻿#include "RenderSettingsWidget.h"
 
 #include <QGridLayout>
 #include <QLabel>
 
 RenderSettingsWidget::RenderSettingsWidget(QWidget *parent)
-    : QGroupBox{parent}
+    : QGroupBox(parent)
+    , mMode(RenderMode::Contours)
+
 {
     QGridLayout *mainLayout = new QGridLayout;
     mainLayout->setVerticalSpacing(8);
@@ -14,23 +16,34 @@ RenderSettingsWidget::RenderSettingsWidget(QWidget *parent)
     {
         mRenderContoursCheckBox = new QCheckBox("Render Contours");
         mainLayout->addWidget(mRenderContoursCheckBox, 1, 0);
+        mRenderContoursCheckBox->setChecked(true);
+        connect(mRenderContoursCheckBox, &QCheckBox::stateChanged, this, [=](int state) {
+            mMode = mMode + RenderMode::Contours;
+            emit renderModeChanged(mMode);
+        });
     }
 
     {
         mDiffuseCheckBox = new QCheckBox("Diffuse Colors");
         mainLayout->addWidget(mDiffuseCheckBox, 2, 0);
+        connect(mDiffuseCheckBox, &QCheckBox::stateChanged, this, [=](int state) {
+            mMode = mMode + RenderMode::Diffuse;
+            emit renderModeChanged(mMode);
+        });
     }
 
     {
         mSmoothIterationsSlider = new QSlider(Qt::Horizontal);
-        mSmoothIterationsSlider->setMinimum(1);
+        mSmoothIterationsSlider->setMinimum(0);
         mSmoothIterationsSlider->setMaximum(100);
-        mSmoothIterationsSlider->setValue(10);
+        mSmoothIterationsSlider->setValue(20);
         mSmoothIterationsSlider->setInvertedAppearance(false);
         mSmoothIterationsSlider->setTickPosition(QSlider::TicksBelow);
 
         mainLayout->addWidget(new QLabel("Smooth Iterations"), 3, 0);
         mainLayout->addWidget(mSmoothIterationsSlider, 3, 1);
+
+        connect(mSmoothIterationsSlider, &QSlider::valueChanged, this, [=](int value) { emit action(Action::UpdateSmoothIterations, value); });
     }
 
     {
@@ -38,9 +51,11 @@ RenderSettingsWidget::RenderSettingsWidget(QWidget *parent)
         mQualitySlider->setMinimum(1);
         mQualitySlider->setMaximum(4);
         mQualitySlider->setTickInterval(1);
-        mQualitySlider->setValue(2);
+        mQualitySlider->setValue(1);
         mQualitySlider->setInvertedAppearance(false);
         mQualitySlider->setTickPosition(QSlider::TicksBelow);
+
+        connect(mQualitySlider, &QSlider::valueChanged, this, [=](int value) { emit action(Action::UpdateQuality, value); });
 
         mainLayout->addWidget(new QLabel("Quality"), 4, 0);
         mainLayout->addWidget(mQualitySlider, 4, 1);

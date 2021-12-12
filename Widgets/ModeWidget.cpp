@@ -25,7 +25,7 @@ ModeWidget::ModeWidget(QGroupBox *parent)
         connect(button, &QRadioButton::clicked, this, [=]() {
             mMode = static_cast<Mode>(i);
             emit modeChanged(mMode);
-            refresh();
+            onDirty(DirtType::GUI);
         });
 
         mRadioButtons << button;
@@ -35,24 +35,25 @@ ModeWidget::ModeWidget(QGroupBox *parent)
     mRadioButtons[mAddColorPointRadioButtonIndex]->setEnabled(false);
     setLayout(layout);
     setTitle("Action Modes");
-    refresh();
+    onDirty(DirtType::GUI);
 }
 
 void ModeWidget::onSelectedCurveChanged(Curve *selectedCurve)
 {
     mSelectedCurve = selectedCurve;
-    refresh();
 }
 
-void ModeWidget::refresh()
+void ModeWidget::onDirty(DirtType type)
 {
-    for (int i = 0; i < mRadioButtons.size(); ++i) {
-        mRadioButtons[i]->setChecked((int) mMode == i);
-    }
+    if (type & DirtType::GUI) {
+        for (int i = 0; i < mRadioButtons.size(); ++i) {
+            mRadioButtons[i]->setChecked((int) mMode == i);
+        }
 
-    if (mSelectedCurve) {
-        mRadioButtons[mAddColorPointRadioButtonIndex]->setEnabled(mSelectedCurve->getSize() >= 2);
-    } else {
-        mRadioButtons[mAddColorPointRadioButtonIndex]->setEnabled(false);
+        if (mSelectedCurve) {
+            mRadioButtons[mAddColorPointRadioButtonIndex]->setEnabled(mSelectedCurve->getSize() >= 2);
+        } else {
+            mRadioButtons[mAddColorPointRadioButtonIndex]->setEnabled(false);
+        }
     }
 }

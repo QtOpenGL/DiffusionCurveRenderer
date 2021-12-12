@@ -106,11 +106,13 @@ void ColorPointWidget::onSelectedCurveChanged(Curve *selectedCurve)
     setEnabled(false);
 }
 
-void ColorPointWidget::refresh()
+void ColorPointWidget::onDirty(DirtType type)
 {
-    if (mSelectedColorPoint) {
-        mColorButton->setColor(Util::convertVector4DtoColor(mSelectedColorPoint->color()));
-        mTypeLabel->setText(mSelectedColorPoint->type() == ColorPoint::Left ? "Left" : "Right");
-        mPositionSlider->setSliderPosition(100 * mSelectedColorPoint->position());
+    if (type & DirtType::GUI) {
+        if (mSelectedColorPoint) {
+            mColorButton->setColor(Util::convertVector4DtoColor(mSelectedColorPoint->color()));
+            mTypeLabel->setText(mSelectedColorPoint->type() == ColorPoint::Left ? "Left" : "Right");
+            mPositionSlider->setSliderPosition(100 * mSelectedColorPoint->position());
+        }
     }
 }

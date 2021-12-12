@@ -13,7 +13,7 @@
 #include "Transformer.h"
 #include "Types.h"
 
-class Controller;
+class RendererManager;
 
 class OpenGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
 {
@@ -26,9 +26,10 @@ public:
     QSize sizeHint() const override;
 
     void setTransformer(Transformer *newTransformer);
-    void setController(Controller *newController);
-
-    void setProjectionParameters(const ProjectionParameters *newProjectionParameters);
+    void setProjectionParameters(ProjectionParameters *newProjectionParameters);
+    void setRendererManager(RendererManager *newRendererManager);
+    float getWidth();
+    float getHeight();
 
 signals:
     void action(Action action, QVariant value = QVariant());
@@ -42,7 +43,12 @@ public slots:
     void onSelectedCurveChanged(const Curve *selectedCurve);
     void onSelectedColorPointChanged(const ColorPoint *selectedColorPoint);
     void onModeChanged(Mode mode);
-    void refresh();
+    void onRenderModeChanged(RenderMode renderMode);
+    void onDirty(DirtType);
+
+private slots:
+    void updatePainter();
+    void updateCursor();
 
 protected:
     void initializeGL() override;
@@ -54,14 +60,15 @@ protected:
 
 private:
     Transformer *mTransformer;
-    Controller *mController;
+    RendererManager *mRendererManager;
 
     const Curve *mSelectedCurve;
     const ControlPoint *mSelectedControlPoint;
     const ColorPoint *mSelectedColorPoint;
-    const ProjectionParameters *mProjectionParameters;
+    ProjectionParameters *mProjectionParameters;
 
     Mode mMode;
+    RenderMode mRenderMode;
     bool mInit;
     bool mMouseRightButtonPressed;
     bool mMouseLeftButtonPressed;
@@ -69,6 +76,8 @@ private:
     QRectF mHandles[4];
     QPen mDashedPen;
     QPen mSolidPen;
+
+    bool mUpdatePainter;
 };
 
 #endif // OPENGLWIDGET_H

@@ -71,6 +71,7 @@ SOURCES += \
     Renderers/RendererManager.cpp \
     Renderers/ScreenRenderer.cpp \
     Transformer.cpp \
+    Types.cpp \
     Util.cpp \
     Widgets/CentralWidget.cpp \
     Widgets/ColorPointWidget.cpp \

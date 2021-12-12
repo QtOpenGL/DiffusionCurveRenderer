@@ -17,13 +17,19 @@ public:
     ~RendererManager();
 
     bool init();
-    void render();
-    void update();
-
+    void contours();
     void diffuse();
 
     void setCurveContainer(const CurveContainer *newCurveContainer);
     void setProjectionParameters(const ProjectionParameters *newProjectionParameters);
+
+    int smoothIterations() const;
+    void setSmoothIterations(int newSmoothIterations);
+
+    int quality() const;
+    void setQuality(int newQuality);
+
+    void clear();
 
 private:
     ContourRenderer *mContourRenderer;
@@ -37,6 +43,9 @@ private:
     QOpenGLFramebufferObject *mInitialFrameBuffer;
     QVector<QOpenGLFramebufferObject *> mDownsampledFramebuffers;
     QVector<QOpenGLFramebufferObject *> mUpsampledFramebuffers;
+
+    int mSmoothIterations;
+    int mQuality;
 
     bool mInit;
 };

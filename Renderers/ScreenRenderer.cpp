@@ -48,6 +48,8 @@ void ScreenRenderer::render(const Parameters &parameters)
     mShader->bind();
 
     glBindTexture(GL_TEXTURE_2D, parameters.texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     mShader->setUniformValue(mWidthRatioLocation, parameters.widthRatio);
     mShader->setUniformValue(mHeightRatioLocation, parameters.heightRatio);

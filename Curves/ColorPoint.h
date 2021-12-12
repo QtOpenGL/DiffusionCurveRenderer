@@ -12,6 +12,7 @@ public:
     enum Type { Left = 0, Right = 1 };
 
     ColorPoint(Curve *parentCurve);
+    ColorPoint(Curve *parentCurve, float position, QVector4D color, Type type);
 
     QVector2D getPosition2D(float gap = 5) const;
 

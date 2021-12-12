@@ -22,7 +22,7 @@ public:
 public slots:
     void onSelectedCurveChanged(Curve *selectedCurve);
     void reset();
-    void refresh();
+    void onDirty(DirtType);
 
 signals:
     void action(Action action, CustomVariant value = CustomVariant());

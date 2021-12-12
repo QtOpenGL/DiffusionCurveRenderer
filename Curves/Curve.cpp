@@ -659,3 +659,11 @@ float Curve::parameterAt(const QVector2D &point, int intervals) const
 
     return parameter;
 }
+
+void Curve::scale(float factor)
+{
+    for (const auto &point : mControlPoints) {
+        QVector2D position = point->position();
+        point->setPosition(factor * position);
+    }
+}
