@@ -16,12 +16,26 @@ public:
     DiffusionRenderer();
     ~DiffusionRenderer();
 
+    struct Parameters
+    {
+        GLuint sourceTexture;
+        GLuint targetTexture;
+        float targetWidth;
+        float targetHeight;
+    };
+
     bool init();
     void renderColorCurves(const QVector<Curve *> &curves, const QMatrix4x4 &projectionMatrix);
-    void blur(GLuint sourceTexture, float targetWidth, float targetHeight);
-    void downsample(GLuint sourceTexture, float targetWidth, float targetHeight);
-    void upsample(GLuint sourceTexture, GLuint targetTexture, float targetWidth, float targetHeight);
-    void smooth(GLuint constrainedTexture, GLuint targetTexture, float targetWidth, float targetHeight, int iterations);
+    void blur(const Parameters &parameters);
+    void downsample(const Parameters &parameters);
+    void upsample(const Parameters &parameters);
+    void smooth(const Parameters &parameters);
+
+    int smoothIterations() const;
+    void setSmoothIterations(int newSmoothIterations);
+
+    float diffusionWidth() const;
+    void setDiffusionWidth(float newDiffusionWidth);
 
 private:
     QOpenGLShaderProgram *mColorCurveShader;
@@ -41,6 +55,9 @@ private:
 
     Ticks *mTicks;
     Quads *mQuads;
+
+    int mSmoothIterations;
+    float mDiffusionWidth;
 
     bool mInit;
 };

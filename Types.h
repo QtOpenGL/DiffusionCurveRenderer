@@ -22,14 +22,12 @@ enum class Action {
     UpdateControlPointXPosition,
     UpdateControlPointYPosition,
     UpdateCurveZIndex,
+    UpdateColorPointColor,
+    UpdateColorPointPosition,
     UpdateContourThickness,
     UpdateDiffusionWidth,
     UpdateContourColor,
-    EnableContourColor,
-    UpdateColorPointColor,
-    UpdateColorPointPosition,
-    UpdateSmoothIterations,
-    UpdateQuality
+    UpdateSmoothIterations
 };
 
 enum class Mode {

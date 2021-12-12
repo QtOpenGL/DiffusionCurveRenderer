@@ -1,9 +1,5 @@
 #include "ControlPoint.h"
 
-ControlPoint::ControlPoint(float x, float y)
-    : mPosition(x, y)
-{}
-
 ControlPoint::ControlPoint(QVector2D position)
     : mPosition(position)
 {}

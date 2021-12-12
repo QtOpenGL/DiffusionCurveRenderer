@@ -2,10 +2,7 @@
 
 CustomFlatButton::CustomFlatButton(QWidget *parent)
     : QPushButton(parent)
-{
-    setAutoFillBackground(true);
-    setFlat(true);
-}
+{}
 
 void CustomFlatButton::setColor(const QColor &newColor)
 {

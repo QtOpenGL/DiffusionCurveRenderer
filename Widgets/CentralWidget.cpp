@@ -32,6 +32,7 @@ void CentralWidget::init()
     gridLayout->addWidget(mOpenGLWidgetContainer, 0, 1, 0, -1);
     gridLayout->setColumnStretch(1, 1);
 
+    mZoomWidget->setMinimumWidth(300);
     setLayout(gridLayout);
 }
 

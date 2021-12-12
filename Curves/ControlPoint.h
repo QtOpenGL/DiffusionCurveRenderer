@@ -7,7 +7,6 @@
 class ControlPoint : public QObject
 {
 public:
-    ControlPoint(float x, float y);
     ControlPoint(QVector2D);
 
     const QVector2D &position() const;

@@ -36,7 +36,7 @@ QVector<Curve *> Util::readCurveDataFromXML(QString filename)
                     while (!element.isNull()) {
                         float x = element.attribute("y").toDouble();
                         float y = element.attribute("x").toDouble();
-                        ControlPoint *controlPoint = new ControlPoint(x, y);
+                        ControlPoint *controlPoint = new ControlPoint(QVector2D(x, y));
                         curve->addControlPoint(controlPoint);
                         element = element.nextSibling().toElement();
                     }
@@ -52,7 +52,8 @@ QVector<Curve *> Util::readCurveDataFromXML(QString filename)
                         uint8_t b = element.attribute("R").toUInt();
                         int globalID = element.attribute("globalID").toInt();
 
-                        ColorPoint *colorPoint = new ColorPoint(curve);
+                        ColorPoint *colorPoint = new ColorPoint();
+                        colorPoint->setParent(curve);
                         colorPoint->setColor(QVector4D(r / 255.0f, g / 255.0f, b / 255.0f, 1.0f));
                         colorPoint->setType(child.tagName() == "left_colors_set" ? ColorPoint::Left : ColorPoint::Right);
                         colorPoint->setPosition(globalID);

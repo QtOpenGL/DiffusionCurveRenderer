@@ -3,7 +3,9 @@
 #include <Curves/Bezier.h>
 
 DiffusionRenderer::DiffusionRenderer()
-    : mInit(false)
+    : mSmoothIterations(40)
+    , mDiffusionWidth(4.0)
+    , mInit(false)
 {}
 
 DiffusionRenderer::~DiffusionRenderer() {}
@@ -104,7 +106,7 @@ bool DiffusionRenderer::init()
             return false;
         }
 
-        mSmootherLocations.insert("constrainedTexture", mSmootherShader->uniformLocation("constrainedTexture"));
+        mSmootherLocations.insert("sourceTexture", mSmootherShader->uniformLocation("sourceTexture"));
         mSmootherLocations.insert("targetTexture", mSmootherShader->uniformLocation("targetTexture"));
         mSmootherLocations.insert("targetWidth", mSmootherShader->uniformLocation("targetWidth"));
         mSmootherLocations.insert("targetHeight", mSmootherShader->uniformLocation("targetHeight"));
@@ -162,7 +164,7 @@ void DiffusionRenderer::renderColorCurves(const QVector<Curve *> &curves, const 
         if (curve == nullptr)
             continue;
 
-        mColorCurveShader->setUniformValue("diffusionWidth", curve->diffusionWidth());
+        mColorCurveShader->setUniformValue("diffusionWidth", mDiffusionWidth);
 
         // Control points
         QVector<QVector2D> controlPoints = curve->getControlPointPositions();
@@ -197,22 +199,19 @@ void DiffusionRenderer::renderColorCurves(const QVector<Curve *> &curves, const 
     mColorCurveShader->release();
 }
 
-void DiffusionRenderer::blur(GLuint sourceTexture, float targetWidth, float targetHeight)
+void DiffusionRenderer::blur(const Parameters &parameters)
 {
     if (!mInit)
         return;
 
     mBlurShader->bind();
 
-    //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
     mBlurShader->setUniformValue(mBlurShaderLocations.value("sourceTexture"), GL_TEXTURE0);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, sourceTexture);
+    glBindTexture(GL_TEXTURE_2D, parameters.sourceTexture);
 
-    mBlurShader->setUniformValue(mBlurShaderLocations.value("targetWidth"), targetWidth);
-    mBlurShader->setUniformValue(mBlurShaderLocations.value("targetHeight"), targetHeight);
+    mBlurShader->setUniformValue(mBlurShaderLocations.value("targetWidth"), parameters.targetWidth);
+    mBlurShader->setUniformValue(mBlurShaderLocations.value("targetHeight"), parameters.targetHeight);
 
     mQuads->bind();
     glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -221,7 +220,7 @@ void DiffusionRenderer::blur(GLuint sourceTexture, float targetWidth, float targ
     mBlurShader->release();
 }
 
-void DiffusionRenderer::downsample(GLuint sourceTexture, float targetWidth, float targetHeight)
+void DiffusionRenderer::downsample(const Parameters &parameters)
 {
     if (!mInit)
         return;
@@ -230,13 +229,13 @@ void DiffusionRenderer::downsample(GLuint sourceTexture, float targetWidth, floa
 
     mDownsamplerShader->setUniformValue(mDownsamplerLocations.value("sourceTexture"), 0);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, sourceTexture);
+    glBindTexture(GL_TEXTURE_2D, parameters.sourceTexture);
 
-    //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-    //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 
-    mDownsamplerShader->setUniformValue(mDownsamplerLocations.value("targetWidth"), targetWidth);
-    mDownsamplerShader->setUniformValue(mDownsamplerLocations.value("targetHeight"), targetHeight);
+    mDownsamplerShader->setUniformValue(mDownsamplerLocations.value("targetWidth"), parameters.targetWidth);
+    mDownsamplerShader->setUniformValue(mDownsamplerLocations.value("targetHeight"), parameters.targetHeight);
 
     mQuads->bind();
     glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -245,7 +244,7 @@ void DiffusionRenderer::downsample(GLuint sourceTexture, float targetWidth, floa
     mDownsamplerShader->release();
 }
 
-void DiffusionRenderer::upsample(GLuint sourceTexture, GLuint targetTexture, float targetWidth, float targetHeight)
+void DiffusionRenderer::upsample(const Parameters &parameters)
 {
     if (!mInit)
         return;
@@ -256,14 +255,14 @@ void DiffusionRenderer::upsample(GLuint sourceTexture, GLuint targetTexture, flo
     mUpsamplerShader->setUniformValue(mUpsamplerLocations.value("tagetTexture"), 1);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, sourceTexture);
-    //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-    //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glBindTexture(GL_TEXTURE_2D, parameters.sourceTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, targetTexture);
-    //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-    //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glBindTexture(GL_TEXTURE_2D, parameters.targetTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 
     mQuads->bind();
     glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -272,7 +271,7 @@ void DiffusionRenderer::upsample(GLuint sourceTexture, GLuint targetTexture, flo
     mUpsamplerShader->release();
 }
 
-void DiffusionRenderer::smooth(GLuint constrainedTexture, GLuint targetTexture, float targetWidth, float targetHeight, int iterations)
+void DiffusionRenderer::smooth(const Parameters &parameters)
 {
     if (!mInit)
         return;
@@ -280,26 +279,46 @@ void DiffusionRenderer::smooth(GLuint constrainedTexture, GLuint targetTexture, 
     mSmootherShader->bind();
     mQuads->bind();
 
-    for (int i = 0; i < iterations; ++i) {
-        mSmootherShader->setUniformValue(mSmootherLocations.value("constrainedTexture"), 3);
+    mSmootherShader->setUniformValue(mSmootherLocations.value("targetWidth"), parameters.targetWidth);
+    mSmootherShader->setUniformValue(mSmootherLocations.value("targetHeight"), parameters.targetHeight);
+
+    for (int i = 0; i < mSmoothIterations; ++i) {
+        mSmootherShader->setUniformValue(mSmootherLocations.value("sourceTexture"), 3);
         mSmootherShader->setUniformValue(mSmootherLocations.value("targetTexture"), 4);
 
         glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, constrainedTexture);
+        glBindTexture(GL_TEXTURE_2D, parameters.sourceTexture);
         //        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
         //        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 
         glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_2D, targetTexture);
+        glBindTexture(GL_TEXTURE_2D, parameters.targetTexture);
         //        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
         //        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-
-        mSmootherShader->setUniformValue(mSmootherLocations.value("targetWidth"), targetWidth);
-        mSmootherShader->setUniformValue(mSmootherLocations.value("targetHeight"), targetHeight);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
 
     mQuads->release();
     mSmootherShader->release();
+}
+
+int DiffusionRenderer::smoothIterations() const
+{
+    return mSmoothIterations;
+}
+
+void DiffusionRenderer::setSmoothIterations(int newSmoothIterations)
+{
+    mSmoothIterations = newSmoothIterations;
+}
+
+float DiffusionRenderer::diffusionWidth() const
+{
+    return mDiffusionWidth;
+}
+
+void DiffusionRenderer::setDiffusionWidth(float newDiffusionWidth)
+{
+    mDiffusionWidth = newDiffusionWidth;
 }

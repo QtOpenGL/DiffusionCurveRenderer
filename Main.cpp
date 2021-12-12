@@ -9,8 +9,6 @@
 #include <QStyleFactory>
 #include <QSurfaceFormat>
 
-#include <Widgets/TestWidget.h>
-
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);

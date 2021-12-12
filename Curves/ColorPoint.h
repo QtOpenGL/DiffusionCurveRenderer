@@ -11,8 +11,7 @@ class ColorPoint : public QObject
 public:
     enum Type { Left = 0, Right = 1 };
 
-    ColorPoint(Curve *parentCurve);
-    ColorPoint(Curve *parentCurve, float position, QVector4D color, Type type);
+    ColorPoint();
 
     QVector2D getPosition2D(float gap = 10) const;
 
@@ -28,8 +27,11 @@ public:
     Type type() const;
     void setType(Type newType);
 
+    Curve *parent() const;
+    void setParent(Curve *newParent);
+
 private:
-    Curve *mParentCurve;
+    Curve *mParent;
     QVector4D mColor;
     float mPosition;
     bool mSelected;

@@ -5,9 +5,7 @@
 #define BUFFER_SIZE 4096.0
 
 RendererManager::RendererManager()
-    : mSmoothIterations(20)
-    , mQuality(1)
-    , mInit(false)
+    : mInit(false)
 {}
 
 RendererManager::~RendererManager() {}
@@ -19,15 +17,12 @@ bool RendererManager::init()
     // Define framebuffer format
     mFrambufferFormat.setAttachment(QOpenGLFramebufferObject::NoAttachment);
     mFrambufferFormat.setSamples(0);
+    mFrambufferFormat.setMipmap(false);
     mFrambufferFormat.setTextureTarget(GL_TEXTURE_2D);
     mFrambufferFormat.setInternalTextureFormat(GL_RGBA8);
 
     // Create initial framebuffer
     mInitialFrameBuffer = new QOpenGLFramebufferObject(BUFFER_SIZE, BUFFER_SIZE, mFrambufferFormat);
-
-    for (int i = 0; i < 2; ++i) {
-        mBlurFramebuffers << new QOpenGLFramebufferObject(BUFFER_SIZE, BUFFER_SIZE, mFrambufferFormat);
-    }
 
     // Create downsampled and upsampled buffers
     int bufferSize = 0.5 * BUFFER_SIZE;
@@ -92,11 +87,16 @@ void RendererManager::diffuse()
     {
         mDownsampledFramebuffers[0]->bind();
         glViewport(0, 0, mDownsampledFramebuffers[0]->width(), mDownsampledFramebuffers[0]->height());
-        //glViewport(0, 0, mProjectionParameters->width, mProjectionParameters->height);
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        mDiffusionRenderer->downsample(mInitialFrameBuffer->texture(), mDownsampledFramebuffers[0]->width(), mDownsampledFramebuffers[0]->height());
+        DiffusionRenderer::Parameters parameters;
+        parameters.sourceTexture = mInitialFrameBuffer->texture();
+        parameters.targetWidth = mDownsampledFramebuffers[0]->width();
+        parameters.targetHeight = mDownsampledFramebuffers[0]->height();
+
+        mDiffusionRenderer->downsample(parameters);
+
         mInitialFrameBuffer->release();
     }
 
@@ -108,14 +108,18 @@ void RendererManager::diffuse()
             glClearColor(0, 0, 0, 0);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            mDiffusionRenderer->downsample(mDownsampledFramebuffers[i - 1]->texture(),
-                                           mDownsampledFramebuffers[i]->width(),
-                                           mDownsampledFramebuffers[i]->height());
+            DiffusionRenderer::Parameters parameters;
+            parameters.sourceTexture = mDownsampledFramebuffers[i - 1]->texture();
+            parameters.targetWidth = mDownsampledFramebuffers[i]->width();
+            parameters.targetHeight = mDownsampledFramebuffers[i]->height();
+
+            mDiffusionRenderer->downsample(parameters);
+
             mDownsampledFramebuffers[i]->release();
         }
     }
 
-    // Upsample n-2
+    // Upsample and smooth n-2
     {
         int secondLast = mUpsampledFramebuffers.size() - 2;
 
@@ -124,20 +128,27 @@ void RendererManager::diffuse()
         glClearColor(0, 0, 0, 0);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        mDiffusionRenderer->upsample(mUpsampledFramebuffers.last()->texture(),
-                                     mUpsampledFramebuffers[secondLast]->texture(),
-                                     mUpsampledFramebuffers[secondLast]->width(),
-                                     mUpsampledFramebuffers[secondLast]->height());
+        // Upsample
+        DiffusionRenderer::Parameters parameters;
+        parameters.sourceTexture = mUpsampledFramebuffers.last()->texture();
+        parameters.targetTexture = mUpsampledFramebuffers[secondLast]->texture();
+        parameters.targetWidth = mUpsampledFramebuffers[secondLast]->width();
+        parameters.targetHeight = mUpsampledFramebuffers[secondLast]->height();
 
-        mDiffusionRenderer->smooth(mDownsampledFramebuffers[secondLast]->texture(),
-                                   mUpsampledFramebuffers[secondLast]->texture(),
-                                   mUpsampledFramebuffers[secondLast]->width(),
-                                   mUpsampledFramebuffers[secondLast]->height(),
-                                   mSmoothIterations);
+        mDiffusionRenderer->upsample(parameters);
+
+        // Smooth
+        parameters.sourceTexture = mDownsampledFramebuffers[secondLast]->texture();
+        parameters.targetTexture = mUpsampledFramebuffers[secondLast]->texture();
+        parameters.targetWidth = mUpsampledFramebuffers[secondLast]->width();
+        parameters.targetHeight = mUpsampledFramebuffers[secondLast]->height();
+
+        mDiffusionRenderer->smooth(parameters);
+
         mUpsampledFramebuffers[secondLast]->release();
     }
 
-    // Upsample n-3,...
+    // Upsample and smooth remaining n-3,...
     {
         for (int i = mUpsampledFramebuffers.size() - 3; 0 <= i; --i)
 
@@ -147,20 +158,28 @@ void RendererManager::diffuse()
             glClearColor(0, 0, 0, 0);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            mDiffusionRenderer->upsample(mUpsampledFramebuffers[i + 1]->texture(),
-                                         mUpsampledFramebuffers[i]->texture(),
-                                         mUpsampledFramebuffers[i]->width(),
-                                         mUpsampledFramebuffers[i]->height());
+            // Upsample
+            DiffusionRenderer::Parameters parameters;
+            parameters.sourceTexture = mUpsampledFramebuffers[i + 1]->texture();
+            parameters.targetTexture = mUpsampledFramebuffers[i]->texture();
+            parameters.targetWidth = mUpsampledFramebuffers[i]->width();
+            parameters.targetHeight = mUpsampledFramebuffers[i]->height();
 
-            mDiffusionRenderer->smooth(mDownsampledFramebuffers[i]->texture(),
-                                       mUpsampledFramebuffers[i]->texture(),
-                                       mUpsampledFramebuffers[i]->width(),
-                                       mUpsampledFramebuffers[i]->height(),
-                                       mSmoothIterations);
+            mDiffusionRenderer->upsample(parameters);
+
+            // Smooth
+            parameters.sourceTexture = mDownsampledFramebuffers[i]->texture();
+            parameters.targetTexture = mUpsampledFramebuffers[i]->texture();
+            parameters.targetWidth = mUpsampledFramebuffers[i]->width();
+            parameters.targetHeight = mUpsampledFramebuffers[i]->height();
+
+            mDiffusionRenderer->smooth(parameters);
+
             mUpsampledFramebuffers[i]->release();
         }
     }
 
+    // Blit to default framebuffer
     QOpenGLFramebufferObject::bindDefault();
     glViewport(0, 0, mProjectionParameters->width, mProjectionParameters->height);
     ScreenRenderer::Parameters parameters;
@@ -180,56 +199,22 @@ void RendererManager::setProjectionParameters(const ProjectionParameters *newPro
     mProjectionParameters = newProjectionParameters;
 }
 
-int RendererManager::smoothIterations() const
+void RendererManager::onSmoothIterationsChanged(int smoothIterations)
 {
-    return mSmoothIterations;
+    mDiffusionRenderer->setSmoothIterations(smoothIterations);
 }
 
-void RendererManager::setSmoothIterations(int newSmoothIterations)
+void RendererManager::onDiffusionWidthChanged(float diffusionWidth)
 {
-    mSmoothIterations = newSmoothIterations;
+    mDiffusionRenderer->setDiffusionWidth(diffusionWidth);
 }
 
-int RendererManager::quality() const
+void RendererManager::onContourThicknessChanged(float thickness)
 {
-    return mQuality;
+    mContourRenderer->setContourThickness(thickness);
 }
 
-void RendererManager::setQuality(int newQuality)
+void RendererManager::onContourColorChanged(const QVector4D color)
 {
-    mQuality = newQuality;
-}
-
-void RendererManager::clear()
-{
-    mInitialFrameBuffer->bind();
-    glViewport(0, 0, mInitialFrameBuffer->width(), mInitialFrameBuffer->height());
-
-    // Clear framebuffer
-    glColorMask(TRUE, TRUE, TRUE, TRUE);
-    glClearColor(0, 0, 0, 0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    mInitialFrameBuffer->release();
-
-    for (int i = 0; i < mDownsampledFramebuffers.size(); i++) {
-        mDownsampledFramebuffers[i]->bind();
-        glViewport(0, 0, mDownsampledFramebuffers[i]->width(), mDownsampledFramebuffers[i]->height());
-
-        // Clear framebuffer
-        glColorMask(TRUE, TRUE, TRUE, TRUE);
-        glClearColor(0, 0, 0, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        mDownsampledFramebuffers[i]->release();
-    }
-
-    for (int i = 0; i < mUpsampledFramebuffers.size(); i++) {
-        mUpsampledFramebuffers[i]->bind();
-        glViewport(0, 0, mUpsampledFramebuffers[i]->width(), mUpsampledFramebuffers[i]->height());
-
-        // Clear framebuffer
-        glColorMask(TRUE, TRUE, TRUE, TRUE);
-        glClearColor(0, 0, 0, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        mUpsampledFramebuffers[i]->release();
-    }
+    mContourRenderer->setContourColor(color);
 }

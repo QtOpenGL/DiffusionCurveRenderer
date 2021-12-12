@@ -2,15 +2,12 @@
 #define CURVEWIDGET_H
 
 #include <CustomVariant.h>
-#include <QCheckBox>
-#include <QComboBox>
 #include <QGroupBox>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
 
 #include "Curves/Curve.h"
-#include "CustomFlatButton.h"
 #include "Types.h"
 
 class CurveWidget : public QGroupBox
@@ -21,7 +18,6 @@ public:
 
 public slots:
     void onSelectedCurveChanged(Curve *selectedCurve);
-    void reset();
     void onDirty(DirtType);
 
 signals:
@@ -29,12 +25,7 @@ signals:
 
 private:
     QLineEdit *mZLineEdit;
-    QSlider *mContourThicknessSlider;
-    QSlider *mDiffusionWidthSlider;
-    QCheckBox *mContourColorStateCheckBox;
-    CustomFlatButton *mColorButton;
     QPushButton *mRemoveButton;
-
     const Curve *mSelectedCurve;
 };
 

@@ -2,7 +2,7 @@
 
 in vec2 fs_TextureCoords;
 
-uniform sampler2D constrainedTexture;
+uniform sampler2D sourceTexture;
 uniform sampler2D targetTexture;
 uniform float targetWidth;
 uniform float targetHeight;
@@ -13,7 +13,7 @@ void main()
 {
 
     vec2 targetPosition = vec2(fs_TextureCoords.s, fs_TextureCoords.t);
-    vec4 color = texture(constrainedTexture, targetPosition).rgba;
+    vec4 color = texture(sourceTexture, targetPosition).rgba;
 
     if(color.a < 1) // Smooth
     {

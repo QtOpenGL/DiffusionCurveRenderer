@@ -26,10 +26,15 @@ public:
     int smoothIterations() const;
     void setSmoothIterations(int newSmoothIterations);
 
-    int quality() const;
-    void setQuality(int newQuality);
+    float sharpness() const;
+    void setSharpness(float newSharpness);
 
-    void clear();
+public slots:
+    void onSmoothIterationsChanged(int smoothIterations);
+    void onDiffusionWidthChanged(float diffusionWidth);
+
+    void onContourThicknessChanged(float thickness);
+    void onContourColorChanged(const QVector4D color);
 
 private:
     ContourRenderer *mContourRenderer;
@@ -43,11 +48,6 @@ private:
     QOpenGLFramebufferObject *mInitialFrameBuffer;
     QVector<QOpenGLFramebufferObject *> mDownsampledFramebuffers;
     QVector<QOpenGLFramebufferObject *> mUpsampledFramebuffers;
-
-    QVector<QOpenGLFramebufferObject *> mBlurFramebuffers;
-
-    int mSmoothIterations;
-    int mQuality;
 
     bool mInit;
 };

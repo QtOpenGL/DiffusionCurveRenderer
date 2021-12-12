@@ -1,6 +1,8 @@
 #ifndef RENDERSETTINGSWIDGET_H
 #define RENDERSETTINGSWIDGET_H
 
+#include "CustomFlatButton.h"
+
 #include <CustomVariant.h>
 #include <Types.h>
 #include <QCheckBox>
@@ -22,7 +24,9 @@ private:
     QCheckBox *mRenderContoursCheckBox;
     QCheckBox *mDiffuseCheckBox;
     QSlider *mSmoothIterationsSlider;
-    QSlider *mQualitySlider;
+    QSlider *mDiffusionWidthSlider;
+    QSlider *mContourThicknessSlider;
+    CustomFlatButton *mColorButton;
 
 private:
     RenderMode mMode;

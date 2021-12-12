@@ -1,28 +1,26 @@
 #include "ColorPoint.h"
 #include "Curve.h"
 
-ColorPoint::ColorPoint(Curve *parentCurve)
-    : mParentCurve(parentCurve)
-{}
+ColorPoint::ColorPoint()
 
-ColorPoint::ColorPoint(Curve *parentCurve, float position, QVector4D color, Type type)
-    : mParentCurve(parentCurve)
-    , mColor(color)
-    , mPosition(position)
-    , mType(type)
 {}
 
 QVector2D ColorPoint::getPosition2D(float gap) const
 {
-    QVector2D positionOnCurve = mParentCurve->valueAt(mPosition);
-    QVector2D normal = mParentCurve->normalAt(mPosition);
+    if(mParent){
 
-    QVector2D gapVector = (mParentCurve->contourThickness() + gap) * normal;
+        QVector2D positionOnCurve = mParent->valueAt(mPosition);
+        QVector2D normal = mParent->normalAt(mPosition);
 
-    if (mType == ColorPoint::Right)
-        gapVector = -gapVector;
+        QVector2D gapVector = (mParent->contourThickness() + gap) * normal;
 
-    return positionOnCurve + gapVector;
+        if (mType == ColorPoint::Right)
+            gapVector = -gapVector;
+
+        return positionOnCurve + gapVector;
+    }
+
+    return QVector2D();
 }
 
 float ColorPoint::position() const
@@ -53,6 +51,16 @@ ColorPoint::Type ColorPoint::type() const
 void ColorPoint::setType(Type newType)
 {
     mType = newType;
+}
+
+Curve *ColorPoint::parent() const
+{
+    return mParent;
+}
+
+void ColorPoint::setParent(Curve *newParent)
+{
+    mParent = newParent;
 }
 
 const QVector4D &ColorPoint::color() const

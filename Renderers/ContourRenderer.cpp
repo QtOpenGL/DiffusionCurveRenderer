@@ -3,6 +3,8 @@
 ContourRenderer::ContourRenderer()
     : mShader(nullptr)
     , mTicks(nullptr)
+    , mContourThickness(6.0f)
+    , mContourColor(0, 0, 0, 1)
 {}
 
 ContourRenderer::~ContourRenderer()
@@ -75,8 +77,8 @@ void ContourRenderer::render(const QVector<Curve *> &curves, const QMatrix4x4 &p
 
             // Uniform Variables
             mShader->setUniformValue(mProjectionMatrixLocation, projectionMatrix);
-            mShader->setUniformValue(mColorLocation, curve->contourColor());
-            mShader->setUniformValue(mThicknessLocation, curve->contourThickness());
+            mShader->setUniformValue(mColorLocation, mContourColor);
+            mShader->setUniformValue(mThicknessLocation, mContourThickness);
             mShader->setUniformValue(mTicksDeltaLocation, mTicks->ticksDelta());
             mShader->setUniformValue(mControlPointsCountLocation, (GLint) controlPoints.size());
 
@@ -104,4 +106,24 @@ QVector4D ContourRenderer::lighter(QVector4D color, float factor)
         z = 1;
 
     return QVector4D(x, y, z, w);
+}
+
+const QVector4D &ContourRenderer::contourColor() const
+{
+    return mContourColor;
+}
+
+void ContourRenderer::setContourColor(const QVector4D &newContourColor)
+{
+    mContourColor = newContourColor;
+}
+
+float ContourRenderer::contourThickness() const
+{
+    return mContourThickness;
+}
+
+void ContourRenderer::setContourThickness(float newContourThickness)
+{
+    mContourThickness = newContourThickness;
 }

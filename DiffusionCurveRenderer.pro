@@ -46,7 +46,6 @@ HEADERS += \
     Widgets/ModeWidget.h \
     Widgets/OpenGLWidget.h \
     Widgets/RenderSettingsWidget.h \
-    Widgets/TestWidget.h \
     Widgets/ZoomWidget.h \
     Window.h
 
@@ -81,7 +80,6 @@ SOURCES += \
     Widgets/ModeWidget.cpp \
     Widgets/OpenGLWidget.cpp \
     Widgets/RenderSettingsWidget.cpp \
-    Widgets/TestWidget.cpp \
     Widgets/ZoomWidget.cpp \
     Window.cpp
 
