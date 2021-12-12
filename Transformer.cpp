@@ -4,12 +4,8 @@ Transformer::Transformer() {}
 
 QVector2D Transformer::mapFromGuiToOpenGL(const QPointF &position) const
 {
-    const float &left = mProjectionParameters->left;
-    const float &top = mProjectionParameters->top;
-    const float &zoomRatio = mProjectionParameters->zoomRatio;
-
-    float x = left + zoomRatio * position.x();
-    float y = top + zoomRatio * position.y();
+    float x = mProjectionParameters->left + mProjectionParameters->zoomRatio * position.x();
+    float y = mProjectionParameters->top + mProjectionParameters->zoomRatio * position.y();
 
     return QVector2D(x, y);
 }

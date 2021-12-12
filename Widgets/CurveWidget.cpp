@@ -18,8 +18,13 @@ CurveWidget::CurveWidget(QGroupBox *parent)
         mZLineEdit = new QLineEdit;
         mZLineEdit->setReadOnly(false);
         mZLineEdit->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-        mZLineEdit->setValidator(new QIntValidator(-1000, 1000, this));
-        connect(mZLineEdit, &QLineEdit::textChanged, this, [=](QString text) { emit action(Action::UpdateCurveZIndex, text.toInt()); });
+        connect(mZLineEdit, &QLineEdit::textChanged, this, [=](QString text) {
+            bool success = false;
+            int z = text.toInt(&success);
+            if (success) {
+                emit action(Action::UpdateCurveZIndex, z);
+            }
+        });
 
         mainLayout->addWidget(new QLabel("Z-index"), 0, 0);
         mainLayout->addWidget(mZLineEdit, 0, 2);

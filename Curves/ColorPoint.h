@@ -14,7 +14,7 @@ public:
     ColorPoint(Curve *parentCurve);
     ColorPoint(Curve *parentCurve, float position, QVector4D color, Type type);
 
-    QVector2D getPosition2D(float gap = 5) const;
+    QVector2D getPosition2D(float gap = 10) const;
 
     const QVector4D &color() const;
     void setColor(const QVector4D &newColor);

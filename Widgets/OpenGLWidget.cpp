@@ -19,15 +19,13 @@ OpenGLWidget::OpenGLWidget(QWidget *parent)
     , mUpdatePainter(false)
 {
     for (int i = 0; i < 4; ++i)
-        mHandles[i].setSize(QSize(10, 10));
+        mHandles[i].setSize(QSize(8, 8));
 
-    mDashedPen.setDashPattern({4, 4});
-    mDashedPen.setWidth(1);
-    mDashedPen.setColor(QColor(128, 128, 128));
+    mDashedPen.setDashPattern({8, 8});
+    mDashedPen.setWidthF(0.5f);
     mDashedPen.setJoinStyle(Qt::MiterJoin);
 
-    mSolidPen.setColor(QColor(128, 128, 128));
-    mSolidPen.setWidth(1);
+    mSolidPen.setWidthF(0.5f);
     mSolidPen.setJoinStyle(Qt::MiterJoin);
 
     setMouseTracking(true);
@@ -58,7 +56,16 @@ void OpenGLWidget::initializeGL()
 
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_ONE, GL_ZERO);
+
+    mProjectionParameters->left = 0;
+    mProjectionParameters->top = 0;
+    mProjectionParameters->zoomRatio = 1.0f;
+    mProjectionParameters->pixelRatio = devicePixelRatioF();
+    mProjectionParameters->right = mProjectionParameters->left + width() * mProjectionParameters->zoomRatio;
+    mProjectionParameters->bottom = mProjectionParameters->top + height() * mProjectionParameters->zoomRatio;
+    mProjectionParameters->width = width() * mProjectionParameters->pixelRatio;
+    mProjectionParameters->height = height() * mProjectionParameters->pixelRatio; // Flip y-axis
 
     mRendererManager->init();
 }
@@ -74,16 +81,22 @@ void OpenGLWidget::paintGL()
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ZERO);
-
     if (mRenderMode & RenderMode::Diffuse) {
         mRendererManager->diffuse();
     }
 
+    glViewport(0, 0, mProjectionParameters->width, mProjectionParameters->height);
+
     if (mRenderMode & RenderMode::Contours) {
-        glViewport(0, 0, mProjectionParameters->width, mProjectionParameters->height);
         mRendererManager->contours();
+    }
+
+    if (mSelectedCurve) {
+        QRectF boundingBox = mTransformer->mapFromOpenGLToGui(mSelectedCurve->getBoundingBox());
+        mHandles[0].moveCenter(boundingBox.topLeft());
+        mHandles[1].moveCenter(boundingBox.bottomLeft());
+        mHandles[2].moveCenter(boundingBox.topRight());
+        mHandles[3].moveCenter(boundingBox.bottomRight());
     }
 
     // None?
@@ -100,18 +113,17 @@ void OpenGLWidget::onDirty(DirtType type)
 
 void OpenGLWidget::updatePainter()
 {
-    float pixelRatio = QPaintDevice::devicePixelRatioF();
-    QOpenGLPaintDevice device(width() * pixelRatio, height() * pixelRatio);
+    if (mRenderMode & RenderMode::Diffuse) {
+        mDashedPen.setColor(QColor(255, 255, 255));
+        mSolidPen.setColor(QColor(255, 255, 255));
+    } else {
+        mDashedPen.setColor(QColor(0, 0, 0));
+        mSolidPen.setColor(QColor(0, 0, 0));
+    }
+
+    QOpenGLPaintDevice device(width() * QPaintDevice::devicePixelRatioF(), height() * QPaintDevice::devicePixelRatioF());
     QPainter painter(&device);
     painter.setRenderHint(QPainter::Antialiasing, true);
-
-    if (mSelectedCurve) {
-        QRectF boundingBox = mTransformer->mapFromOpenGLToGui(mSelectedCurve->getBoundingBox());
-        mHandles[0].moveCenter(boundingBox.topLeft());
-        mHandles[1].moveCenter(boundingBox.bottomLeft());
-        mHandles[2].moveCenter(boundingBox.topRight());
-        mHandles[3].moveCenter(boundingBox.bottomRight());
-    }
 
     switch (mMode) {
     case Mode::Pan:
@@ -138,19 +150,19 @@ void OpenGLWidget::updatePainter()
                 painter.setPen(QColor(0, 0, 0, 0));
 
                 // Outer disk
-                int outerRadius = controlPoints[j]->selected() ? 12 : 10;
+                int outerRadius = controlPoints[j]->selected() ? 20 : 16;
                 //outerRadius /= mProjectionParameters->zoomRatio;
-                painter.setBrush(QColor(122, 120, 120, 128));
+                painter.setBrush(QColor(128, 128, 128, 128));
                 painter.drawEllipse(center, outerRadius, outerRadius);
 
                 // Inner disk
-                int innerRadius = 6;
+                int innerRadius = 10;
                 //innerRadius /= mProjectionParameters->zoomRatio;
-                painter.setBrush(QColor(240, 240, 240));
+                painter.setBrush(QColor(255, 255, 255));
                 painter.drawEllipse(center, innerRadius, innerRadius);
             }
 
-            // color points
+            // Color points
             QVector<const ColorPoint *> colorPoints = mSelectedCurve->getRightColorPoints();
             colorPoints << mSelectedCurve->getLeftColorPoints();
 
@@ -159,13 +171,13 @@ void OpenGLWidget::updatePainter()
                 painter.setPen(QColor(0, 0, 0, 0));
 
                 // Outer disk
-                int outerRadius = colorPoints[i]->selected() ? 12 : 10;
+                int outerRadius = colorPoints[i]->selected() ? 18 : 14;
                 //outerRadius /= mProjectionParameters->zoomRatio;
-                painter.setBrush(QColor(122, 120, 120, 40));
+                painter.setBrush(QColor(128, 128, 128, 128));
                 painter.drawEllipse(center, outerRadius, outerRadius);
 
                 // Inner disk
-                int innerRadius = 6;
+                int innerRadius = 8;
                 //innerRadius /= mProjectionParameters->zoomRatio;
                 painter.setBrush(Util::convertVector4DtoColor(colorPoints[i]->color()));
                 painter.drawEllipse(center, innerRadius, innerRadius);
@@ -178,26 +190,24 @@ void OpenGLWidget::updatePainter()
             // Draw bounding box
             QRectF boundingBox = mTransformer->mapFromOpenGLToGui(mSelectedCurve->getBoundingBox());
             painter.setPen(mDashedPen);
+            painter.setRenderHint(QPainter::Antialiasing, false);
             painter.drawRect(boundingBox);
+            painter.setRenderHint(QPainter::Antialiasing, true);
+
+            painter.setPen(mSolidPen);
 
             // Draw pivot point
-            mSolidPen.setColor(QColor(128, 128, 128));
-            painter.setPen(mSolidPen);
-            painter.setBrush(QBrush());
-
             QPointF center = boundingBox.center();
             painter.drawEllipse(center, 6, 6);
             painter.drawLine(center.x() - 10, center.y() + 0.5, center.x() + 10, center.y() + 0.5);
             painter.drawLine(center.x() + 0.5, center.y() - 10, center.x() + 0.5, center.y() + 10);
 
             // Draw corners
-            mSolidPen.setColor(QColor(0, 0, 0));
-            painter.setPen(mSolidPen);
-            painter.setBrush(QColor(0, 0, 0, 0));
-
+            painter.setRenderHint(QPainter::Antialiasing, false);
             for (int i = 0; i < 4; ++i) {
                 painter.drawRect(mHandles[i]);
             }
+            painter.setRenderHint(QPainter::Antialiasing, true);
         }
         break;
     }

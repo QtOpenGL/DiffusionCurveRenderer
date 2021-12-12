@@ -24,13 +24,11 @@ ControlPointWidget::ControlPointWidget(QGroupBox *parent)
         mControlPointX = new QLineEdit;
         mControlPointX->setReadOnly(false);
         mControlPointX->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-        mControlPointX->setValidator(new QIntValidator(-10000, 10000, this));
-
         connect(mControlPointX, &QLineEdit::textEdited, this, [=](QString text) {
-            if (mSelectedControlPoint) {
-                float x = text.toFloat();
-                float y = mSelectedControlPoint->position().y();
-                emit action(Action::UpdateControlPointPosition, QPointF(x, y));
+            bool success = false;
+            float x = text.toFloat(&success);
+            if (success) {
+                emit action(Action::UpdateControlPointXPosition, x);
             }
         });
 
@@ -43,13 +41,12 @@ ControlPointWidget::ControlPointWidget(QGroupBox *parent)
         mControlPointY = new QLineEdit;
         mControlPointY->setReadOnly(false);
         mControlPointY->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-        mControlPointY->setValidator(new QIntValidator(-10000, 10000, this));
 
         connect(mControlPointY, &QLineEdit::textEdited, this, [this](QString text) {
-            if (mSelectedControlPoint) {
-                float x = mSelectedControlPoint->position().x();
-                float y = text.toFloat();
-                emit action(Action::UpdateControlPointPosition, QPointF(x, y));
+            bool success = false;
+            float y = text.toFloat(&success);
+            if (success) {
+                emit action(Action::UpdateControlPointYPosition, y);
             }
         });
 

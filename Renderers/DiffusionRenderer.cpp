@@ -42,7 +42,7 @@ bool DiffusionRenderer::init()
         // Attribute Locations
         mColorCurveShader->bindAttributeLocation("vs_Tick", 0);
 
-        mTicks = new Ticks(0, 0.99, 2000);
+        mTicks = new Ticks(0, 1.0, 2000);
         mTicks->create();
 
         mColorCurveShader->release();
@@ -107,6 +107,26 @@ bool DiffusionRenderer::init()
         mSmootherShader->release();
     }
 
+    // Blur
+    {
+        mBlurShader = new QOpenGLShaderProgram;
+
+        if (!mBlurShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Diffusion/Blur/VertexShader.vert")
+            || !mBlurShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Diffusion/Blur/FragmentShader.frag") || !mBlurShader->link()
+            || !mBlurShader->bind()) {
+            qCritical() << mBlurShader->log();
+            return false;
+        }
+
+        mBlurShaderLocations.insert("sourceTexture", mBlurShader->uniformLocation("sourceTexture"));
+        mBlurShaderLocations.insert("targetWidth", mBlurShader->uniformLocation("targetWidth"));
+        mBlurShaderLocations.insert("targetHeight", mBlurShader->uniformLocation("targetHeight"));
+
+        mBlurShader->bindAttributeLocation("vs_Position", 0);
+        mBlurShader->bindAttributeLocation("vs_TextureCoords", 1);
+        mBlurShader->release();
+    }
+
     mQuads = new Quads;
     mQuads->create();
 
@@ -163,6 +183,30 @@ void DiffusionRenderer::renderColorCurves(const QVector<Curve *> &curves, const 
 
     mTicks->release();
     mColorCurveShader->release();
+}
+
+void DiffusionRenderer::blur(GLuint sourceTexture, float targetWidth, float targetHeight)
+{
+    if (!mInit)
+        return;
+
+    mBlurShader->bind();
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    mBlurShader->setUniformValue(mBlurShaderLocations.value("sourceTexture"), GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, sourceTexture);
+
+    mBlurShader->setUniformValue(mBlurShaderLocations.value("targetWidth"), targetWidth);
+    mBlurShader->setUniformValue(mBlurShaderLocations.value("targetHeight"), targetHeight);
+
+    mQuads->bind();
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    mQuads->release();
+
+    mBlurShader->release();
 }
 
 void DiffusionRenderer::downsample(GLuint sourceTexture, float targetWidth, float targetHeight)

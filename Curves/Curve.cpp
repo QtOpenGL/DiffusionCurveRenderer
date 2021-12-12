@@ -5,8 +5,8 @@
 
 Curve::Curve()
     : mContourColorEnabled(true)
-    , mContourColor(0, 0, 0, 1)
-    , mContourThickness(4.0f)
+    , mContourColor(0.0, 0.0, 0.0, 1)
+    , mContourThickness(6.0f)
     , mDiffusionWidth(4.0f)
     , mSelected(false)
     , mZ(0)

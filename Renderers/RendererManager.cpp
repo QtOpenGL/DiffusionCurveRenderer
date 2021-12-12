@@ -15,13 +15,14 @@ RendererManager::~RendererManager() {}
 bool RendererManager::init()
 {
     initializeOpenGLFunctions();
-    // Define multisample format
+
+    // Define framebuffer format
     mFrambufferFormat.setAttachment(QOpenGLFramebufferObject::NoAttachment);
     mFrambufferFormat.setSamples(0);
     mFrambufferFormat.setTextureTarget(GL_TEXTURE_2D);
     mFrambufferFormat.setInternalTextureFormat(GL_RGBA8);
 
-    // Create multisample framebuffer and blitted framebuffer objects
+    // Create initial framebuffer
     mInitialFrameBuffer = new QOpenGLFramebufferObject(BUFFER_SIZE, BUFFER_SIZE, mFrambufferFormat);
 
     // Create downsampled and upsampled buffers
@@ -91,20 +92,31 @@ void RendererManager::diffuse()
         mInitialFrameBuffer->release();
     }
 
-    //    // Downsample
+    // Downsample 0
     {
-        for (int i = 0; i < mDownsampledFramebuffers.size(); i++) {
+        mDownsampledFramebuffers[0]->bind();
+        glViewport(0, 0, mDownsampledFramebuffers[0]->width(), mDownsampledFramebuffers[0]->height());
+
+        GLuint sourceTexture = mInitialFrameBuffer->texture();
+        mDiffusionRenderer->downsample(sourceTexture, 2 * mDownsampledFramebuffers[0]->width(), 2 * mDownsampledFramebuffers[0]->height());
+
+        mDownsampledFramebuffers[0]->release();
+    }
+
+    // Downsample 1,2,...
+    {
+        for (int i = 1; i < mDownsampledFramebuffers.size(); i++) {
             mDownsampledFramebuffers[i]->bind();
             glViewport(0, 0, mDownsampledFramebuffers[i]->width(), mDownsampledFramebuffers[i]->height());
 
-            GLuint sourceTexture = i == 0 ? mInitialFrameBuffer->texture() : mDownsampledFramebuffers[i - 1]->texture();
+            GLuint sourceTexture = mDownsampledFramebuffers[i - 1]->texture();
             mDiffusionRenderer->downsample(sourceTexture, 2 * mDownsampledFramebuffers[i]->width(), 2 * mDownsampledFramebuffers[i]->height());
 
             mDownsampledFramebuffers[i]->release();
         }
     }
 
-    //    // Upsample and smooth
+    //    Upsample and smooth
     {
         GLuint sourceTexture = mDownsampledFramebuffers.last()->texture();
         for (int i = mUpsampledFramebuffers.size() - 2; 0 <= i; i--) {
@@ -140,7 +152,6 @@ void RendererManager::diffuse()
         //parameters.texture = mDownsampledFramebuffers.last()->texture();
         mScreenRenderer->render(parameters);
     }
-    //clear();
 }
 
 void RendererManager::setCurveContainer(const CurveContainer *newCurveContainer)

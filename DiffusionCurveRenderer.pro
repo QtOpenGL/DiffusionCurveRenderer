@@ -89,6 +89,8 @@ DISTFILES += \
     Shaders/Contour/FragmentShader.frag \
     Shaders/Contour/GeometryShader.geom \
     Shaders/Contour/VertexShader.vert \
+    Shaders/Diffusion/Blur/FragmentShader.frag \
+    Shaders/Diffusion/Blur/VertexShader.vert \
     Shaders/Diffusion/ColorCurve/FragmentShader.frag \
     Shaders/Diffusion/ColorCurve/GeometryShader.geom \
     Shaders/Diffusion/ColorCurve/VertexShader.vert \

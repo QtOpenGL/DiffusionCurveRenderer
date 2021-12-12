@@ -19,6 +19,8 @@ enum class Action {
     RemoveControlPoint,
     RemoveColorPoint,
     UpdateControlPointPosition,
+    UpdateControlPointXPosition,
+    UpdateControlPointYPosition,
     UpdateCurveZIndex,
     UpdateContourThickness,
     UpdateDiffusionWidth,

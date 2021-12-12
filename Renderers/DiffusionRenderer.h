@@ -18,6 +18,7 @@ public:
 
     bool init();
     void renderColorCurves(const QVector<Curve *> &curves, const QMatrix4x4 &projectionMatrix);
+    void blur(GLuint sourceTexture, float targetWidth, float targetHeight);
     void downsample(GLuint sourceTexture, float targetWidth, float targetHeight);
     void upsample(GLuint sourceTexture, GLuint targetTexture, float targetWidth, float targetHeight);
     void smooth(GLuint constrainedTexture, GLuint targetTexture, float targetWidth, float targetHeight, int iterations);
@@ -34,6 +35,9 @@ private:
 
     QOpenGLShaderProgram *mSmootherShader;
     QMap<QString, Location> mSmootherLocations;
+
+    QOpenGLShaderProgram *mBlurShader;
+    QMap<QString, Location> mBlurShaderLocations;
 
     Ticks *mTicks;
     Quads *mQuads;

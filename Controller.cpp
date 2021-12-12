@@ -32,7 +32,14 @@ Controller::Controller(QObject *parent)
     mCentralWidget->setRenderSettingsWidget(mRenderSettingsWidget);
     mCentralWidget->init();
 
-    mProjectionParameters->zoomRatio = 1.0f;
+    mProjectionParameters->left = 0;
+    mProjectionParameters->top = 0;
+    mProjectionParameters->zoomRatio = 0;
+    mProjectionParameters->pixelRatio = 0;
+    mProjectionParameters->right = 0;
+    mProjectionParameters->bottom = 0;
+    mProjectionParameters->width = 0;
+    mProjectionParameters->height = 0;
 
     mTransformer->setProjectionParameters(mProjectionParameters);
 
@@ -76,18 +83,18 @@ Controller::Controller(QObject *parent)
     connect(this, &Controller::dirty, mColorPointWidget, &ColorPointWidget::onDirty);
 
     Bezier *bezier = new Bezier;
-    bezier->addControlPoint(new ControlPoint(100, 512)); // First
-                                                         //    bezier->addControlPoint(new ControlPoint(0, 0));
-                                                         //    bezier->addControlPoint(new ControlPoint(0, 0));
-    bezier->addControlPoint(new ControlPoint(600, 800)); // Last
-    bezier->addColorPoint(new ColorPoint(bezier, 0, QVector4D(1, 0, 0, 1), ColorPoint::Left));
-    bezier->addColorPoint(new ColorPoint(bezier, 0.5, QVector4D(0, 0, 0, 1), ColorPoint::Left));
-    bezier->addColorPoint(new ColorPoint(bezier, 1, QVector4D(0, 0, 1, 1), ColorPoint::Left));
-    bezier->addColorPoint(new ColorPoint(bezier, 0, QVector4D(0, 1, 0, 1), ColorPoint::Right));
-    bezier->addColorPoint(new ColorPoint(bezier, 0.25, QVector4D(1, 1, 1, 1), ColorPoint::Right));
-    bezier->addColorPoint(new ColorPoint(bezier, 0.5, QVector4D(1, 1, 0, 1), ColorPoint::Right));
-    bezier->addColorPoint(new ColorPoint(bezier, 0.75, QVector4D(0, 0, 0, 1), ColorPoint::Right));
-    bezier->addColorPoint(new ColorPoint(bezier, 1, QVector4D(0, 1, 1, 1), ColorPoint::Right));
+    bezier->addControlPoint(new ControlPoint(100.0f, 512.0f)); // First
+                                                               //    bezier->addControlPoint(new ControlPoint(0, 0));
+                                                               //    bezier->addControlPoint(new ControlPoint(0, 0));
+    bezier->addControlPoint(new ControlPoint(600.0f, 800.0f)); // Last
+    bezier->addColorPoint(new ColorPoint(bezier, 0.0f, QVector4D(1, 0, 0, 1), ColorPoint::Left));
+    bezier->addColorPoint(new ColorPoint(bezier, 0.5f, QVector4D(0, 0, 0, 1), ColorPoint::Left));
+    bezier->addColorPoint(new ColorPoint(bezier, 1.0f, QVector4D(0, 0, 1, 1), ColorPoint::Left));
+    bezier->addColorPoint(new ColorPoint(bezier, 0.0f, QVector4D(0, 1, 0, 1), ColorPoint::Right));
+    bezier->addColorPoint(new ColorPoint(bezier, 0.25f, QVector4D(1, 1, 1, 1), ColorPoint::Right));
+    bezier->addColorPoint(new ColorPoint(bezier, 0.5f, QVector4D(1, 1, 0, 1), ColorPoint::Right));
+    bezier->addColorPoint(new ColorPoint(bezier, 0.75f, QVector4D(0, 0, 0, 1), ColorPoint::Right));
+    bezier->addColorPoint(new ColorPoint(bezier, 1.0f, QVector4D(0, 1, 1, 1), ColorPoint::Right));
     mCurveContainer->addCurve(bezier);
 }
 
@@ -280,6 +287,25 @@ void Controller::onAction(Action action, CustomVariant value)
     case Action::UpdateControlPointPosition: {
         if (mCurveContainer->selectedControlPoint()) {
             mCurveContainer->selectedControlPoint()->setPosition(value.toVector2D());
+            emit dirty(DirtType::OpenGL + DirtType::QPainter + DirtType::GUI);
+        }
+        break;
+    }
+    case Action::UpdateControlPointXPosition: {
+        if (mCurveContainer->selectedControlPoint()) {
+            QVector2D position = mCurveContainer->selectedControlPoint()->position();
+            position.setX(value.toFloat());
+            mCurveContainer->selectedControlPoint()->setPosition(position);
+
+            emit dirty(DirtType::OpenGL + DirtType::QPainter + DirtType::GUI);
+        }
+        break;
+    }
+    case Action::UpdateControlPointYPosition: {
+        if (mCurveContainer->selectedControlPoint()) {
+            QVector2D position = mCurveContainer->selectedControlPoint()->position();
+            position.setY(value.toFloat());
+            mCurveContainer->selectedControlPoint()->setPosition(position);
 
             emit dirty(DirtType::OpenGL + DirtType::QPainter + DirtType::GUI);
         }
