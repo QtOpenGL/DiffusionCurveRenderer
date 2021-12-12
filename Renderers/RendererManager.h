@@ -44,6 +44,8 @@ private:
     QVector<QOpenGLFramebufferObject *> mDownsampledFramebuffers;
     QVector<QOpenGLFramebufferObject *> mUpsampledFramebuffers;
 
+    QVector<QOpenGLFramebufferObject *> mBlurFramebuffers;
+
     int mSmoothIterations;
     int mQuality;
 

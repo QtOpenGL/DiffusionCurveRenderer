@@ -150,14 +150,14 @@ void OpenGLWidget::updatePainter()
                 painter.setPen(QColor(0, 0, 0, 0));
 
                 // Outer disk
-                int outerRadius = controlPoints[j]->selected() ? 20 : 16;
-                //outerRadius /= mProjectionParameters->zoomRatio;
+                float outerRadius = controlPoints[j]->selected() ? 14 : 10;
+                outerRadius /= mProjectionParameters->zoomRatio;
                 painter.setBrush(QColor(128, 128, 128, 128));
                 painter.drawEllipse(center, outerRadius, outerRadius);
 
                 // Inner disk
-                int innerRadius = 10;
-                //innerRadius /= mProjectionParameters->zoomRatio;
+                float innerRadius = 6;
+                innerRadius /= mProjectionParameters->zoomRatio;
                 painter.setBrush(QColor(255, 255, 255));
                 painter.drawEllipse(center, innerRadius, innerRadius);
             }
@@ -171,14 +171,14 @@ void OpenGLWidget::updatePainter()
                 painter.setPen(QColor(0, 0, 0, 0));
 
                 // Outer disk
-                int outerRadius = colorPoints[i]->selected() ? 18 : 14;
-                //outerRadius /= mProjectionParameters->zoomRatio;
+                float outerRadius = colorPoints[i]->selected() ? 12 : 8;
+                outerRadius /= mProjectionParameters->zoomRatio;
                 painter.setBrush(QColor(128, 128, 128, 128));
                 painter.drawEllipse(center, outerRadius, outerRadius);
 
                 // Inner disk
-                int innerRadius = 8;
-                //innerRadius /= mProjectionParameters->zoomRatio;
+                float innerRadius = 4;
+                innerRadius /= mProjectionParameters->zoomRatio;
                 painter.setBrush(Util::convertVector4DtoColor(colorPoints[i]->color()));
                 painter.drawEllipse(center, innerRadius, innerRadius);
             }

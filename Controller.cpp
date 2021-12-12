@@ -82,20 +82,21 @@ Controller::Controller(QObject *parent)
     connect(this, &Controller::dirty, mControlPointWidget, &ControlPointWidget::onDirty);
     connect(this, &Controller::dirty, mColorPointWidget, &ColorPointWidget::onDirty);
 
-    Bezier *bezier = new Bezier;
-    bezier->addControlPoint(new ControlPoint(100.0f, 512.0f)); // First
-                                                               //    bezier->addControlPoint(new ControlPoint(0, 0));
-                                                               //    bezier->addControlPoint(new ControlPoint(0, 0));
-    bezier->addControlPoint(new ControlPoint(600.0f, 800.0f)); // Last
-    bezier->addColorPoint(new ColorPoint(bezier, 0.0f, QVector4D(1, 0, 0, 1), ColorPoint::Left));
-    bezier->addColorPoint(new ColorPoint(bezier, 0.5f, QVector4D(0, 0, 0, 1), ColorPoint::Left));
-    bezier->addColorPoint(new ColorPoint(bezier, 1.0f, QVector4D(0, 0, 1, 1), ColorPoint::Left));
-    bezier->addColorPoint(new ColorPoint(bezier, 0.0f, QVector4D(0, 1, 0, 1), ColorPoint::Right));
-    bezier->addColorPoint(new ColorPoint(bezier, 0.25f, QVector4D(1, 1, 1, 1), ColorPoint::Right));
-    bezier->addColorPoint(new ColorPoint(bezier, 0.5f, QVector4D(1, 1, 0, 1), ColorPoint::Right));
-    bezier->addColorPoint(new ColorPoint(bezier, 0.75f, QVector4D(0, 0, 0, 1), ColorPoint::Right));
-    bezier->addColorPoint(new ColorPoint(bezier, 1.0f, QVector4D(0, 1, 1, 1), ColorPoint::Right));
-    mCurveContainer->addCurve(bezier);
+    //    Bezier *bezier = new Bezier;
+    //    bezier->addControlPoint(new ControlPoint(100.0f, 512.0f)); // First
+    //    bezier->addControlPoint(new ControlPoint(600.0f, 800.0f)); // Last
+    //    bezier->addColorPoint(new ColorPoint(bezier, 0.0f, QVector4D(1, 0, 0, 1), ColorPoint::Left));
+    //    bezier->addColorPoint(new ColorPoint(bezier, 0.5f, QVector4D(0, 0, 0, 1), ColorPoint::Left));
+    //    bezier->addColorPoint(new ColorPoint(bezier, 1.0f, QVector4D(0, 0, 1, 1), ColorPoint::Left));
+    //    bezier->addColorPoint(new ColorPoint(bezier, 0.0f, QVector4D(0, 1, 0, 1), ColorPoint::Right));
+    //    bezier->addColorPoint(new ColorPoint(bezier, 0.25f, QVector4D(1, 1, 1, 1), ColorPoint::Right));
+    //    bezier->addColorPoint(new ColorPoint(bezier, 0.5f, QVector4D(1, 1, 0, 1), ColorPoint::Right));
+    //    bezier->addColorPoint(new ColorPoint(bezier, 0.75f, QVector4D(0, 0, 0, 1), ColorPoint::Right));
+    //    bezier->addColorPoint(new ColorPoint(bezier, 1.0f, QVector4D(0, 1, 1, 1), ColorPoint::Right));
+    //    mCurveContainer->addCurve(bezier);
+
+    QVector<Curve *> curves = Util::readCurveDataFromXML("Resources/CurveData/poivron.xml");
+    mCurveContainer->addCurves(curves);
 }
 
 CentralWidget *Controller::centralWidget() const

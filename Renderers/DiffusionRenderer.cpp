@@ -26,7 +26,7 @@ bool DiffusionRenderer::init()
         // Uniform Variables
         mColorCurveLocations.insert("projectionMatrix", mColorCurveShader->uniformLocation("projectionMatrix"));
         mColorCurveLocations.insert("ticksDelta", mColorCurveShader->uniformLocation("ticksDelta"));
-        mColorCurveLocations.insert("thickness", mColorCurveShader->uniformLocation("thickness"));
+        mColorCurveLocations.insert("diffusionWidth", mColorCurveShader->uniformLocation("diffusionWidth"));
 
         mColorCurveLocations.insert("controlPoints", mColorCurveShader->uniformLocation("controlPoints"));
         mColorCurveLocations.insert("controlPointsCount", mColorCurveShader->uniformLocation("controlPointsCount"));
@@ -39,10 +39,12 @@ bool DiffusionRenderer::init()
         mColorCurveLocations.insert("rightColorPositions", mColorCurveShader->uniformLocation("rightColorPositions"));
         mColorCurveLocations.insert("rightColorsCount", mColorCurveShader->uniformLocation("rightColorsCount"));
 
+        qDebug() << "ColorCurve Shader Locations:" << mColorCurveLocations;
+
         // Attribute Locations
         mColorCurveShader->bindAttributeLocation("vs_Tick", 0);
 
-        mTicks = new Ticks(0, 1.0, 2000);
+        mTicks = new Ticks(0, 1.0, 1000);
         mTicks->create();
 
         mColorCurveShader->release();
@@ -63,6 +65,8 @@ bool DiffusionRenderer::init()
         mDownsamplerLocations.insert("targetWidth", mDownsamplerShader->uniformLocation("targetWidth"));
         mDownsamplerLocations.insert("targetHeight", mDownsamplerShader->uniformLocation("targetHeight"));
 
+        qDebug() << "Downsampler Shader Locations:" << mDownsamplerLocations;
+
         mDownsamplerShader->bindAttributeLocation("vs_Position", 0);
         mDownsamplerShader->bindAttributeLocation("vs_TextureCoords", 1);
         mDownsamplerShader->release();
@@ -81,6 +85,9 @@ bool DiffusionRenderer::init()
 
         mUpsamplerLocations.insert("sourceTexture", mUpsamplerShader->uniformLocation("sourceTexture"));
         mUpsamplerLocations.insert("targetTexture", mUpsamplerShader->uniformLocation("targetTexture"));
+
+        qDebug() << "Upsampler Shader Locations:" << mUpsamplerLocations;
+
         mUpsamplerShader->bindAttributeLocation("vs_Position", 0);
         mUpsamplerShader->bindAttributeLocation("vs_TextureCoords", 1);
         mUpsamplerShader->release();
@@ -102,8 +109,11 @@ bool DiffusionRenderer::init()
         mSmootherLocations.insert("targetWidth", mSmootherShader->uniformLocation("targetWidth"));
         mSmootherLocations.insert("targetHeight", mSmootherShader->uniformLocation("targetHeight"));
 
+        qDebug() << "Smoother Shader Locations:" << mSmootherLocations;
+
         mSmootherShader->bindAttributeLocation("vs_Position", 0);
         mSmootherShader->bindAttributeLocation("vs_TextureCoords", 1);
+
         mSmootherShader->release();
     }
 
@@ -121,6 +131,8 @@ bool DiffusionRenderer::init()
         mBlurShaderLocations.insert("sourceTexture", mBlurShader->uniformLocation("sourceTexture"));
         mBlurShaderLocations.insert("targetWidth", mBlurShader->uniformLocation("targetWidth"));
         mBlurShaderLocations.insert("targetHeight", mBlurShader->uniformLocation("targetHeight"));
+
+        qDebug() << "Blur Shader Locations:" << mBlurShaderLocations;
 
         mBlurShader->bindAttributeLocation("vs_Position", 0);
         mBlurShader->bindAttributeLocation("vs_TextureCoords", 1);
@@ -149,6 +161,8 @@ void DiffusionRenderer::renderColorCurves(const QVector<Curve *> &curves, const 
 
         if (curve == nullptr)
             continue;
+
+        curve->scale(1);
 
         mColorCurveShader->setUniformValue("diffusionWidth", curve->diffusionWidth());
 
@@ -179,6 +193,8 @@ void DiffusionRenderer::renderColorCurves(const QVector<Curve *> &curves, const 
         mColorCurveShader->setUniformValue(mColorCurveLocations.value("rightColorsCount"), (GLint) rightColors.size());
 
         glDrawArrays(GL_POINTS, 0, mTicks->size());
+
+        curve->scale(1);
     }
 
     mTicks->release();
@@ -192,8 +208,8 @@ void DiffusionRenderer::blur(GLuint sourceTexture, float targetWidth, float targ
 
     mBlurShader->bind();
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
     mBlurShader->setUniformValue(mBlurShaderLocations.value("sourceTexture"), GL_TEXTURE0);
     glActiveTexture(GL_TEXTURE0);
@@ -216,12 +232,12 @@ void DiffusionRenderer::downsample(GLuint sourceTexture, float targetWidth, floa
 
     mDownsamplerShader->bind();
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-    mDownsamplerShader->setUniformValue(mDownsamplerLocations.value("sourceTexture"), GL_TEXTURE0);
+    mDownsamplerShader->setUniformValue(mDownsamplerLocations.value("sourceTexture"), 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, sourceTexture);
+
+    //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 
     mDownsamplerShader->setUniformValue(mDownsamplerLocations.value("targetWidth"), targetWidth);
     mDownsamplerShader->setUniformValue(mDownsamplerLocations.value("targetHeight"), targetHeight);
@@ -245,9 +261,13 @@ void DiffusionRenderer::upsample(GLuint sourceTexture, GLuint targetTexture, flo
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, sourceTexture);
+    //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_2D, targetTexture);
+    //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    //    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 
     mQuads->bind();
     glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -270,9 +290,13 @@ void DiffusionRenderer::smooth(GLuint constrainedTexture, GLuint targetTexture, 
 
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, constrainedTexture);
+        //        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+        //        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, targetTexture);
+        //        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+        //        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 
         mSmootherShader->setUniformValue(mSmootherLocations.value("targetWidth"), targetWidth);
         mSmootherShader->setUniformValue(mSmootherLocations.value("targetHeight"), targetHeight);

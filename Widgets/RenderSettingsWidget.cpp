@@ -34,8 +34,8 @@ RenderSettingsWidget::RenderSettingsWidget(QWidget *parent)
 
     {
         mSmoothIterationsSlider = new QSlider(Qt::Horizontal);
-        mSmoothIterationsSlider->setMinimum(0);
-        mSmoothIterationsSlider->setMaximum(100);
+        mSmoothIterationsSlider->setMinimum(1);
+        mSmoothIterationsSlider->setMaximum(40);
         mSmoothIterationsSlider->setValue(20);
         mSmoothIterationsSlider->setInvertedAppearance(false);
         mSmoothIterationsSlider->setTickPosition(QSlider::TicksBelow);

@@ -40,6 +40,34 @@ QVector<Curve *> Util::readCurveDataFromXML(QString filename)
                         curve->addControlPoint(controlPoint);
                         element = element.nextSibling().toElement();
                     }
+                } else if (child.tagName() == "left_colors_set" || child.tagName() == "right_colors_set") {
+                    QDomElement element = child.firstChild().toElement();
+                    int maxGlobalID = 0;
+
+                    QVector<ColorPoint *> colorPoints;
+
+                    while (!element.isNull()) {
+                        uint8_t r = element.attribute("B").toUInt();
+                        uint8_t g = element.attribute("G").toUInt();
+                        uint8_t b = element.attribute("R").toUInt();
+                        int globalID = element.attribute("globalID").toInt();
+
+                        ColorPoint *colorPoint = new ColorPoint(curve);
+                        colorPoint->setColor(QVector4D(r / 255.0f, g / 255.0f, b / 255.0f, 1.0f));
+                        colorPoint->setType(child.tagName() == "left_colors_set" ? ColorPoint::Left : ColorPoint::Right);
+                        colorPoint->setPosition(globalID);
+                        colorPoints << colorPoint;
+
+                        if (globalID >= maxGlobalID)
+                            maxGlobalID = globalID;
+
+                        element = element.nextSibling().toElement();
+                    }
+
+                    for (int i = 0; i < colorPoints.size(); ++i) {
+                        colorPoints[i]->setPosition(colorPoints[i]->position() / maxGlobalID);
+                        curve->addColorPoint(colorPoints[i]);
+                    }
                 }
                 child = child.nextSibling().toElement();
             }

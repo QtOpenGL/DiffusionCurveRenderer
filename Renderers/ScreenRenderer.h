@@ -28,6 +28,7 @@ private:
     QOpenGLShaderProgram *mShader;
     Quads *mQuads;
 
+    int mTextureLocation;
     int mWidthRatioLocation;
     int mHeightRatioLocation;
 };

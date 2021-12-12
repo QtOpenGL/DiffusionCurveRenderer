@@ -12,7 +12,7 @@ void main()
     vec2 target = vec2(fs_TextureCoords.s, fs_TextureCoords.t);
     vec4 color = texture(targetTexture, target).rgba;
 
-    if(color.a > 0.1)
+    if(color.a > 0)
     {
         out_Color = color;
     }

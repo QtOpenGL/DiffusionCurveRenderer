@@ -25,6 +25,10 @@ bool RendererManager::init()
     // Create initial framebuffer
     mInitialFrameBuffer = new QOpenGLFramebufferObject(BUFFER_SIZE, BUFFER_SIZE, mFrambufferFormat);
 
+    for (int i = 0; i < 2; ++i) {
+        mBlurFramebuffers << new QOpenGLFramebufferObject(BUFFER_SIZE, BUFFER_SIZE, mFrambufferFormat);
+    }
+
     // Create downsampled and upsampled buffers
     int bufferSize = 0.5 * BUFFER_SIZE;
     while (bufferSize > 0) {
@@ -49,109 +53,124 @@ void RendererManager::contours()
     if (!mInit)
         return;
 
-    // Clear framebuffer
-    //    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    //    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     // Set projection matrix
     QMatrix4x4 projectionMatrix;
     projectionMatrix.setToIdentity();
     projectionMatrix.ortho(mProjectionParameters->left, mProjectionParameters->right, mProjectionParameters->bottom, mProjectionParameters->top, -1, 1);
+
+    // Render
     mContourRenderer->render(mCurveContainer->getCurves(), projectionMatrix);
 }
 
 void RendererManager::diffuse()
 {
+    //    QMatrix4x4 projectionMatrix;
+    //    projectionMatrix.setToIdentity();
+    //    projectionMatrix.ortho(mProjectionParameters->left,
+    //                           mProjectionParameters->left + mInitialFrameBuffer->width(),
+    //                           mProjectionParameters->top + mInitialFrameBuffer->height(),
+    //                           mProjectionParameters->top,
+    //                           -1,
+    //                           1);
+
     QMatrix4x4 projectionMatrix;
     projectionMatrix.setToIdentity();
     projectionMatrix.ortho(mProjectionParameters->left, mProjectionParameters->right, mProjectionParameters->bottom, mProjectionParameters->top, -1, 1);
 
-    // Diffuse
+    // Render color curves into initial framebuffer
     {
-        // Bind my framebuffer
         mInitialFrameBuffer->bind();
         glViewport(0, 0, mInitialFrameBuffer->width(), mInitialFrameBuffer->height());
-
-        // Clear framebuffer
         glClearColor(0, 0, 0, 0);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);
 
-        // Set projection matrix
-        //        QMatrix4x4 projectionMatrix;
-        //        projectionMatrix.setToIdentity();
-        //        projectionMatrix.ortho(-mInitialFrameBuffer->width() / 2,
-        //                               mInitialFrameBuffer->width() / 2,
-        //                               -mInitialFrameBuffer->height() / 2,
-        //                               mInitialFrameBuffer->height() / 2,
-        //                               -1,
-        //                       1);
-
-        // Diffuse curves
         mDiffusionRenderer->renderColorCurves(mCurveContainer->getCurves(), projectionMatrix);
-        //mInitialFrameBuffer->toImage().save(QString("Initial.png"));
         mInitialFrameBuffer->release();
     }
 
-    // Downsample 0
+    // First downsample
     {
         mDownsampledFramebuffers[0]->bind();
         glViewport(0, 0, mDownsampledFramebuffers[0]->width(), mDownsampledFramebuffers[0]->height());
+        //glViewport(0, 0, mProjectionParameters->width, mProjectionParameters->height);
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
 
-        GLuint sourceTexture = mInitialFrameBuffer->texture();
-        mDiffusionRenderer->downsample(sourceTexture, 2 * mDownsampledFramebuffers[0]->width(), 2 * mDownsampledFramebuffers[0]->height());
-
-        mDownsampledFramebuffers[0]->release();
+        mDiffusionRenderer->downsample(mInitialFrameBuffer->texture(), mDownsampledFramebuffers[0]->width(), mDownsampledFramebuffers[0]->height());
+        mInitialFrameBuffer->release();
     }
 
-    // Downsample 1,2,...
+    // Downsample 1,2,3...
     {
-        for (int i = 1; i < mDownsampledFramebuffers.size(); i++) {
+        for (int i = 1; i < mDownsampledFramebuffers.size(); ++i) {
             mDownsampledFramebuffers[i]->bind();
             glViewport(0, 0, mDownsampledFramebuffers[i]->width(), mDownsampledFramebuffers[i]->height());
+            glClearColor(0, 0, 0, 0);
+            glClear(GL_COLOR_BUFFER_BIT);
 
-            GLuint sourceTexture = mDownsampledFramebuffers[i - 1]->texture();
-            mDiffusionRenderer->downsample(sourceTexture, 2 * mDownsampledFramebuffers[i]->width(), 2 * mDownsampledFramebuffers[i]->height());
-
+            mDiffusionRenderer->downsample(mDownsampledFramebuffers[i - 1]->texture(),
+                                           mDownsampledFramebuffers[i]->width(),
+                                           mDownsampledFramebuffers[i]->height());
             mDownsampledFramebuffers[i]->release();
         }
     }
 
-    //    Upsample and smooth
+    // Upsample n-2
     {
-        GLuint sourceTexture = mDownsampledFramebuffers.last()->texture();
-        for (int i = mUpsampledFramebuffers.size() - 2; 0 <= i; i--) {
+        int secondLast = mUpsampledFramebuffers.size() - 2;
+
+        mUpsampledFramebuffers[secondLast]->bind();
+        glViewport(0, 0, mUpsampledFramebuffers[secondLast]->width(), mUpsampledFramebuffers[secondLast]->height());
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        mDiffusionRenderer->upsample(mUpsampledFramebuffers.last()->texture(),
+                                     mUpsampledFramebuffers[secondLast]->texture(),
+                                     mUpsampledFramebuffers[secondLast]->width(),
+                                     mUpsampledFramebuffers[secondLast]->height());
+
+        mDiffusionRenderer->smooth(mDownsampledFramebuffers[secondLast]->texture(),
+                                   mUpsampledFramebuffers[secondLast]->texture(),
+                                   mUpsampledFramebuffers[secondLast]->width(),
+                                   mUpsampledFramebuffers[secondLast]->height(),
+                                   mSmoothIterations);
+        mUpsampledFramebuffers[secondLast]->release();
+    }
+
+    // Upsample n-3,...
+    {
+        for (int i = mUpsampledFramebuffers.size() - 3; 0 <= i; --i)
+
+        {
             mUpsampledFramebuffers[i]->bind();
             glViewport(0, 0, mUpsampledFramebuffers[i]->width(), mUpsampledFramebuffers[i]->height());
+            glClearColor(0, 0, 0, 0);
+            glClear(GL_COLOR_BUFFER_BIT);
 
-            GLuint targetTexture = mDownsampledFramebuffers[i]->texture();
-            mDiffusionRenderer->upsample(sourceTexture, targetTexture, mUpsampledFramebuffers[i]->width(), mUpsampledFramebuffers[i]->height());
+            mDiffusionRenderer->upsample(mUpsampledFramebuffers[i + 1]->texture(),
+                                         mUpsampledFramebuffers[i]->texture(),
+                                         mUpsampledFramebuffers[i]->width(),
+                                         mUpsampledFramebuffers[i]->height());
 
-            sourceTexture = mUpsampledFramebuffers[i]->texture();
-            GLuint constrainedTexture = mDownsampledFramebuffers[i]->texture();
-            //mUpsampledFramebuffers[i]->toImage().save(QString("Upsampled %1.png").arg(i));
-            mDiffusionRenderer->smooth(constrainedTexture,
-                                       sourceTexture,
+            mDiffusionRenderer->smooth(mDownsampledFramebuffers[i]->texture(),
+                                       mUpsampledFramebuffers[i]->texture(),
                                        mUpsampledFramebuffers[i]->width(),
                                        mUpsampledFramebuffers[i]->height(),
                                        mSmoothIterations);
-
             mUpsampledFramebuffers[i]->release();
         }
     }
 
-    //To screen
-    {
-        QOpenGLFramebufferObject::bindDefault();
+    //glViewport(0, 0, mProjectionParameters->width, mProjectionParameters->height);
+    //QOpenGLFramebufferObject::blitFramebuffer(nullptr, mUpsampledFramebuffer[mUpsampledFramebuffers.size() - 2]);
 
-        glViewport(0, 0, mProjectionParameters->width, mProjectionParameters->height);
-
-        ScreenRenderer::Parameters parameters;
-        parameters.widthRatio = 1;
-        parameters.heightRatio = 1;
-        parameters.texture = mUpsampledFramebuffers[0]->texture();
-        //parameters.texture = mDownsampledFramebuffers.last()->texture();
-        mScreenRenderer->render(parameters);
-    }
+    QOpenGLFramebufferObject::bindDefault();
+    glViewport(0, 0, mProjectionParameters->width, mProjectionParameters->height);
+    ScreenRenderer::Parameters parameters;
+    parameters.texture = mUpsampledFramebuffers[0]->texture();
+    parameters.widthRatio = 1;
+    parameters.heightRatio = 1;
+    mScreenRenderer->render(parameters);
 }
 
 void RendererManager::setCurveContainer(const CurveContainer *newCurveContainer)
