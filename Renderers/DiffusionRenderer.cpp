@@ -162,8 +162,6 @@ void DiffusionRenderer::renderColorCurves(const QVector<Curve *> &curves, const 
         if (curve == nullptr)
             continue;
 
-        curve->scale(1);
-
         mColorCurveShader->setUniformValue("diffusionWidth", curve->diffusionWidth());
 
         // Control points
@@ -193,8 +191,6 @@ void DiffusionRenderer::renderColorCurves(const QVector<Curve *> &curves, const 
         mColorCurveShader->setUniformValue(mColorCurveLocations.value("rightColorsCount"), (GLint) rightColors.size());
 
         glDrawArrays(GL_POINTS, 0, mTicks->size());
-
-        curve->scale(1);
     }
 
     mTicks->release();
