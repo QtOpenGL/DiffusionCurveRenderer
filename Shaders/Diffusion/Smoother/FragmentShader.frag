@@ -48,15 +48,15 @@ void main()
         vectors[8] = se;
 
         float weights[9];
-        weights[0] = 1;
+        weights[0] = 0;
         weights[1] = 2; // n
-        weights[2] = 1;
+        weights[2] = 0;
         weights[3] = 2; // w
         weights[4] = 4; // c
         weights[5] = 2; // e
-        weights[6] = 1;
+        weights[6] = 0;
         weights[7] = 2; // s
-        weights[8] = 1;
+        weights[8] = 0;
 
         vec4 colors[9];
 
