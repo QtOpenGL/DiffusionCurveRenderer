@@ -37,6 +37,9 @@ public:
     float diffusionWidth() const;
     void setDiffusionWidth(float newDiffusionWidth);
 
+    int quality() const;
+    void setQuality(int newQuality);
+
 private:
     QOpenGLShaderProgram *mColorCurveShader;
     QMap<QString, Location> mColorCurveLocations;
@@ -56,6 +59,7 @@ private:
     Ticks *mTicks;
     Quads *mQuads;
 
+    int mQuality;
     int mSmoothIterations;
     float mDiffusionWidth;
 

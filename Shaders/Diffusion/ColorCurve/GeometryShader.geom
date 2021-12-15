@@ -1,7 +1,7 @@
 #version 430 core
 
 layout (points) in;
-layout (triangle_strip, max_vertices = 4) out;
+layout (line_strip, max_vertices = 4) out;
 
 uniform mat4 projectionMatrix;
 uniform float ticksDelta;
@@ -124,18 +124,18 @@ void main()
     float t0 = gs_Tick[0];
     float t1 = t0 + ticksDelta;
 
-
-
     gl_Position = projectionMatrix * vec4(valueAt(t0) + 0.5f * diffusionWidth * normalAt(t0), 0, 1);
     fs_Color = rightColorAt(t0);
     EmitVertex();
 
-    gl_Position = projectionMatrix * vec4(valueAt(t0) - 0.5f * diffusionWidth * normalAt(t0), 0, 1);
-    fs_Color = leftColorAt(t0);
-    EmitVertex();
-
     gl_Position = projectionMatrix * vec4(valueAt(t1) + 0.5f * diffusionWidth * normalAt(t1), 0, 1);
     fs_Color = rightColorAt(t1);
+    EmitVertex();
+
+    EndPrimitive();
+
+    gl_Position = projectionMatrix * vec4(valueAt(t0) - 0.5f * diffusionWidth * normalAt(t0), 0, 1);
+    fs_Color = leftColorAt(t0);
     EmitVertex();
 
     gl_Position = projectionMatrix * vec4(valueAt(t1) - 0.5f * diffusionWidth * normalAt(t1), 0, 1);

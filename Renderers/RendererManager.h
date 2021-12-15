@@ -17,24 +17,20 @@ public:
     ~RendererManager();
 
     bool init();
+    void createFramebuffers();
+    void deleteFramebuffers();
     void contours();
     void diffuse();
 
     void setCurveContainer(const CurveContainer *newCurveContainer);
     void setProjectionParameters(const ProjectionParameters *newProjectionParameters);
 
-    int smoothIterations() const;
-    void setSmoothIterations(int newSmoothIterations);
-
-    float sharpness() const;
-    void setSharpness(float newSharpness);
-
 public slots:
     void onSmoothIterationsChanged(int smoothIterations);
     void onDiffusionWidthChanged(float diffusionWidth);
-
     void onContourThicknessChanged(float thickness);
-    void onContourColorChanged(const QVector4D color);
+    void onContourColorChanged(const QVector4D &color);
+    void onQualityChanged(int quality);
 
 private:
     ContourRenderer *mContourRenderer;
@@ -49,7 +45,10 @@ private:
     QVector<QOpenGLFramebufferObject *> mDownsampledFramebuffers;
     QVector<QOpenGLFramebufferObject *> mUpsampledFramebuffers;
 
+    const int mBufferSize;
+    int mQuality;
     bool mInit;
+    bool mRenderQualityChanged;
 };
 
 #endif // RENDERERMANAGER_H

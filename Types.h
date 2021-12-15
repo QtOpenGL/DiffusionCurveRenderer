@@ -27,7 +27,8 @@ enum class Action {
     UpdateContourThickness,
     UpdateDiffusionWidth,
     UpdateContourColor,
-    UpdateSmoothIterations
+    UpdateSmoothIterations,
+    UpdateRenderQuality
 };
 
 enum class Mode {

@@ -3,8 +3,9 @@
 #include <Curves/Bezier.h>
 
 DiffusionRenderer::DiffusionRenderer()
-    : mSmoothIterations(40)
-    , mDiffusionWidth(4.0)
+    : mQuality(1.0f)
+    , mSmoothIterations(40)
+    , mDiffusionWidth(4.0f)
     , mInit(false)
 {}
 
@@ -26,6 +27,7 @@ bool DiffusionRenderer::init()
         }
 
         // Uniform Variables
+
         mColorCurveLocations.insert("projectionMatrix", mColorCurveShader->uniformLocation("projectionMatrix"));
         mColorCurveLocations.insert("ticksDelta", mColorCurveShader->uniformLocation("ticksDelta"));
         mColorCurveLocations.insert("diffusionWidth", mColorCurveShader->uniformLocation("diffusionWidth"));
@@ -46,7 +48,7 @@ bool DiffusionRenderer::init()
         // Attribute Locations
         mColorCurveShader->bindAttributeLocation("vs_Tick", 0);
 
-        mTicks = new Ticks(0, 1.0, 1000);
+        mTicks = new Ticks(0, 1.0, 100);
         mTicks->create();
 
         mColorCurveShader->release();
@@ -164,6 +166,8 @@ void DiffusionRenderer::renderColorCurves(const QVector<Curve *> &curves, const 
         if (curve == nullptr)
             continue;
 
+        curve->scale(mQuality);
+
         mColorCurveShader->setUniformValue("diffusionWidth", mDiffusionWidth);
 
         // Control points
@@ -193,6 +197,8 @@ void DiffusionRenderer::renderColorCurves(const QVector<Curve *> &curves, const 
         mColorCurveShader->setUniformValue(mColorCurveLocations.value("rightColorsCount"), (GLint) rightColors.size());
 
         glDrawArrays(GL_POINTS, 0, mTicks->size());
+
+        curve->scale(1.0f / mQuality);
     }
 
     mTicks->release();
@@ -288,13 +294,9 @@ void DiffusionRenderer::smooth(const Parameters &parameters)
 
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D, parameters.sourceTexture);
-        //        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-        //        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D, parameters.targetTexture);
-        //        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-        //        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
@@ -321,4 +323,14 @@ float DiffusionRenderer::diffusionWidth() const
 void DiffusionRenderer::setDiffusionWidth(float newDiffusionWidth)
 {
     mDiffusionWidth = newDiffusionWidth;
+}
+
+int DiffusionRenderer::quality() const
+{
+    return mQuality;
+}
+
+void DiffusionRenderer::setQuality(int newQuality)
+{
+    mQuality = newQuality;
 }

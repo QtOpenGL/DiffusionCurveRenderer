@@ -7,7 +7,7 @@
 
 RenderSettingsWidget::RenderSettingsWidget(QWidget *parent)
     : QGroupBox(parent)
-    , mMode(RenderMode::Contours + RenderMode::Diffuse)
+    , mMode(RenderMode::Diffuse)
 
 {
     QGridLayout *mainLayout = new QGridLayout;
@@ -17,7 +17,7 @@ RenderSettingsWidget::RenderSettingsWidget(QWidget *parent)
 
     {
         mRenderContoursCheckBox = new QCheckBox("Render Contours");
-        mRenderContoursCheckBox->setChecked(true);
+        mRenderContoursCheckBox->setChecked(false);
         mainLayout->addWidget(mRenderContoursCheckBox, 1, 0);
 
         connect(mRenderContoursCheckBox, &QCheckBox::stateChanged, this, [=](int state) {
@@ -41,8 +41,8 @@ RenderSettingsWidget::RenderSettingsWidget(QWidget *parent)
     {
         mSmoothIterationsSlider = new QSlider(Qt::Horizontal);
         mSmoothIterationsSlider->setMinimum(1);
-        mSmoothIterationsSlider->setMaximum(40);
-        mSmoothIterationsSlider->setValue(20);
+        mSmoothIterationsSlider->setMaximum(200);
+        mSmoothIterationsSlider->setValue(40);
         mSmoothIterationsSlider->setInvertedAppearance(false);
         mSmoothIterationsSlider->setTickPosition(QSlider::TicksBelow);
 
@@ -55,17 +55,33 @@ RenderSettingsWidget::RenderSettingsWidget(QWidget *parent)
     // Diffusion Width Slider
     {
         mDiffusionWidthSlider = new QSlider(Qt::Horizontal);
-        mDiffusionWidthSlider->setMinimum(1);
-        mDiffusionWidthSlider->setMaximum(16);
-        mDiffusionWidthSlider->setTickInterval(3);
-        mDiffusionWidthSlider->setValue(4);
+        mDiffusionWidthSlider->setMinimum(100);
+        mDiffusionWidthSlider->setMaximum(1600);
+        mDiffusionWidthSlider->setTickInterval(75);
+        mDiffusionWidthSlider->setValue(400);
         mDiffusionWidthSlider->setInvertedAppearance(false);
         mDiffusionWidthSlider->setTickPosition(QSlider::TicksBelow);
 
         mainLayout->addWidget(new QLabel("Diffusion Width"), 4, 0);
         mainLayout->addWidget(mDiffusionWidthSlider, 4, 1);
 
-        connect(mDiffusionWidthSlider, &QSlider::valueChanged, this, [=](int value) { emit action(Action::UpdateDiffusionWidth, value); });
+        connect(mDiffusionWidthSlider, &QSlider::valueChanged, this, [=](int value) { emit action(Action::UpdateDiffusionWidth, value / 100.0f); });
+    }
+
+    // Quality Slider
+    {
+        mQualitySlider = new QSlider(Qt::Horizontal);
+        mQualitySlider->setMinimum(1);
+        mQualitySlider->setMaximum(4);
+        mQualitySlider->setTickInterval(1);
+        mQualitySlider->setValue(1);
+        mQualitySlider->setInvertedAppearance(false);
+        mQualitySlider->setTickPosition(QSlider::TicksBelow);
+
+        mainLayout->addWidget(new QLabel("Render Quality"), 5, 0);
+        mainLayout->addWidget(mQualitySlider, 5, 1);
+
+        connect(mQualitySlider, &QSlider::valueChanged, this, [=](int value) { emit action(Action::UpdateRenderQuality, value); });
     }
 
     // Contour Thickness Slider

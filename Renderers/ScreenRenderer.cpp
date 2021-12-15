@@ -31,10 +31,8 @@ bool ScreenRenderer::init()
     }
 
     mTextureLocation = mShader->uniformLocation("sourceTexture");
-    mWidthRatioLocation = mShader->uniformLocation("widthRatio");
-    mHeightRatioLocation = mShader->uniformLocation("heightRatio");
 
-    qDebug() << "Screen Shader Locations:" << mTextureLocation << mWidthRatioLocation << mHeightRatioLocation;
+    qDebug() << "Screen Shader Location(s):" << mTextureLocation;
 
     mShader->bindAttributeLocation("vs_Position", 0);
     mShader->bindAttributeLocation("vs_TextureCoords", 1);
@@ -46,18 +44,13 @@ bool ScreenRenderer::init()
     return true;
 }
 
-void ScreenRenderer::render(const Parameters &parameters)
+void ScreenRenderer::render(GLuint texture)
 {
     mShader->bind();
 
     mShader->setUniformValue(mTextureLocation, GL_TEXTURE0);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, parameters.texture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
-
-    mShader->setUniformValue(mWidthRatioLocation, parameters.widthRatio);
-    mShader->setUniformValue(mHeightRatioLocation, parameters.heightRatio);
+    glBindTexture(GL_TEXTURE_2D, texture);
 
     mQuads->bind();
     glDrawArrays(GL_TRIANGLES, 0, 6);

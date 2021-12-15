@@ -11,8 +11,8 @@ out vec4 out_Color;
 void main()
 {
 
-    float uStep = 1 / targetWidth;
-    float vStep = 1 / targetHeight;
+    float uStep = 0.5 / targetWidth;
+    float vStep = 0.5 / targetHeight;
 
 
     // nw n ne

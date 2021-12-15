@@ -26,6 +26,7 @@ private:
     QSlider *mSmoothIterationsSlider;
     QSlider *mDiffusionWidthSlider;
     QSlider *mContourThicknessSlider;
+    QSlider *mQualitySlider;
     CustomFlatButton *mColorButton;
 
 private:

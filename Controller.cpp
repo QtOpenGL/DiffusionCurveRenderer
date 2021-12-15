@@ -82,7 +82,7 @@ Controller::Controller(QObject *parent)
     connect(this, &Controller::dirty, mControlPointWidget, &ControlPointWidget::onDirty);
     connect(this, &Controller::dirty, mColorPointWidget, &ColorPointWidget::onDirty);
 
-    QVector<Curve *> curves = Util::readCurveDataFromXML("Resources/CurveData/fish.xml");
+    QVector<Curve *> curves = Util::readCurveDataFromXML("Resources/CurveData/lady_bug.xml");
     mCurveContainer->addCurves(curves);
 }
 
@@ -94,6 +94,10 @@ CentralWidget *Controller::centralWidget() const
 void Controller::onAction(Action action, CustomVariant value)
 {
     switch (action) {
+    case Action::UpdateRenderQuality:
+        mRendererManager->onQualityChanged(value.toInt());
+        emit dirty(DirtType::OpenGL);
+        break;
     case Action::UpdateContourThickness:
         mRendererManager->onContourThicknessChanged(value.toFloat());
         emit dirty(DirtType::OpenGL);
