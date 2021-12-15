@@ -82,7 +82,7 @@ Controller::Controller(QObject *parent)
     connect(this, &Controller::dirty, mControlPointWidget, &ControlPointWidget::onDirty);
     connect(this, &Controller::dirty, mColorPointWidget, &ColorPointWidget::onDirty);
 
-    QVector<Curve *> curves = Util::readCurveDataFromXML("Resources/CurveData/lady_bug.xml");
+    QVector<Curve *> curves = Util::readCurveDataFromXML("Resources/CurveData/zephyr.xml");
     mCurveContainer->addCurves(curves);
 }
 
