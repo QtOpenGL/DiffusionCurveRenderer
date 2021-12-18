@@ -13,7 +13,7 @@ RendererManager::RendererManager()
     , mQuality(1)
     , mInit(false)
     , mRenderQualityChanged(false)
-    , mDiffusionWidth(3.0f)
+    , mDiffusionWidth(2.0f)
     , mSmoothIterations(40)
 
 {}

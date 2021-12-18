@@ -115,7 +115,7 @@ RenderSettingsWidget::RenderSettingsWidget(QWidget *parent)
         mDiffusionWidthSlider->setMinimum(100);
         mDiffusionWidthSlider->setMaximum(600);
         mDiffusionWidthSlider->setTickInterval(50);
-        mDiffusionWidthSlider->setValue(300);
+        mDiffusionWidthSlider->setValue(200);
         mDiffusionWidthSlider->setInvertedAppearance(false);
         mDiffusionWidthSlider->setTickPosition(QSlider::TicksBelow);
 
