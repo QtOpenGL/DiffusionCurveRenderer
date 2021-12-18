@@ -22,7 +22,6 @@ bool ScreenRenderer::init()
 {
     initializeOpenGLFunctions();
     mShader = new QOpenGLShaderProgram;
-    mQuads = new Quads;
 
     if (!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Screen/VertexShader.vert")
         || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Screen/FragmentShader.frag") || !mShader->link() || !mShader->bind()) {
@@ -31,12 +30,14 @@ bool ScreenRenderer::init()
     }
 
     mTextureLocation = mShader->uniformLocation("sourceTexture");
+    mPixelRatioLocation = mShader->uniformLocation("pixelRatio");
 
-    qDebug() << "Screen Shader Location(s):" << mTextureLocation;
+    qDebug() << "Screen Shader Location(s):" << mTextureLocation << mPixelRatioLocation;
 
     mShader->bindAttributeLocation("vs_Position", 0);
     mShader->bindAttributeLocation("vs_TextureCoords", 1);
 
+    mQuads = new Quads;
     mQuads->create();
 
     mShader->release();
@@ -44,11 +45,12 @@ bool ScreenRenderer::init()
     return true;
 }
 
-void ScreenRenderer::render(GLuint texture)
+void ScreenRenderer::render(GLuint texture, float pixelRatio)
 {
     mShader->bind();
 
-    mShader->setUniformValue(mTextureLocation, GL_TEXTURE0);
+    mShader->setUniformValue(mPixelRatioLocation, pixelRatio);
+    mShader->setUniformValue(mTextureLocation, 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
 

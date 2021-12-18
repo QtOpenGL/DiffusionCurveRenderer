@@ -90,19 +90,25 @@ void main()
     float t0 = gs_Tick[0];
     float t1 = t0 + ticksDelta;
 
-    gl_Position = projectionMatrix * vec4(valueAt(t0) + 0.5f * thickness * normalAt(t0), 0, 1);
+    vec2 valueAt_t0 = valueAt(t0);
+    vec2 valueAt_t1 = valueAt(t1);
+
+    vec2 normalAt_t0 = normalAt(t0);
+    vec2 normalAt_t1 = normalAt(t1);
+
+    gl_Position = projectionMatrix * vec4(valueAt_t0 + 0.5f * thickness * normalAt_t0, 0, 1);
     fs_Color = color;
     EmitVertex();
 
-    gl_Position = projectionMatrix * vec4(valueAt(t0) - 0.5f * thickness * normalAt(t0), 0, 1);
+    gl_Position = projectionMatrix * vec4(valueAt_t0 - 0.5f * thickness * normalAt_t0, 0, 1);
     fs_Color = color;
     EmitVertex();
 
-    gl_Position = projectionMatrix * vec4(valueAt(t1) + 0.5f * thickness * normalAt(t1), 0, 1);
+    gl_Position = projectionMatrix * vec4(valueAt_t1 + 0.5f * thickness * normalAt_t1, 0, 1);
     fs_Color = color;
     EmitVertex();
 
-    gl_Position = projectionMatrix * vec4(valueAt(t1) - 0.5f * thickness * normalAt(t1), 0, 1);
+    gl_Position = projectionMatrix * vec4(valueAt_t1 - 0.5f * thickness * normalAt_t1, 0, 1);
     fs_Color = color;
     EmitVertex();
 

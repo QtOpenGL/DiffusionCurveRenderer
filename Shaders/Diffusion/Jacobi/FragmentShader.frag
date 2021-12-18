@@ -2,25 +2,23 @@
 
 in vec2 fs_TextureCoords;
 
-uniform sampler2D sourceTexture;
-uniform float targetWidth;
-uniform float targetHeight;
+uniform sampler2D constrainedTexture;
+uniform sampler2D targetTexture;
 
 out vec4 out_Color;
 
 void main()
 {
-    vec2 center = vec2(fs_TextureCoords.s, fs_TextureCoords.t);
-    vec4 color = texture(sourceTexture, center).rgba;
+    vec4 color = texture(constrainedTexture, fs_TextureCoords);
 
-    if(color.a > 0)
+    if(color.a > 0.1)
     {
         out_Color = color;
     }
     else
     {
-        float uStep = 1 / targetWidth;
-        float vStep =  1 / targetHeight;
+        float uStep = 1.0f / textureSize(constrainedTexture, 0).x;
+        float vStep = 1.0f / textureSize(constrainedTexture, 0).y;
 
         // nw n ne
         // w  c e
@@ -50,23 +48,22 @@ void main()
         vectors[8] = se;
 
         float weights[9];
-        weights[0] = 0;
+        weights[0] = 1;
         weights[1] = 2; // n
-        weights[2] = 0;
+        weights[2] = 1;
         weights[3] = 2; // w
         weights[4] = 4; // c
         weights[5] = 2; // e
-        weights[6] = 0;
+        weights[6] = 1;
         weights[7] = 2; // s
-        weights[8] = 0;
+        weights[8] = 1;
 
         vec4 colors[9];
 
         for(int i = 0; i < 9; i++)
         {
-            colors[i] = texture(sourceTexture, vectors[i]);
+            colors[i] = texture(targetTexture, vectors[i]);
         }
-
 
         float totalWeight = 0;
         vec4 color = vec4(0,0,0,0);
@@ -84,8 +81,9 @@ void main()
         {
             out_Color = color / totalWeight;
         }
-        else{
-            out_Color = vec4(0,0,0,0);
+        else
+        {
+            out_Color = vec4(1,1,1,1);
         }
 
     }

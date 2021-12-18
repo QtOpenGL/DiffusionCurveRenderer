@@ -5,7 +5,7 @@ layout (line_strip, max_vertices = 4) out;
 
 uniform mat4 projectionMatrix;
 uniform float ticksDelta;
-uniform float diffusionWidth;
+uniform float gap;
 uniform vec2 controlPoints[32];
 uniform int controlPointsCount;
 
@@ -124,21 +124,28 @@ void main()
     float t0 = gs_Tick[0];
     float t1 = t0 + ticksDelta;
 
-    gl_Position = projectionMatrix * vec4(valueAt(t0) + 0.5f * diffusionWidth * normalAt(t0), 0, 1);
+    vec2 valueAt_t0 = valueAt(t0);
+    vec2 valueAt_t1 = valueAt(t1);
+
+    vec2 normalAt_t0 = normalAt(t0);
+    vec2 normalAt_t1 = normalAt(t1);
+
+
+    gl_Position = projectionMatrix * vec4(valueAt_t0 + 0.5f * gap * normalAt_t0, 0, 1);
     fs_Color = rightColorAt(t0);
     EmitVertex();
 
-    gl_Position = projectionMatrix * vec4(valueAt(t1) + 0.5f * diffusionWidth * normalAt(t1), 0, 1);
+    gl_Position = projectionMatrix * vec4(valueAt_t1 + 0.5f * gap * normalAt_t1, 0, 1);
     fs_Color = rightColorAt(t1);
     EmitVertex();
 
     EndPrimitive();
 
-    gl_Position = projectionMatrix * vec4(valueAt(t0) - 0.5f * diffusionWidth * normalAt(t0), 0, 1);
+    gl_Position = projectionMatrix * vec4(valueAt_t0 - 0.5f * gap * normalAt_t0, 0, 1);
     fs_Color = leftColorAt(t0);
     EmitVertex();
 
-    gl_Position = projectionMatrix * vec4(valueAt(t1) - 0.5f * diffusionWidth * normalAt(t1), 0, 1);
+    gl_Position = projectionMatrix * vec4(valueAt_t1 - 0.5f * gap * normalAt_t1, 0, 1);
     fs_Color = leftColorAt(t1);
     EmitVertex();
 

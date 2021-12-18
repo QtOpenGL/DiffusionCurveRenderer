@@ -7,6 +7,7 @@
 #include <Types.h>
 #include <QCheckBox>
 #include <QGroupBox>
+#include <QRadioButton>
 #include <QSlider>
 #include <QWidget>
 
@@ -19,10 +20,13 @@ public:
 signals:
     void action(Action, CustomVariant);
     void renderModeChanged(RenderMode);
+    void colorRendererModeChanged(ColorRendererMode);
 
 private:
     QCheckBox *mRenderContoursCheckBox;
     QCheckBox *mDiffuseCheckBox;
+    QRadioButton *mLineStripRadioButton;
+    QRadioButton *mTriangleStripRadioButton;
     QSlider *mSmoothIterationsSlider;
     QSlider *mDiffusionWidthSlider;
     QSlider *mContourThicknessSlider;
@@ -31,6 +35,7 @@ private:
 
 private:
     RenderMode mMode;
+    ColorRendererMode mColorRendererMode;
 };
 
 #endif // RENDERSETTINGSWIDGET_H

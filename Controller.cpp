@@ -72,8 +72,17 @@ Controller::Controller(QObject *parent)
     connect(mControlPointWidget, &ControlPointWidget::action, this, &Controller::onAction);
     connect(mColorPointWidget, &ColorPointWidget::action, this, &Controller::onAction);
     connect(mZoomWidget, &ZoomWidget::zoomRatioChanged, this, &Controller::onZoomRatioChanged);
+
     connect(mRenderSettingsWidget, &RenderSettingsWidget::action, this, &Controller::onAction);
     connect(mRenderSettingsWidget, &RenderSettingsWidget::renderModeChanged, mOpenGLWidget, &OpenGLWidget::onRenderModeChanged);
+    connect(mRenderSettingsWidget, &RenderSettingsWidget::renderModeChanged, this, [=](RenderMode mode) {
+        mRendererManager->onRenderModeChanged(mode);
+    });
+
+    connect(mRenderSettingsWidget, &RenderSettingsWidget::colorRendererModeChanged, this, [=](ColorRendererMode mode) {
+        mRendererManager->onColorRendererModeChanged(mode);
+        emit dirty(DirtType::OpenGL);
+    });
 
     connect(this, &Controller::zoomRatioChanged, mZoomWidget, &ZoomWidget::onZoomRatioChanged);
     connect(this, &Controller::dirty, mOpenGLWidget, &OpenGLWidget::onDirty);

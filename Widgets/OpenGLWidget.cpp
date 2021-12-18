@@ -35,7 +35,7 @@ OpenGLWidget::~OpenGLWidget()
 {
     makeCurrent();
 
-    // TO BE IMPLEMENTED
+    // TODO
 
     doneCurrent();
 }
@@ -78,18 +78,7 @@ void OpenGLWidget::paintGL()
     mProjectionParameters->width = width() * mProjectionParameters->pixelRatio;
     mProjectionParameters->height = height() * mProjectionParameters->pixelRatio; // Flip y-axis
 
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    if (mRenderMode & RenderMode::Diffuse) {
-        mRendererManager->diffuse();
-    }
-
-    glViewport(0, 0, mProjectionParameters->width, mProjectionParameters->height);
-
-    if (mRenderMode & RenderMode::Contours) {
-        mRendererManager->contours();
-    }
+    mRendererManager->render();
 
     if (mSelectedCurve) {
         QRectF boundingBox = mTransformer->mapFromOpenGLToGui(mSelectedCurve->getBoundingBox());
@@ -151,13 +140,13 @@ void OpenGLWidget::updatePainter()
 
                 // Outer disk
                 float outerRadius = controlPoints[j]->selected() ? 14 : 10;
-                outerRadius /= mProjectionParameters->zoomRatio;
+                // outerRadius /= mProjectionParameters->zoomRatio;
                 painter.setBrush(QColor(128, 128, 128, 128));
                 painter.drawEllipse(center, outerRadius, outerRadius);
 
                 // Inner disk
                 float innerRadius = 6;
-                innerRadius /= mProjectionParameters->zoomRatio;
+                //innerRadius /= mProjectionParameters->zoomRatio;
                 painter.setBrush(QColor(255, 255, 255));
                 painter.drawEllipse(center, innerRadius, innerRadius);
             }
@@ -172,13 +161,13 @@ void OpenGLWidget::updatePainter()
 
                 // Outer disk
                 float outerRadius = colorPoints[i]->selected() ? 12 : 8;
-                outerRadius /= mProjectionParameters->zoomRatio;
+                //outerRadius /= mProjectionParameters->zoomRatio;
                 painter.setBrush(QColor(128, 128, 128, 128));
                 painter.drawEllipse(center, outerRadius, outerRadius);
 
                 // Inner disk
                 float innerRadius = 4;
-                innerRadius /= mProjectionParameters->zoomRatio;
+                //innerRadius /= mProjectionParameters->zoomRatio;
                 painter.setBrush(Util::convertVector4DtoColor(colorPoints[i]->color()));
                 painter.drawEllipse(center, innerRadius, innerRadius);
             }

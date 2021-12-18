@@ -13,7 +13,7 @@ public:
 
     ColorPoint();
 
-    QVector2D getPosition2D(float gap = 10) const;
+    QVector2D getPosition2D(float gap = 5) const;
 
     const QVector4D &color() const;
     void setColor(const QVector4D &newColor);

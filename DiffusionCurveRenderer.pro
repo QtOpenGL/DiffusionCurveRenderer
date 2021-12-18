@@ -27,7 +27,10 @@ HEADERS += \
     Renderers/Base/Quads.h \
     Renderers/Base/Ticks.h \
     Renderers/ContourRenderer.h \
-    Renderers/DiffusionRenderer.h \
+    Renderers/Diffusion/ColorRenderer.h \
+    Renderers/Diffusion/DownsampleRenderer.h \
+    Renderers/Diffusion/JacobiRenderer.h \
+    Renderers/Diffusion/UpsampleRenderer.h \
     Renderers/GUI/Base/LineRenderer.h \
     Renderers/GUI/Base/PointRenderer.h \
     Renderers/GUI/Base/RectangleRenderer.h \
@@ -61,7 +64,10 @@ SOURCES += \
     Renderers/Base/Quads.cpp \
     Renderers/Base/Ticks.cpp \
     Renderers/ContourRenderer.cpp \
-    Renderers/DiffusionRenderer.cpp \
+    Renderers/Diffusion/ColorRenderer.cpp \
+    Renderers/Diffusion/DownsampleRenderer.cpp \
+    Renderers/Diffusion/JacobiRenderer.cpp \
+    Renderers/Diffusion/UpsampleRenderer.cpp \
     Renderers/GUI/Base/LineRenderer.cpp \
     Renderers/GUI/Base/PointRenderer.cpp \
     Renderers/GUI/Base/RectangleRenderer.cpp \
@@ -87,17 +93,18 @@ DISTFILES += \
     Shaders/Contour/FragmentShader.frag \
     Shaders/Contour/GeometryShader.geom \
     Shaders/Contour/VertexShader.vert \
-    Shaders/Diffusion/Blur/FragmentShader.frag \
-    Shaders/Diffusion/Blur/VertexShader.vert \
-    Shaders/Diffusion/ColorCurve/FragmentShader.frag \
-    Shaders/Diffusion/ColorCurve/GeometryShader.geom \
-    Shaders/Diffusion/ColorCurve/VertexShader.vert \
-    Shaders/Diffusion/Downsampler/FragmentShader.frag \
-    Shaders/Diffusion/Downsampler/VertexShader.vert \
-    Shaders/Diffusion/Smoother/FragmentShader.frag \
-    Shaders/Diffusion/Smoother/VertexShader.vert \
-    Shaders/Diffusion/Upsampler/FragmentShader.frag \
-    Shaders/Diffusion/Upsampler/VertexShader.vert \
+    Shaders/Diffusion/Color/LineStrip/FragmentShader.frag \
+    Shaders/Diffusion/Color/LineStrip/GeometryShader.geom \
+    Shaders/Diffusion/Color/LineStrip/VertexShader.vert \
+    Shaders/Diffusion/Color/TriangleStrip/FragmentShader.frag \
+    Shaders/Diffusion/Color/TriangleStrip/GeometryShader.geom \
+    Shaders/Diffusion/Color/TriangleStrip/VertexShader.vert \
+    Shaders/Diffusion/Downsample/FragmentShader.frag \
+    Shaders/Diffusion/Downsample/VertexShader.vert \
+    Shaders/Diffusion/Jacobi/FragmentShader.frag \
+    Shaders/Diffusion/Jacobi/VertexShader.vert \
+    Shaders/Diffusion/Upsample/FragmentShader.frag \
+    Shaders/Diffusion/Upsample/VertexShader.vert \
     Shaders/Line/FragmentShader.frag \
     Shaders/Line/GeometryShader.geom \
     Shaders/Line/VertexShader.vert \

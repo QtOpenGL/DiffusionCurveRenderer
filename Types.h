@@ -1,6 +1,8 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+typedef int Location;
+
 namespace Constants {
 const int MAX_CONTROL_POINT_COUNT = 32;
 const int MAX_COLOR_POINT_COUNT = 32;
@@ -55,6 +57,8 @@ struct ProjectionParameters
     float zoomRatio;
     float pixelRatio;
 };
+
+enum class ColorRendererMode { LineStrip, TriangleStrip };
 
 RenderMode operator+(const RenderMode &lhs, const RenderMode &rhs);
 bool operator&(const RenderMode &lhs, const RenderMode &rhs);

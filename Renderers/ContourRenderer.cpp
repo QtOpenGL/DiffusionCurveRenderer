@@ -3,7 +3,7 @@
 ContourRenderer::ContourRenderer()
     : mShader(nullptr)
     , mTicks(nullptr)
-    , mContourThickness(6.0f)
+    , mContourThickness(1.0f)
     , mContourColor(0, 0, 0, 1)
 {}
 

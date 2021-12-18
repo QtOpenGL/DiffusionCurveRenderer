@@ -2,13 +2,16 @@
 #define RENDERERMANAGER_H
 
 #include "ContourRenderer.h"
-#include "DiffusionRenderer.h"
 #include "ScreenRenderer.h"
 
-#include <QOpenGLFramebufferObject>
-
 #include <CurveContainer.h>
+#include <Renderers/Diffusion/ColorRenderer.h>
+#include <Renderers/Diffusion/DownsampleRenderer.h>
+#include <Renderers/Diffusion/JacobiRenderer.h>
+#include <Renderers/Diffusion/UpsampleRenderer.h>
 #include <Widgets/OpenGLWidget.h>
+
+#include <QOpenGLFramebufferObject>
 
 class RendererManager : protected QOpenGLFunctions
 {
@@ -17,10 +20,10 @@ public:
     ~RendererManager();
 
     bool init();
+    void render();
+
     void createFramebuffers();
     void deleteFramebuffers();
-    void contours();
-    void diffuse();
 
     void setCurveContainer(const CurveContainer *newCurveContainer);
     void setProjectionParameters(const ProjectionParameters *newProjectionParameters);
@@ -31,24 +34,40 @@ public slots:
     void onContourThicknessChanged(float thickness);
     void onContourColorChanged(const QVector4D &color);
     void onQualityChanged(int quality);
+    void onRenderModeChanged(RenderMode mode);
+    void onColorRendererModeChanged(ColorRendererMode mode);
+
+private slots:
+    void diffuse();
+    void contours();
 
 private:
     ContourRenderer *mContourRenderer;
+    ColorRenderer *mColorRenderer;
+    DownsampleRenderer *mDownsampleRenderer;
+    UpsampleRenderer *mUpsampleRenderer;
+    JacobiRenderer *mJacobiRenderer;
     ScreenRenderer *mScreenRenderer;
-    DiffusionRenderer *mDiffusionRenderer;
 
     const CurveContainer *mCurveContainer;
     const ProjectionParameters *mProjectionParameters;
 
     QOpenGLFramebufferObjectFormat mFrambufferFormat;
     QOpenGLFramebufferObject *mInitialFrameBuffer;
+    QVector<QOpenGLFramebufferObject *> mTemporaryFrameBuffers;
     QVector<QOpenGLFramebufferObject *> mDownsampledFramebuffers;
     QVector<QOpenGLFramebufferObject *> mUpsampledFramebuffers;
 
-    const int mBufferSize;
+    RenderMode mRenderMode;
+    ColorRendererMode mColorRendererMode;
+
+    int mBufferSize;
     int mQuality;
     bool mInit;
     bool mRenderQualityChanged;
+    float mGap;
+    float mDiffusionWidth;
+    int mSmoothIterations;
 };
 
 #endif // RENDERERMANAGER_H
