@@ -11,7 +11,16 @@ ColorRenderer::ColorRenderer()
 
 ColorRenderer::~ColorRenderer()
 {
-    // TODO
+    if (mLineStripShader)
+        delete mLineStripShader;
+    if (mTriangleStripShader)
+        delete mTriangleStripShader;
+    if (mTicks)
+        delete mTicks;
+
+    mLineStripShader = nullptr;
+    mTriangleStripShader = nullptr;
+    mTicks = nullptr;
 }
 
 bool ColorRenderer::init()

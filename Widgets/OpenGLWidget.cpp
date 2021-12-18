@@ -8,6 +8,7 @@
 
 OpenGLWidget::OpenGLWidget(QWidget *parent)
     : QOpenGLWidget(parent)
+    , mRendererManager(nullptr)
     , mSelectedCurve(nullptr)
     , mSelectedControlPoint(nullptr)
     , mMode(Mode::Select)
@@ -35,7 +36,10 @@ OpenGLWidget::~OpenGLWidget()
 {
     makeCurrent();
 
-    // TODO
+    if (mRendererManager)
+        delete mRendererManager;
+
+    mRendererManager = nullptr;
 
     doneCurrent();
 }

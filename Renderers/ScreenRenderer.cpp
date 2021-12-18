@@ -7,15 +7,13 @@ ScreenRenderer::ScreenRenderer()
 
 ScreenRenderer::~ScreenRenderer()
 {
-    if (mShader) {
+    if (mShader)
         delete mShader;
-        mShader = nullptr;
-    }
-
-    if (mQuads) {
+    if (mQuads)
         delete mQuads;
-        mQuads = nullptr;
-    }
+
+    mShader = nullptr;
+    mQuads = nullptr;
 }
 
 bool ScreenRenderer::init()

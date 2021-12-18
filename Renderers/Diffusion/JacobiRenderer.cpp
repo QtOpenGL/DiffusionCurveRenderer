@@ -1,12 +1,20 @@
 #include "JacobiRenderer.h"
 
 JacobiRenderer::JacobiRenderer()
-    : mInit(false)
+    : mShader(nullptr)
+    , mQuads(nullptr)
+    , mInit(false)
 {}
 
 JacobiRenderer::~JacobiRenderer()
 {
-    // TODO
+    if (mShader)
+        delete mShader;
+    if (mQuads)
+        delete mQuads;
+
+    mShader = nullptr;
+    mQuads = nullptr;
 }
 
 bool JacobiRenderer::init()

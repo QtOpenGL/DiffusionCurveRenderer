@@ -1,12 +1,20 @@
 #include "DownsampleRenderer.h"
 
 DownsampleRenderer::DownsampleRenderer()
-    : mInit(false)
+    : mShader(nullptr)
+    , mQuads(nullptr)
+    , mInit(false)
 {}
 
 DownsampleRenderer::~DownsampleRenderer()
 {
-    // TODO
+    if (mShader)
+        delete mShader;
+    if (mQuads)
+        delete mQuads;
+
+    mShader = nullptr;
+    mQuads = nullptr;
 }
 
 bool DownsampleRenderer::init()

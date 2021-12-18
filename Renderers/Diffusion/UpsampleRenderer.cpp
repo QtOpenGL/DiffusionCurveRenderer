@@ -8,7 +8,13 @@ UpsampleRenderer::UpsampleRenderer()
 
 UpsampleRenderer::~UpsampleRenderer()
 {
-    // TODO
+    if (mShader)
+        delete mShader;
+    if (mQuads)
+        delete mQuads;
+
+    mShader = nullptr;
+    mQuads = nullptr;
 }
 
 bool UpsampleRenderer::init()

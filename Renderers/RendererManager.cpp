@@ -2,7 +2,12 @@
 #include <QImage>
 
 RendererManager::RendererManager()
-    : mRenderMode(RenderMode::Diffuse)
+    : mContourRenderer(nullptr)
+    , mDownsampleRenderer(nullptr)
+    , mUpsampleRenderer(nullptr)
+    , mJacobiRenderer(nullptr)
+    , mScreenRenderer(nullptr)
+    , mRenderMode(RenderMode::Diffuse)
     , mColorRendererMode(ColorRendererMode::TriangleStrip)
     , mBufferSize(2048.0f)
     , mQuality(1)
@@ -10,9 +15,30 @@ RendererManager::RendererManager()
     , mRenderQualityChanged(false)
     , mDiffusionWidth(3.0f)
     , mSmoothIterations(40)
+
 {}
 
-RendererManager::~RendererManager() {}
+RendererManager::~RendererManager()
+{
+    if (mContourRenderer)
+        delete mContourRenderer;
+    if (mDownsampleRenderer)
+        delete mDownsampleRenderer;
+    if (mUpsampleRenderer)
+        delete mUpsampleRenderer;
+    if (mJacobiRenderer)
+        delete mJacobiRenderer;
+    if (mScreenRenderer)
+        delete mScreenRenderer;
+
+    mContourRenderer = nullptr;
+    mDownsampleRenderer = nullptr;
+    mUpsampleRenderer = nullptr;
+    mJacobiRenderer = nullptr;
+    mScreenRenderer = nullptr;
+
+    deleteFramebuffers();
+}
 
 bool RendererManager::init()
 {
@@ -123,7 +149,7 @@ void RendererManager::diffuse()
 
     QOpenGLFramebufferObject::blitFramebuffer(mUpsampledFramebuffers.last(), mDownsampledFramebuffers.last());
 
-    // Upsample and Smooth last
+    // Upsample and Smooth
     {
         int secondLast = mUpsampledFramebuffers.size() - 2;
         mUpsampledFramebuffers[secondLast]->bind();
@@ -132,10 +158,16 @@ void RendererManager::diffuse()
         glClear(GL_COLOR_BUFFER_BIT);
         mUpsampleRenderer->render(mUpsampledFramebuffers.last()->texture(), mDownsampledFramebuffers[secondLast]->texture());
         mJacobiRenderer->render(mDownsampledFramebuffers.last()->texture(), mUpsampledFramebuffers[secondLast]->texture());
+
+        for (int j = 0; j < mSmoothIterations; j++) {
+            QOpenGLFramebufferObject::blitFramebuffer(mTemporaryFrameBuffers.last(), mUpsampledFramebuffers.last());
+            mJacobiRenderer->render(mDownsampledFramebuffers.last()->texture(), mUpsampledFramebuffers[secondLast]->texture());
+        }
+
         mUpsampledFramebuffers[secondLast]->release();
     }
 
-    // Upsample
+    // Upsample and Smooth
     {
         for (int i = mUpsampledFramebuffers.size() - 3; 0 <= i; --i) {
             mUpsampledFramebuffers[i]->bind();
