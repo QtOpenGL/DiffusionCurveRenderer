@@ -3,6 +3,6 @@
 - Rendering 2D Bezier curves using OpenGL API.
 - Diffusing colors constrained by Bezier curves. Diffusion algorithm belongs to [Orzan et al.](https://hal.archives-ouvertes.fr/inria-00274768/)
 
-![](Screenshot1.png)
+![](Screenshot_2021-12-18_12-51.png)
 
-![](Screenshot2.png)
+![](Screenshot_2021-12-18_12-48.png)
