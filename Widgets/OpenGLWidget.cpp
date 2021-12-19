@@ -278,6 +278,16 @@ float OpenGLWidget::getHeight()
     return height();
 }
 
+void OpenGLWidget::makeCurrent()
+{
+    QOpenGLWidget::makeCurrent();
+}
+
+void OpenGLWidget::doneCurrent()
+{
+    QOpenGLWidget::doneCurrent();
+}
+
 void OpenGLWidget::setProjectionParameters(ProjectionParameters *newProjectionParameters)
 {
     mProjectionParameters = newProjectionParameters;

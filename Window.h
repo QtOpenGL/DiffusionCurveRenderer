@@ -4,6 +4,7 @@
 #include <Widgets/CentralWidget.h>
 
 #include <QMainWindow>
+#include <QMenuBar>
 
 class Window : public QMainWindow
 {
@@ -18,6 +19,9 @@ public:
 
     void setCentralWidget(CentralWidget *newCentralWidget);
     void initialize();
+
+signals:
+    void action(Action, CustomVariant variant = CustomVariant());
 
 private:
     CentralWidget *mCentralWidget;

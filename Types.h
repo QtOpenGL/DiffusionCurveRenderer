@@ -30,7 +30,9 @@ enum class Action {
     UpdateDiffusionWidth,
     UpdateContourColor,
     UpdateSmoothIterations,
-    UpdateRenderQuality
+    UpdateRenderQuality,
+    LoadFromXML,
+    SaveAsPNG
 };
 
 enum class Mode {

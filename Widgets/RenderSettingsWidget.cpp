@@ -22,6 +22,7 @@ RenderSettingsWidget::RenderSettingsWidget(QWidget *parent)
     mainLayout->setRowMinimumHeight(3, 40);
     mainLayout->setRowMinimumHeight(4, 40);
     mainLayout->setRowMinimumHeight(5, 40);
+    //    mainLayout->setRowMinimumHeight(6, 40);
 
     {
         mRenderContoursCheckBox = new QCheckBox("Contours");

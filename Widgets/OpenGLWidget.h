@@ -30,6 +30,8 @@ public:
     void setRendererManager(RendererManager *newRendererManager);
     float getWidth();
     float getHeight();
+    void makeCurrent();
+    void doneCurrent();
 
 signals:
     void action(Action action, QVariant value = QVariant());
