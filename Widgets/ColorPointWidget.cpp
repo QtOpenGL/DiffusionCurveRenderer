@@ -23,17 +23,18 @@ ColorPointWidget::ColorPointWidget(QWidget *parent)
         mainLayout->addWidget(mTypeLabel, 0, 1);
     }
 
-    // Y
     {
         mPositionSlider = new QSlider(Qt::Horizontal);
         mPositionSlider->setMinimum(0);
-        mPositionSlider->setMaximum(100);
+        mPositionSlider->setMaximum(100000);
         mPositionSlider->setValue(0);
-        mPositionSlider->setTickInterval(20);
+        mPositionSlider->setTickInterval(20000);
+        mPositionSlider->setSingleStep(100);
+        mPositionSlider->setPageStep(100);
         mPositionSlider->setInvertedAppearance(false);
         mPositionSlider->setTickPosition(QSlider::TicksBelow);
 
-        connect(mPositionSlider, &QSlider::valueChanged, this, [=](int value) { emit action(Action::UpdateColorPointPosition, value / 100.0f); });
+        connect(mPositionSlider, &QSlider::valueChanged, this, [=](int value) { emit action(Action::UpdateColorPointPosition, value / 100000.0f); });
 
         mainLayout->addWidget(new QLabel("Position"), 1, 0);
         mainLayout->addWidget(mPositionSlider, 1, 1);
@@ -87,7 +88,7 @@ void ColorPointWidget::onSelectedColorPointChanged(ColorPoint *selectedColorPoin
         setEnabled(true);
         mColorButton->setColor(Util::convertVector4DtoColor(mSelectedColorPoint->color()));
         mTypeLabel->setText(mSelectedColorPoint->type() == ColorPoint::Left ? "Left" : "Right");
-        mPositionSlider->setSliderPosition(100 * mSelectedColorPoint->position());
+        mPositionSlider->setSliderPosition(100000.0f * mSelectedColorPoint->position());
     } else {
         mTypeLabel->clear();
         mColorButton->setColor(QColor(0, 0, 0, 0));
@@ -112,7 +113,7 @@ void ColorPointWidget::onDirty(DirtType type)
         if (mSelectedColorPoint) {
             mColorButton->setColor(Util::convertVector4DtoColor(mSelectedColorPoint->color()));
             mTypeLabel->setText(mSelectedColorPoint->type() == ColorPoint::Left ? "Left" : "Right");
-            mPositionSlider->setSliderPosition(100 * mSelectedColorPoint->position());
+            mPositionSlider->setSliderPosition(100000.0f * mSelectedColorPoint->position());
         }
     }
 }

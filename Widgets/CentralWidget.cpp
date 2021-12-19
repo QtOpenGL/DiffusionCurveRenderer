@@ -66,6 +66,16 @@ void CentralWidget::setRenderSettingsWidget(RenderSettingsWidget *newRenderSetti
     mRenderSettingsWidget = newRenderSettingsWidget;
 }
 
+void CentralWidget::onKeyPressed(Qt::Key key)
+{
+    emit keyPressed(key);
+}
+
+void CentralWidget::onKeyReleased(Qt::Key key)
+{
+    emit keyReleased(key);
+}
+
 void CentralWidget::setControlPointWidget(ControlPointWidget *newControlPointWidget)
 {
     mControlPointWidget = newControlPointWidget;

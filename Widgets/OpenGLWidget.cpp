@@ -14,10 +14,10 @@ OpenGLWidget::OpenGLWidget(QWidget *parent)
     , mMode(Mode::Select)
     , mRenderMode(RenderMode::Diffuse)
     , mInit(false)
-    , mMouseRightButtonPressed(false)
     , mMouseLeftButtonPressed(false)
+    , mMouseRightButtonPressed(false)
+    , mMouseMiddleButtonPressed(false)
     , mMousePosition(0, 0)
-    , mUpdatePainter(false)
 {
     for (int i = 0; i < 4; ++i)
         mHandles[i].setSize(QSize(8, 8));
@@ -92,15 +92,14 @@ void OpenGLWidget::paintGL()
         mHandles[3].moveCenter(boundingBox.bottomRight());
     }
 
-    // None?
     updatePainter();
 }
 
 void OpenGLWidget::onDirty(DirtType type)
 {
     if (type & DirtType::OpenGL) {
-        update();
         updateCursor();
+        update();
     }
 }
 
@@ -143,14 +142,14 @@ void OpenGLWidget::updatePainter()
                 painter.setPen(QColor(0, 0, 0, 0));
 
                 // Outer disk
-                float outerRadius = controlPoints[j]->selected() ? 14 : 10;
-                // outerRadius /= mProjectionParameters->zoomRatio;
+                float outerRadius = controlPoints[j]->selected() ? 16 : 12;
+                outerRadius = qMin(outerRadius, outerRadius / mProjectionParameters->zoomRatio);
                 painter.setBrush(QColor(128, 128, 128, 128));
                 painter.drawEllipse(center, outerRadius, outerRadius);
 
                 // Inner disk
                 float innerRadius = 6;
-                //innerRadius /= mProjectionParameters->zoomRatio;
+                innerRadius = qMin(innerRadius, innerRadius / mProjectionParameters->zoomRatio);
                 painter.setBrush(QColor(255, 255, 255));
                 painter.drawEllipse(center, innerRadius, innerRadius);
             }
@@ -164,14 +163,14 @@ void OpenGLWidget::updatePainter()
                 painter.setPen(QColor(0, 0, 0, 0));
 
                 // Outer disk
-                float outerRadius = colorPoints[i]->selected() ? 12 : 8;
-                //outerRadius /= mProjectionParameters->zoomRatio;
-                painter.setBrush(QColor(128, 128, 128, 128));
+                float outerRadius = colorPoints[i]->selected() ? 16 : 12;
+                outerRadius = qMin(outerRadius, outerRadius / mProjectionParameters->zoomRatio);
+                painter.setBrush(QColor(0, 0, 0, 128));
                 painter.drawEllipse(center, outerRadius, outerRadius);
 
                 // Inner disk
-                float innerRadius = 4;
-                //innerRadius /= mProjectionParameters->zoomRatio;
+                float innerRadius = 6;
+                innerRadius = qMin(innerRadius, innerRadius / mProjectionParameters->zoomRatio);
                 painter.setBrush(Util::convertVector4DtoColor(colorPoints[i]->color()));
                 painter.drawEllipse(center, innerRadius, innerRadius);
             }
@@ -209,12 +208,6 @@ void OpenGLWidget::updatePainter()
 
 void OpenGLWidget::updateCursor()
 {
-    if (mMouseRightButtonPressed) {
-        setCursor(Qt::ClosedHandCursor);
-        update();
-        return;
-    }
-
     switch (mMode) {
     case Mode::AppendControlPoint:
         setCursor(Qt::CrossCursor);
@@ -249,26 +242,25 @@ void OpenGLWidget::wheelEvent(QWheelEvent *event)
 void OpenGLWidget::mousePressEvent(QMouseEvent *event)
 {
     mMouseRightButtonPressed = event->button() == Qt::RightButton;
+    mMouseMiddleButtonPressed = event->button() == Qt::MiddleButton;
     mMouseLeftButtonPressed = event->button() == Qt::LeftButton;
 
     emit mousePressed(event);
-    updateCursor();
 }
 
 void OpenGLWidget::mouseReleaseEvent(QMouseEvent *event)
 {
     mMouseRightButtonPressed = false;
+    mMouseMiddleButtonPressed = false;
     mMouseLeftButtonPressed = false;
 
     emit mouseReleased(event);
-    updateCursor();
 }
 
 void OpenGLWidget::mouseMoveEvent(QMouseEvent *event)
 {
     emit mouseMoved(event);
     mMousePosition = event->pos();
-    updateCursor();
 }
 
 void OpenGLWidget::setRendererManager(RendererManager *newRendererManager)
@@ -299,29 +291,24 @@ void OpenGLWidget::setTransformer(Transformer *newTransformer)
 void OpenGLWidget::onSelectedControlPointChanged(const ControlPoint *selectedControlPoint)
 {
     mSelectedControlPoint = selectedControlPoint;
-    update();
 }
 
 void OpenGLWidget::onSelectedCurveChanged(const Curve *selectedCurve)
 {
     mSelectedCurve = selectedCurve;
-    update();
 }
 
 void OpenGLWidget::onSelectedColorPointChanged(const ColorPoint *selectedColorPoint)
 {
     mSelectedColorPoint = selectedColorPoint;
-    update();
 }
 
 void OpenGLWidget::onModeChanged(Mode mode)
 {
     mMode = mode;
-    update();
 }
 
 void OpenGLWidget::onRenderModeChanged(RenderMode renderMode)
 {
     mRenderMode = renderMode;
-    update();
 }

@@ -44,7 +44,7 @@ enum class Mode {
 
 enum class RenderMode { None = 0x01, Contours = 0x02, Diffuse = 0x04 };
 
-enum class DirtType { GUI = 0x01, QPainter = 0x02, OpenGL = 0x04 };
+enum class DirtType { GUI = 0x01, OpenGL = 0x02 };
 
 struct ProjectionParameters
 {

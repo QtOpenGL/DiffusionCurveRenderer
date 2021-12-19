@@ -2,13 +2,13 @@
 #include "Curve.h"
 
 ColorPoint::ColorPoint()
+    : mSelected(false)
 
 {}
 
 QVector2D ColorPoint::getPosition2D(float gap) const
 {
-    if(mParent){
-
+    if (mParent) {
         QVector2D positionOnCurve = mParent->valueAt(mPosition);
         QVector2D normal = mParent->normalAt(mPosition);
 

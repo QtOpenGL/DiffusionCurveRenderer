@@ -10,12 +10,12 @@ ModeWidget::ModeWidget(QGroupBox *parent)
     QVBoxLayout *layout = new QVBoxLayout;
 
     QVector<QString> labels;
-    labels << "Select"               //0
-           << "Append Control Point" // 1
-           << "Insert Control Point" // 2
-           << "Add Color Point"      // 3
-           << "Move Curve"           // 4
-           << "Pan";                 // 5
+    labels << "Select"                          //0
+           << "Append Control Point (Ctrl)"     // 1
+           << "Insert Control Point (Shift)"    // 2
+           << "Add Color Point (Alt)"           // 3
+           << "Move Curve (Mouse Left Button)"; // 4
+
     mAddColorPointRadioButtonIndex = 3;
 
     for (int i = 0; i < labels.size(); ++i) {
@@ -25,7 +25,7 @@ ModeWidget::ModeWidget(QGroupBox *parent)
         connect(button, &QRadioButton::clicked, this, [=]() {
             mMode = static_cast<Mode>(i);
             emit modeChanged(mMode);
-            onDirty(DirtType::GUI);
+            refresh();
         });
 
         mRadioButtons << button;
@@ -35,7 +35,7 @@ ModeWidget::ModeWidget(QGroupBox *parent)
     mRadioButtons[mAddColorPointRadioButtonIndex]->setEnabled(false);
     setLayout(layout);
     setTitle("Action Modes");
-    onDirty(DirtType::GUI);
+    refresh();
 }
 
 void ModeWidget::onSelectedCurveChanged(Curve *selectedCurve)
@@ -45,15 +45,25 @@ void ModeWidget::onSelectedCurveChanged(Curve *selectedCurve)
 
 void ModeWidget::onDirty(DirtType type)
 {
-    if (type & DirtType::GUI) {
-        for (int i = 0; i < mRadioButtons.size(); ++i) {
-            mRadioButtons[i]->setChecked((int) mMode == i);
-        }
+    if (type & DirtType::GUI)
+        refresh();
+}
 
-        if (mSelectedCurve) {
-            mRadioButtons[mAddColorPointRadioButtonIndex]->setEnabled(mSelectedCurve->getSize() >= 2);
-        } else {
-            mRadioButtons[mAddColorPointRadioButtonIndex]->setEnabled(false);
-        }
-    }
+void ModeWidget::onModeChanged(Mode mode)
+{
+    mMode = mode;
+
+    emit modeChanged(mode);
+    refresh();
+}
+
+void ModeWidget::refresh()
+{
+    for (int i = 0; i < mRadioButtons.size(); ++i)
+        mRadioButtons[i]->setChecked((int) mMode == i);
+
+    if (mSelectedCurve)
+        mRadioButtons[mAddColorPointRadioButtonIndex]->setEnabled(mSelectedCurve->getSize() >= 2);
+    else
+        mRadioButtons[mAddColorPointRadioButtonIndex]->setEnabled(false);
 }

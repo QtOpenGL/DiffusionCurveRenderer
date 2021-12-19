@@ -2,6 +2,7 @@
 
 ControlPoint::ControlPoint(QVector2D position)
     : mPosition(position)
+    , mSelected(false)
 {}
 
 const QVector2D &ControlPoint::position() const

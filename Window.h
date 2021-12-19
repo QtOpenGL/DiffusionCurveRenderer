@@ -14,6 +14,8 @@ public:
     ~Window();
 
     void keyPressEvent(QKeyEvent *event) override;
+    void keyReleaseEvent(QKeyEvent *event) override;
+
     void setCentralWidget(CentralWidget *newCentralWidget);
     void initialize();
 

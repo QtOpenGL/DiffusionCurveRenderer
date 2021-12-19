@@ -7,7 +7,7 @@
 
 RenderSettingsWidget::RenderSettingsWidget(QWidget *parent)
     : QGroupBox(parent)
-    , mMode(RenderMode::Diffuse)
+    , mMode(RenderMode::Contours + RenderMode::Diffuse)
     , mColorRendererMode(ColorRendererMode::TriangleStrip)
 
 {
@@ -25,7 +25,7 @@ RenderSettingsWidget::RenderSettingsWidget(QWidget *parent)
 
     {
         mRenderContoursCheckBox = new QCheckBox("Contours");
-        mRenderContoursCheckBox->setChecked(false);
+        mRenderContoursCheckBox->setChecked(true);
 
         connect(mRenderContoursCheckBox, &QCheckBox::stateChanged, this, [=](int state) {
             mMode = mMode + RenderMode::Contours;

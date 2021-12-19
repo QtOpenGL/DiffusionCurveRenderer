@@ -30,6 +30,14 @@ public:
     void setColorPointWidget(ColorPointWidget *newColorPointWidget);
     void setRenderSettingsWidget(RenderSettingsWidget *newRenderSettingsWidget);
 
+signals:
+    emit void keyPressed(Qt::Key);
+    emit void keyReleased(Qt::Key);
+
+public slots:
+    void onKeyPressed(Qt::Key);
+    void onKeyReleased(Qt::Key);
+
 private:
     QGroupBox *mOpenGLWidgetContainer;
     OpenGLWidget *mOpenGLWidget;

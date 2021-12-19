@@ -63,14 +63,19 @@ private:
 
     ProjectionParameters *mProjectionParameters;
 
+    Mode mModeBeforeMousePress;
     Mode mMode;
 
-    bool mMouseRightButtonPressed;
     bool mMouseLeftButtonPressed;
+    bool mMouseMiddleButtonPressed;
+    bool mMouseRightButtonPressed;
     bool mMousePressedOnCurve;
     QPointF mMousePosition;
 
     float mZoomStep;
+
+    bool mKeyPressed;
+    Qt::Key mPressedKey;
 };
 
 #endif // CONTROLLER_H

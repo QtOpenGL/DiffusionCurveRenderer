@@ -69,15 +69,19 @@ private:
 
     Mode mMode;
     RenderMode mRenderMode;
+
     bool mInit;
-    bool mMouseRightButtonPressed;
+
     bool mMouseLeftButtonPressed;
+    bool mMouseRightButtonPressed;
+    bool mMouseMiddleButtonPressed;
+
     QPointF mMousePosition;
+
     QRectF mHandles[4];
+
     QPen mDashedPen;
     QPen mSolidPen;
-
-    bool mUpdatePainter;
 };
 
 #endif // OPENGLWIDGET_H
