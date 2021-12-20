@@ -13,9 +13,7 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    QApplication::setStyle(QStyleFactory::create("Windows"));
-
-    QFile file("Resources/StyleSheet.qss");
+    QFile file("Resources/style.qss");
     if (file.open(QFile::ReadOnly)) {
         QString styleSheet = QLatin1String(file.readAll());
         qApp->setStyleSheet(styleSheet);
