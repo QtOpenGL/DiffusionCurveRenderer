@@ -70,6 +70,7 @@ Controller::Controller(QObject *parent)
     connect(mOpenGLWidget, &OpenGLWidget::mouseReleased, this, &Controller::onMouseReleased);
     connect(mOpenGLWidget, &OpenGLWidget::mouseMoved, this, &Controller::onMouseMoved);
 
+    connect(mCentralWidget, &CentralWidget::action, this, &Controller::onAction);
     connect(mCurveWidget, &CurveWidget::action, this, &Controller::onAction);
     connect(mControlPointWidget, &ControlPointWidget::action, this, &Controller::onAction);
     connect(mColorPointWidget, &ColorPointWidget::action, this, &Controller::onAction);
@@ -154,6 +155,36 @@ CentralWidget *Controller::centralWidget() const
 void Controller::onAction(Action action, CustomVariant value)
 {
     switch (action) {
+    case Action::LoadFromXML: {
+        QVector<Curve *> curves = Util::readCurveDataFromXML(value.toString());
+        if (!curves.isEmpty()) {
+            mCurveContainer->setSelectedColorPoint(nullptr);
+            mCurveContainer->setSelectedControlPoint(nullptr);
+            mCurveContainer->setSelectedCurve(nullptr);
+            mCurveContainer->clear();
+            mCurveContainer->addCurves(curves);
+            emit dirty(DirtType::OpenGL + DirtType::GUI);
+        }
+
+        break;
+    }
+
+    case Action::SaveAsPNG: {
+        ColorPoint *colorPoint = mCurveContainer->selectedColorPoint();
+        ControlPoint *controlPoint = mCurveContainer->selectedControlPoint();
+        Curve *curve = mCurveContainer->selectedCurve();
+
+        mCurveContainer->setSelectedColorPoint(nullptr);
+        mCurveContainer->setSelectedControlPoint(nullptr);
+        mCurveContainer->setSelectedCurve(nullptr);
+
+        mOpenGLWidget->save(value.toString());
+
+        mCurveContainer->setSelectedColorPoint(colorPoint);
+        mCurveContainer->setSelectedControlPoint(controlPoint);
+        mCurveContainer->setSelectedCurve(curve);
+        break;
+    }
     case Action::UpdateRenderQuality:
         mRendererManager->onQualityChanged(value.toInt());
         emit dirty(DirtType::OpenGL);

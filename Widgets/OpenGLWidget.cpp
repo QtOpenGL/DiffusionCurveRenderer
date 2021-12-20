@@ -103,6 +103,15 @@ void OpenGLWidget::onDirty(DirtType type)
     }
 }
 
+bool OpenGLWidget::save(const QString &filePath)
+{
+    makeCurrent();
+    bool success = grabFramebuffer().save(filePath);
+    doneCurrent();
+
+    return success;
+}
+
 void OpenGLWidget::updatePainter()
 {
     if (mRenderMode & RenderMode::Diffuse) {
@@ -276,16 +285,6 @@ float OpenGLWidget::getWidth()
 float OpenGLWidget::getHeight()
 {
     return height();
-}
-
-void OpenGLWidget::makeCurrent()
-{
-    QOpenGLWidget::makeCurrent();
-}
-
-void OpenGLWidget::doneCurrent()
-{
-    QOpenGLWidget::doneCurrent();
 }
 
 void OpenGLWidget::setProjectionParameters(ProjectionParameters *newProjectionParameters)

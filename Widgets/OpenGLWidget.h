@@ -30,8 +30,6 @@ public:
     void setRendererManager(RendererManager *newRendererManager);
     float getWidth();
     float getHeight();
-    void makeCurrent();
-    void doneCurrent();
 
 signals:
     void action(Action action, QVariant value = QVariant());
@@ -47,6 +45,7 @@ public slots:
     void onModeChanged(Mode mode);
     void onRenderModeChanged(RenderMode renderMode);
     void onDirty(DirtType);
+    bool save(const QString &filePath);
 
 private slots:
     void updatePainter();

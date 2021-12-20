@@ -37,6 +37,7 @@ public:
 
 public slots:
     void sortCurves();
+    void clear();
 
 signals:
     void selectedCurveChanged(Curve *selectedCurve);

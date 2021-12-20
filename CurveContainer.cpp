@@ -182,6 +182,18 @@ void CurveContainer::sortCurves()
     mCurves = sortedCurves;
 }
 
+void CurveContainer::clear()
+{
+    for (auto &curve : mCurves) {
+        if (curve)
+            curve->deleteLater();
+
+        curve = nullptr;
+    }
+
+    mCurves.clear();
+}
+
 ColorPoint *CurveContainer::selectedColorPoint() const
 {
     return mSelectedColorPoint;

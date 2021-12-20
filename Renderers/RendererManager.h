@@ -57,6 +57,7 @@ private:
     QVector<QOpenGLFramebufferObject *> mTemporaryFrameBuffers;
     QVector<QOpenGLFramebufferObject *> mDownsampledFramebuffers;
     QVector<QOpenGLFramebufferObject *> mUpsampledFramebuffers;
+    QOpenGLFramebufferObject *mSaverFrameBuffer;
 
     RenderMode mRenderMode;
     ColorRendererMode mColorRendererMode;

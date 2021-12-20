@@ -33,6 +33,7 @@ public:
 signals:
     emit void keyPressed(Qt::Key);
     emit void keyReleased(Qt::Key);
+    emit void action(Action action, CustomVariant variant = CustomVariant());
 
 public slots:
     void onKeyPressed(Qt::Key);
