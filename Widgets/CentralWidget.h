@@ -48,6 +48,7 @@ private:
     ZoomWidget *mZoomWidget;
     ColorPointWidget *mColorPointWidget;
     RenderSettingsWidget *mRenderSettingsWidget;
+    QPushButton *mClearButton;
 };
 
 #endif // CENTRALWIDGET_H

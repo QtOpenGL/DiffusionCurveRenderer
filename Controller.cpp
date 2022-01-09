@@ -155,6 +155,13 @@ CentralWidget *Controller::centralWidget() const
 void Controller::onAction(Action action, CustomVariant value)
 {
     switch (action) {
+    case Action::ClearCanvas:
+        mCurveContainer->setSelectedColorPoint(nullptr);
+        mCurveContainer->setSelectedControlPoint(nullptr);
+        mCurveContainer->setSelectedCurve(nullptr);
+        mCurveContainer->clear();
+        emit dirty(DirtType::OpenGL + DirtType::GUI);
+        break;
     case Action::LoadFromXML: {
         QVector<Curve *> curves = Util::readCurveDataFromXML(value.toString());
         if (!curves.isEmpty()) {
@@ -168,7 +175,6 @@ void Controller::onAction(Action action, CustomVariant value)
 
         break;
     }
-
     case Action::SaveAsPNG: {
         ColorPoint *colorPoint = mCurveContainer->selectedColorPoint();
         ControlPoint *controlPoint = mCurveContainer->selectedControlPoint();

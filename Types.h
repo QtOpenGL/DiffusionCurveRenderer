@@ -32,7 +32,8 @@ enum class Action {
     UpdateSmoothIterations,
     UpdateRenderQuality,
     LoadFromXML,
-    SaveAsPNG
+    SaveAsPNG,
+    ClearCanvas
 };
 
 enum class Mode {

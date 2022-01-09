@@ -13,22 +13,25 @@ CentralWidget::CentralWidget(QWidget *parent)
 
 void CentralWidget::init()
 {
-    QGridLayout *gridLayout = new QGridLayout;
+    mClearButton = new QPushButton("Clear Canvas");
+    connect(mClearButton, &QPushButton::clicked, this, [=]() { emit action(Action::ClearCanvas); });
 
+    // OpenGL Widget and Container
+    QHBoxLayout *layout = new QHBoxLayout;
+    mOpenGLWidgetContainer = new QGroupBox;
+    mOpenGLWidgetContainer->setTitle("Canvas");
+    mOpenGLWidgetContainer->setLayout(layout);
+    layout->addWidget(mOpenGLWidget);
+
+    QGridLayout *gridLayout = new QGridLayout;
     gridLayout->addWidget(mModeWidget, 0, 0);
     gridLayout->addWidget(mCurveWidget, 1, 0);
     gridLayout->addWidget(mControlPointWidget, 2, 0);
     gridLayout->addWidget(mColorPointWidget, 3, 0);
     gridLayout->addWidget(mRenderSettingsWidget, 4, 0);
     gridLayout->addWidget(mZoomWidget, 5, 0);
-
-    gridLayout->addItem(new QSpacerItem(1, 1, QSizePolicy::Ignored, QSizePolicy::Expanding), 6, 0);
-
-    QHBoxLayout *layout = new QHBoxLayout;
-    mOpenGLWidgetContainer = new QGroupBox;
-    mOpenGLWidgetContainer->setTitle("Canvas");
-    mOpenGLWidgetContainer->setLayout(layout);
-    layout->addWidget(mOpenGLWidget);
+    gridLayout->addWidget(mClearButton, 6, 0);
+    gridLayout->addItem(new QSpacerItem(1, 1, QSizePolicy::Ignored, QSizePolicy::Expanding), 7, 0);
     gridLayout->addWidget(mOpenGLWidgetContainer, 0, 1, 0, -1);
     gridLayout->setColumnStretch(1, 1);
 
