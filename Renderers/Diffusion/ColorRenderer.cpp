@@ -2,6 +2,8 @@
 
 #include <Curves/Bezier.h>
 
+#include <Helper.h>
+
 ColorRenderer::ColorRenderer()
     : mLineStripShader(nullptr)
     , mTriangleStripShader(nullptr)
@@ -30,9 +32,12 @@ bool ColorRenderer::init()
     // Line strip shader
     {
         mLineStripShader = new QOpenGLShaderProgram;
-        if (!mLineStripShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Diffusion/Color/LineStrip/VertexShader.vert")
-            || !mLineStripShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Diffusion/Color/LineStrip/FragmentShader.frag")
-            || !mLineStripShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Diffusion/Color/LineStrip/GeometryShader.geom")
+        if (!mLineStripShader->addShaderFromSourceCode(QOpenGLShader::Vertex,
+                                                       Helper::getBytes(":/Resources/Shaders/Diffusion/Color/LineStrip/VertexShader.vert"))
+            || !mLineStripShader->addShaderFromSourceCode(QOpenGLShader::Fragment,
+                                                          Helper::getBytes(":/Resources/Shaders/Diffusion/Color/LineStrip/FragmentShader.frag"))
+            || !mLineStripShader->addShaderFromSourceCode(QOpenGLShader::Geometry,
+                                                          Helper::getBytes(":/Resources/Shaders/Diffusion/Color/LineStrip/GeometryShader.geom"))
             || !mLineStripShader->link() || !mLineStripShader->bind()) {
             qCritical() << mLineStripShader->log();
             return false;
@@ -66,9 +71,12 @@ bool ColorRenderer::init()
     // Triangle strip shader
     {
         mTriangleStripShader = new QOpenGLShaderProgram;
-        if (!mTriangleStripShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Diffusion/Color/TriangleStrip/VertexShader.vert")
-            || !mTriangleStripShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Diffusion/Color/TriangleStrip/FragmentShader.frag")
-            || !mTriangleStripShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Diffusion/Color/TriangleStrip/GeometryShader.geom")
+        if (!mTriangleStripShader->addShaderFromSourceCode(QOpenGLShader::Vertex,
+                                                           Helper::getBytes(":/Resources/Shaders/Diffusion/Color/TriangleStrip/VertexShader.vert"))
+            || !mTriangleStripShader->addShaderFromSourceCode(QOpenGLShader::Fragment,
+                                                              Helper::getBytes(":/Resources/Shaders/Diffusion/Color/TriangleStrip/FragmentShader.frag"))
+            || !mTriangleStripShader->addShaderFromSourceCode(QOpenGLShader::Geometry,
+                                                              Helper::getBytes(":/Resources/Shaders/Diffusion/Color/TriangleStrip/GeometryShader.geom"))
             || !mTriangleStripShader->link() || !mTriangleStripShader->bind()) {
             qCritical() << mTriangleStripShader->log();
             return false;

@@ -24,6 +24,7 @@ HEADERS += \
     Curves/ControlPoint.h \
     Curves/Curve.h \
     CustomVariant.h \
+    Helper.h \
     Renderers/Base/Quads.h \
     Renderers/Base/Ticks.h \
     Renderers/ContourRenderer.h \
@@ -60,6 +61,7 @@ SOURCES += \
     Curves/ControlPoint.cpp \
     Curves/Curve.cpp \
     CustomVariant.cpp \
+    Helper.cpp \
     Main.cpp \
     Renderers/Base/Quads.cpp \
     Renderers/Base/Ticks.cpp \
@@ -89,30 +91,5 @@ SOURCES += \
     Widgets/ZoomWidget.cpp \
     Window.cpp
 
-DISTFILES += \
-    Shaders/Contour/FragmentShader.frag \
-    Shaders/Contour/GeometryShader.geom \
-    Shaders/Contour/VertexShader.vert \
-    Shaders/Diffusion/Color/LineStrip/FragmentShader.frag \
-    Shaders/Diffusion/Color/LineStrip/GeometryShader.geom \
-    Shaders/Diffusion/Color/LineStrip/VertexShader.vert \
-    Shaders/Diffusion/Color/TriangleStrip/FragmentShader.frag \
-    Shaders/Diffusion/Color/TriangleStrip/GeometryShader.geom \
-    Shaders/Diffusion/Color/TriangleStrip/VertexShader.vert \
-    Shaders/Diffusion/Downsample/FragmentShader.frag \
-    Shaders/Diffusion/Downsample/VertexShader.vert \
-    Shaders/Diffusion/Jacobi/FragmentShader.frag \
-    Shaders/Diffusion/Jacobi/VertexShader.vert \
-    Shaders/Diffusion/Upsample/FragmentShader.frag \
-    Shaders/Diffusion/Upsample/VertexShader.vert \
-    Shaders/Line/FragmentShader.frag \
-    Shaders/Line/GeometryShader.geom \
-    Shaders/Line/VertexShader.vert \
-    Shaders/Point/FragmentShader.frag \
-    Shaders/Point/GeometryShader.geom \
-    Shaders/Point/VertexShader.vert \
-    Shaders/Rectangle/FragmentShader.frag \
-    Shaders/Rectangle/GeometryShader.geom \
-    Shaders/Rectangle/VertexShader.vert \
-    Shaders/Screen/FragmentShader.frag \
-    Shaders/Screen/VertexShader.vert
+RESOURCES += \
+    Resources.qrc

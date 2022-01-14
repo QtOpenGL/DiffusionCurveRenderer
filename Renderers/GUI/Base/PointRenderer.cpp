@@ -1,4 +1,5 @@
 #include "PointRenderer.h"
+#include <Helper.h>
 #include <QtMath>
 
 PointRenderer::PointRenderer()
@@ -24,9 +25,10 @@ bool PointRenderer::init()
 
     mShader = new QOpenGLShaderProgram;
 
-    if (!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Point/VertexShader.vert")
-        || !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Point/GeometryShader.geom")
-        || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Point/FragmentShader.frag") || !mShader->link() || !mShader->bind()) {
+    if (!mShader->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/Point/VertexShader.vert"))
+        || !mShader->addShaderFromSourceCode(QOpenGLShader::Geometry, Helper::getBytes(":/Resources/Shaders/Point/GeometryShader.geom"))
+        || !mShader->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/Point/FragmentShader.frag"))
+        || !mShader->link() || !mShader->bind()) {
         qCritical() << mShader->log();
         return false;
     }

@@ -143,7 +143,7 @@ Controller::Controller(QObject *parent)
         }
     });
 
-    QVector<Curve *> curves = Util::readCurveDataFromXML("Resources/CurveData/zephyr.xml");
+    QVector<Curve *> curves = Util::readCurveDataFromXML(":/Resources/CurveData/zephyr.xml");
     mCurveContainer->addCurves(curves);
 }
 

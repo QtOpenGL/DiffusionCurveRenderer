@@ -1,4 +1,6 @@
 #include "ContourRenderer.h"
+#include "Helper.h"
+#include <QFile>
 
 ContourRenderer::ContourRenderer()
     : mShader(nullptr)
@@ -24,10 +26,10 @@ bool ContourRenderer::init()
     initializeOpenGLFunctions();
     mShader = new QOpenGLShaderProgram;
 
-    if (!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Contour/VertexShader.vert")
-        || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Contour/FragmentShader.frag")
-        || !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Contour/GeometryShader.geom") || !mShader->link()
-        || !mShader->bind()) {
+    if (!mShader->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/Contour/VertexShader.vert"))
+        || !mShader->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/Contour/FragmentShader.frag"))
+        || !mShader->addShaderFromSourceCode(QOpenGLShader::Geometry, Helper::getBytes(":/Resources/Shaders/Contour/GeometryShader.geom"))
+        || !mShader->link() || !mShader->bind()) {
         qCritical() << mShader->log();
         return false;
     }

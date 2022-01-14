@@ -1,5 +1,7 @@
 #include "RectangleRenderer.h"
 
+#include <Helper.h>
+
 RectangleRenderer::RectangleRenderer()
     : mShader(nullptr)
     , mTicks(nullptr)
@@ -23,10 +25,10 @@ bool RectangleRenderer::init()
 
     mShader = new QOpenGLShaderProgram;
 
-    if (!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Rectangle/VertexShader.vert")
-        || !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Rectangle/GeometryShader.geom")
-        || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Rectangle/FragmentShader.frag") || !mShader->link()
-        || !mShader->bind()) {
+    if (!mShader->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/Rectangle/VertexShader.vert"))
+        || !mShader->addShaderFromSourceCode(QOpenGLShader::Geometry, Helper::getBytes(":/Resources/Shaders/Rectangle/GeometryShader.geom"))
+        || !mShader->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/Rectangle/FragmentShader.frag"))
+        || !mShader->link() || !mShader->bind()) {
         qCritical() << mShader->log();
         return false;
     }

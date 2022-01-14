@@ -1,5 +1,7 @@
 #include "ScreenRenderer.h"
 
+#include <Helper.h>
+
 ScreenRenderer::ScreenRenderer()
     : mShader(nullptr)
     , mQuads(nullptr)
@@ -21,8 +23,9 @@ bool ScreenRenderer::init()
     initializeOpenGLFunctions();
     mShader = new QOpenGLShaderProgram;
 
-    if (!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Screen/VertexShader.vert")
-        || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Screen/FragmentShader.frag") || !mShader->link() || !mShader->bind()) {
+    if (!mShader->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/Screen/VertexShader.vert"))
+        || !mShader->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/Screen/FragmentShader.frag"))
+        || !mShader->link() || !mShader->bind()) {
         qCritical() << mShader->log();
         return false;
     }

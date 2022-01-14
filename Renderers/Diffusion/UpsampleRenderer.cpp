@@ -1,5 +1,7 @@
 #include "UpsampleRenderer.h"
 
+#include <Helper.h>
+
 UpsampleRenderer::UpsampleRenderer()
     : mShader(nullptr)
     , mQuads(nullptr)
@@ -23,9 +25,9 @@ bool UpsampleRenderer::init()
 
     mShader = new QOpenGLShaderProgram;
 
-    if (!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Diffusion/Upsample/VertexShader.vert")
-        || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Diffusion/Upsample/FragmentShader.frag") || !mShader->link()
-        || !mShader->bind()) {
+    if (!mShader->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/Diffusion/Upsample/VertexShader.vert"))
+        || !mShader->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/Diffusion/Upsample/FragmentShader.frag"))
+        || !mShader->link() || !mShader->bind()) {
         qCritical() << mShader->log();
         return false;
     }

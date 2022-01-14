@@ -1,5 +1,7 @@
 ﻿#include "LineRenderer.h"
 
+#include <Helper.h>
+
 LineRenderer::LineRenderer()
     : mShader(nullptr)
     , mDenseTicks(nullptr)
@@ -28,9 +30,10 @@ bool LineRenderer::init()
 
     mShader = new QOpenGLShaderProgram;
 
-    if (!mShader->addShaderFromSourceFile(QOpenGLShader::Vertex, "Shaders/Line/VertexShader.vert")
-        || !mShader->addShaderFromSourceFile(QOpenGLShader::Fragment, "Shaders/Line/FragmentShader.frag")
-        || !mShader->addShaderFromSourceFile(QOpenGLShader::Geometry, "Shaders/Line/GeometryShader.geom") || !mShader->link() || !mShader->bind()) {
+    if (!mShader->addShaderFromSourceCode(QOpenGLShader::Vertex, Helper::getBytes(":/Resources/Shaders/Line/VertexShader.vert"))
+        || !mShader->addShaderFromSourceCode(QOpenGLShader::Fragment, Helper::getBytes(":/Resources/Shaders/Line/FragmentShader.frag"))
+        || !mShader->addShaderFromSourceCode(QOpenGLShader::Geometry, Helper::getBytes(":/Resources/Shaders/Line/GeometryShader.geom"))
+        || !mShader->link() || !mShader->bind()) {
         qCritical() << mShader->log();
         return false;
     }
